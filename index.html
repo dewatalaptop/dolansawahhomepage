@@ -35,7 +35,6 @@
         body.theme-jadwal {
             background: linear-gradient(135deg, #f6d365, #fda085);
         }
-        /* TEMA BARU UNTUK MENU REGULER */
         body.theme-reguler {
             background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
         }
@@ -109,10 +108,11 @@
             border-radius: 10px; text-align: center; border: none; cursor: pointer;
             transition: transform 0.3s, opacity 0.3s;
         }
+        /* Warna Tombol Selang-seling */
         #page-home .orange { background: linear-gradient(45deg, #ff9800, #ff5722); }
-        #page-home .blue { background: linear-gradient(45deg, #2196F3, #1976D2); }
         #page-home .green { background: linear-gradient(45deg, #4caf50, #8bc34a); }
         #page-home .button:hover { transform: scale(1.05); opacity: 0.9; }
+        
         #page-home .floating-button {
             display: block; width: 90%; max-width: 320px; padding: 14px;
             margin: 30px auto 10px; font-size: 18px; font-weight: bold; text-decoration: none;
@@ -189,7 +189,7 @@
         #page-jadwal .schedule { font-size: 16px; }
         #page-jadwal .footer { margin-top: 15px; font-size: 14px; color: #777; }
 
-        /* --- GAYA BARU UNTUK HALAMAN MENU REGULER --- */
+        /* --- Gaya Halaman Menu Reguler --- */
         #page-reguler .menu-container {
             max-width: 800px; margin: 0 auto;
         }
@@ -261,12 +261,16 @@
         <div class="main-container">
             <h1>Selamat Datang di Dolan Sawah</h1>
             <p>Jelajahi berbagai menu dan tempat menarik kami.</p>
-            <a href="#" onclick="showPage('page-reguler')" class="button blue">Menu Reguler</a>
-            <a href="#" onclick="showPage('page-menu')" class="button orange">Menu Paket Prasmanan</a>
+            
+            <a href="#" onclick="showPage('page-reguler')" class="button orange">Menu Reguler</a>
+            <a href="#" onclick="showPage('page-menu')" class="button green">Menu Paket Prasmanan</a>
             <a href="#" onclick="showPage('page-gallery')" class="button orange">Gallery Lokasi</a>
             <a href="#" onclick="showPage('page-jadwal')" class="button green">Jadwal Buka</a>
+
+            <a href="https://dewatalaptop.github.io/checkerds" target="_blank" rel="noopener noreferrer" class="button orange">Kalender Reservasi Dolan Sawah</a>
+
             <a href="https://wa.me/6285601393640?text=Nama%20%3A%0AAlamat%20%3A%0ATanggal%20acara%20%3A%0AJam%20acara%20%3A%0AJumlah%20peserta%20%3A%0APilihan%20Tempat%20%3A%0APilihan%20Menu%20%3A" class="floating-button">
-                Reservasi Sekarang
+                Reservasi via WhatsApp
             </a>
         </div>
     </div>
