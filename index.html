@@ -5,167 +5,232 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mini Site Dolan Sawah</title>
     <style>
-*
-{
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-}
-body
-{
-	font-family: 'Poppins', sans-serif;
-	text-align: center;
-	background: linear-gradient(135deg, #ff9800, #ffcc80);
-	color: black;
-	overflow: hidden;
-}
-.loading-screen
-{
-	position: fixed;
-	width: 100%;
-	height: 100%;
-	background: white;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
-	z-index: 2000;
-}
-.loading-bar
-{
-	width: 80%;
-	max-width: 300px;
-	height: 8px;
-	background: #ddd;
-	border-radius: 5px;
-	overflow: hidden;
-	margin-top: 10px;
-}
-.loading-fill
-{
-	width: 0%;
-	height: 100%;
-	background: linear-gradient(90deg, #ff9800, #ff5722);
-	transition: width 0.2s;
-}
-.loading-text
-{
-	font-size: 18px;
-	margin-top: 10px;
-	font-weight: bold;
-	color: #ff9800;
-}
-.container
-{
-	display: none;
-	max-width: 800px;
-	margin: auto;
-	padding: 80px 20px 50px;
-	background: white;
-	border-radius: 15px;
-	box-shadow: 0px 10px 20px rgba(255, 152, 0, 0.5);
-	animation: fadeIn 1s ease-in-out;
-}
-@keyframes fadeIn
-{
-	opacity: 0;
-	transform: translateY(-20px);
-}
-to
-{
-	opacity: 1;
-	transform: translateY(0);
-}
-.gallery
-{
-	width: 100%;
-	position: fixed;
-	top: 0;
-	left: 0;
-	z-index: 1000;
-	background: white;
-	box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-}
-.gallery img
-{
-	width: 100%;
-	height: auto;
-	max-height: 200px;
-	object-fit: cover;
-}
-h1
-{
-	color: #ff9800;
-}
-.button
-{
-	display: block;
-	width: 90%;
-	max-width: 300px;
-	padding: 14px;
-	margin: 10px auto;
-	font-size: 18px;
-	font-weight: bold;
-	text-decoration: none;
-	color: white;
-	border-radius: 10px;
-	text-align: center;
-	border: none;
-	cursor: pointer;
-	transition: transform 0.3s, opacity 0.3s;
-}
-.orange
-{
-	background: linear-gradient(45deg, #ff9800, #ff5722);
-}
-.green
-{
-	background: linear-gradient(45deg, #4caf50, #8bc34a);
-}
-.button:hover
-{
-	transform: scale(1.05);
-	opacity: 0.9;
-}
-.floating-button
-{
-	display: block;
-	width: 90%;
-	max-width: 320px;
-	padding: 14px;
-	margin: 30px auto 10px;
-	font-size: 18px;
-	font-weight: bold;
-	text-decoration: none;
-	color: black;
-	background: linear-gradient(45deg, #ffeb3b, #fbc02d);
-	border-radius: 10px;
-	text-align: center;
-	border: none;
-	cursor: pointer;
-	box-shadow: 0px 5px 15px rgba(255, 235, 59, 0.7);
-	animation: blink-effect 1.5s infinite alternate;
-}
-@keyframes blink-effect
-{
-	opacity: 1;
-	transform: scale(1);
-}
-50%
-{
-	opacity: 0.7;
-	transform: scale(1.08);
-}
-100%
-{
-	opacity: 1;
-	transform: scale(1);
-}
-</style>
-</head>
-<body>
+        /* CSS GABUNGAN UNTUK SEMUA HALAMAN */
 
-    <!-- Indikator Loading -->
+        /* Gaya Global & Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            text-align: center;
+            color: black;
+            transition: background 0.5s ease;
+        }
+
+        /* --- Tema Latar Belakang untuk Setiap Halaman --- */
+        body.theme-home {
+            background: linear-gradient(135deg, #ff9800, #ffcc80);
+            overflow: hidden; /* Sembunyikan scrollbar saat loading */
+        }
+        body.theme-menu {
+            background: linear-gradient(135deg, #ff9800, #e65100);
+        }
+        body.theme-gallery {
+            background: linear-gradient(135deg, #f6d365, #fda085);
+        }
+        body.theme-jadwal {
+            background: linear-gradient(135deg, #f6d365, #fda085);
+        }
+        
+        /* Kontainer Konten Halaman */
+        .page-content {
+            display: none; /* Semua halaman disembunyikan secara default */
+            padding: 20px;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Tombol Kembali */
+        .back-button {
+            display: inline-block;
+            background: #ff5722;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 25px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .back-button:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- Layar Loading (Dari index.html) --- */
+        .loading-screen {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 2000;
+        }
+        .loading-bar {
+            width: 80%;
+            max-width: 300px;
+            height: 8px;
+            background: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .loading-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff9800, #ff5722);
+            transition: width 0.2s;
+        }
+        .loading-text {
+            font-size: 18px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #ff9800;
+        }
+
+        /* --- Gaya Halaman Utama (Home) --- */
+        #page-home .header-gallery {
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background: white;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        #page-home .header-gallery img {
+            width: 100%;
+            height: auto;
+            max-height: 200px;
+            object-fit: cover;
+        }
+        #page-home .main-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 80px 20px 50px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0px 10px 20px rgba(255, 152, 0, 0.5);
+        }
+        #page-home h1 { color: #ff9800; }
+        #page-home .button {
+            display: block;
+            width: 90%;
+            max-width: 300px;
+            padding: 14px;
+            margin: 10px auto;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        #page-home .orange { background: linear-gradient(45deg, #ff9800, #ff5722); }
+        #page-home .green { background: linear-gradient(45deg, #4caf50, #8bc34a); }
+        #page-home .button:hover { transform: scale(1.05); opacity: 0.9; }
+        #page-home .floating-button {
+            display: block; width: 90%; max-width: 320px; padding: 14px;
+            margin: 30px auto 10px; font-size: 18px; font-weight: bold;
+            text-decoration: none; color: black;
+            background: linear-gradient(45deg, #ffeb3b, #fbc02d);
+            border-radius: 10px; text-align: center; border: none; cursor: pointer;
+            box-shadow: 0px 5px 15px rgba(255, 235, 59, 0.7);
+            animation: blink-effect 1.5s infinite alternate;
+        }
+        @keyframes blink-effect {
+            from { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.08); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- Gaya Halaman Menu Prasmanan --- */
+        #page-menu .container {
+            max-width: 600px; margin: auto; background: #111;
+            padding: 20px; border-radius: 12px;
+            box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8);
+            color: white;
+        }
+        #page-menu h1 {
+            font-size: 24px; color: #ff9800;
+            text-shadow: 0 0 10px rgba(255, 152, 0, 0.8);
+            margin-bottom: 20px;
+        }
+        #page-menu .image-container { display: flex; justify-content: center; }
+        #page-menu .image-container img {
+            width: 100%; max-width: 100%; border-radius: 10px;
+            border: 3px solid #ff9800;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+        #page-menu .image-container img:hover {
+            transform: scale(1.08);
+            box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8);
+        }
+
+        /* --- Gaya Halaman Galeri --- */
+        #page-gallery .container {
+            max-width: 90%; margin: 20px auto; padding: 20px;
+            background: white; border-radius: 15px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        #page-gallery .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px; padding: 10px;
+        }
+        #page-gallery .gallery img {
+            width: 100%; height: auto; border-radius: 10px;
+            cursor: pointer; transition: transform 0.3s ease-in-out;
+        }
+        #page-gallery .gallery img:hover { transform: scale(1.05); }
+
+        /* Mode Fullscreen untuk Galeri */
+        .fullscreen-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); display: flex; justify-content: center;
+            align-items: center; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out; z-index: 3000;
+        }
+        .fullscreen-modal img { max-width: 90%; max-height: 90%; border-radius: 10px; }
+        .fullscreen-modal.show { opacity: 1; visibility: visible; }
+        .close-btn {
+            position: absolute; top: 20px; right: 20px; font-size: 30px;
+            color: white; background: red; border: none; border-radius: 50%;
+            width: 40px; height: 40px; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; transition: background 0.3s;
+        }
+        .close-btn:hover { background: darkred; }
+
+        /* --- Gaya Halaman Jadwal Buka --- */
+        #page-jadwal .container {
+            background: white; padding: 20px; border-radius: 15px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+            max-width: 400px; width: 90%; margin: 20px auto;
+        }
+        #page-jadwal h1 { font-size: 22px; color: #ff5733; margin-top: 15px; }
+        #page-jadwal .schedule { font-size: 16px; }
+        #page-jadwal .highlight { color: #56ab2f; }
+        #page-jadwal .footer { margin-top: 15px; font-size: 14px; color: #777; }
+    </style>
+</head>
+
+<body class="theme-home">
+
     <div class="loading-screen">
         <h2>Memuat Halaman...</h2>
         <div class="loading-bar">
@@ -174,52 +239,132 @@ h1
         <p class="loading-text">0%</p>
     </div>
 
-    <!-- Galeri Gambar sebagai Header -->
-    <div class="gallery">
-        <img src="http://dolansawah.hexat.com/images/8C2E210D-68C8-4A0A-B2AB-791500EA544A_thumb.jpeg" alt="Gallery Image" />
+    <div id="page-home" class="page-content">
+        <div class="header-gallery">
+            <img src="http://dolansawah.hexat.com/images/8C2E210D-68C8-4A0A-B2AB-791500EA544A_thumb.jpeg" alt="Gallery Image" />
+        </div>
+        <div class="main-container">
+            <h1>Selamat Datang di Dolan Sawah</h1>
+            <p>Jelajahi berbagai menu dan tempat menarik kami.</p>
+            <a href="#" onclick="showPage('page-gallery')" class="button orange">Gallery Lokasi</a>
+            <a href="#" onclick="showPage('page-menu')" class="button orange">Menu Paket Prasmanan</a>
+            <a href="#" onclick="showPage('page-jadwal')" class="button green">Jadwal Buka</a>
+            <a href="https://wa.me/6285601393640?text=Nama%20%3A%0AAlamat%20%3A%0ATanggal%20acara%20%3A%0AJam%20acara%20%3A%0AJumlah%20peserta%20%3A%0APilihan%20Tempat%20%3A%0APilihan%20Menu%20%3A" class="floating-button">
+                Reservasi Sekarang
+            </a>
+        </div>
     </div>
 
-    <!-- Konten Utama -->
-    <div class="container">
-        <h1>Selamat Datang di Dolan Sawah</h1>
-        <p>Jelajahi berbagai menu dan tempat menarik kami.</p>
-
-        <a href="/gallery tempat" class="button orange">Gallery Lokasi</a>
-        
-        <a href="/menu paket prasmanan" class="button orange">Menu Paket Prasmanan</a>
-        <a href="/jadwal buka" class="button green">Jadwal Buka</a>
-
-        <a href="https://wa.me/6285601393640?text=Nama%20%3A%0AAlamat%20%3A%0ATanggal%20acara%20%3A%0AJam%20acara%20%3A%0AJumlah%20peserta%20%3A%0APilihan%20Tempat%20%3A%0APilihan%20Menu%20%3A" class="floating-button">
-            Reservasi Sekarang
-        </a>
+    <div id="page-menu" class="page-content">
+        <div class="container">
+            <h1>Menu Paket Prasmanan</h1>
+            <div class="image-container">
+                <img src="http://dolansawah.hexat.com/images/IMG_3494.png" alt="Menu Prasmanan" />
+            </div>
+            <button class="back-button" onclick="showPage('page-home')">Kembali ke Home</button>
+        </div>
     </div>
+
+    <div id="page-gallery" class="page-content">
+        <div class="container">
+            <h1>Galeri Dolan Sawah</h1>
+            <p>Klik gambar untuk memperbesar tampilan.</p>
+            <div class="gallery">
+                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0001.jpg" alt="Tempat 1" onclick="openFullscreen(this)">
+                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0002.jpg" alt="Tempat 2" onclick="openFullscreen(this)">
+                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0003.jpg" alt="Tempat 3" onclick="openFullscreen(this)">
+                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0004.jpg" alt="Tempat 4" onclick="openFullscreen(this)">
+                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0005.jpg" alt="Tempat 5" onclick="openFullscreen(this)">
+            </div>
+            <button class="back-button" onclick="showPage('page-home')">Kembali ke Home</button>
+        </div>
+    </div>
+    
+    <div id="page-jadwal" class="page-content">
+        <div class="container">
+            <h1>Jadwal Buka</h1>
+            <p class="schedule">
+                Senin - Minggu<br />
+                06.00 - 22.00<br /><br />
+            </p>
+            <p class="footer">Dolan Sawah - Tempat Wisata & Kuliner</p>
+            <button class="back-button" onclick="showPage('page-home')">Kembali ke Home</button>
+        </div>
+    </div>
+
+    <div class="fullscreen-modal" id="fullscreen-modal">
+        <button class="close-btn" onclick="closeFullscreen()">X</button>
+        <img id="fullscreen-img" src="" alt="Gambar besar">
+    </div>
+
 
     <script>
-        let progress = 0;
-        const loadingText = document.querySelector(".loading-text");
-        const loadingFill = document.querySelector(".loading-fill");
+        // --- SCRIPT GABUNGAN UNTUK SEMUA FUNGSI ---
 
-        function updateLoading() {
-            if (progress < 100) {
-                progress += Math.floor(Math.random() * 10) + 5;
-                if (progress > 100) progress = 100;
-                loadingFill.style.width = progress + "%";
-                loadingText.textContent = progress + "%";
-                setTimeout(updateLoading, Math.random() * 200);
-            } else {
-                setTimeout(() => {
-                    document.querySelector(".loading-screen").style.display = "none";
-                    document.querySelector(".container").style.display = "block";
-                    document.body.style.overflow = "auto";
-                }, 500);
+        // Fungsi utama untuk navigasi halaman
+        function showPage(pageId) {
+            // Sembunyikan semua halaman
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+            
+            // Tampilkan halaman yang dipilih
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.style.display = 'block';
+            }
+
+            // Ganti tema latar belakang body
+            const theme = pageId.replace('page-', 'theme-');
+            document.body.className = theme;
+            
+            // Atur ulang scroll ke atas
+            window.scrollTo(0, 0);
+            
+            // Pastikan scrollbar muncul jika bukan di halaman home
+            if (pageId !== 'page-home') {
+                document.body.style.overflow = "auto";
             }
         }
 
+        // --- Fungsi untuk Galeri ---
+        const fullscreenModal = document.getElementById("fullscreen-modal");
+        const fullscreenImg = document.getElementById("fullscreen-img");
+
+        function openFullscreen(imgElement) {
+            fullscreenImg.src = imgElement.src;
+            fullscreenModal.classList.add("show");
+        }
+
+        function closeFullscreen() {
+            fullscreenModal.classList.remove("show");
+        }
+
+        // --- Fungsi untuk Layar Loading ---
         document.addEventListener("DOMContentLoaded", () => {
+            let progress = 0;
+            const loadingText = document.querySelector(".loading-text");
+            const loadingFill = document.querySelector(".loading-fill");
+            const loadingScreen = document.querySelector(".loading-screen");
+
+            function updateLoading() {
+                if (progress < 100) {
+                    progress += Math.floor(Math.random() * 10) + 5;
+                    if (progress > 100) progress = 100;
+                    loadingFill.style.width = progress + "%";
+                    loadingText.textContent = progress + "%";
+                    setTimeout(updateLoading, Math.random() * 200);
+                } else {
+                    setTimeout(() => {
+                        loadingScreen.style.display = "none";
+                        // Tampilkan halaman utama setelah loading selesai
+                        showPage('page-home');
+                    }, 500);
+                }
+            }
             setTimeout(updateLoading, 500);
         });
     </script>
 
 </body>
 </html>
-
