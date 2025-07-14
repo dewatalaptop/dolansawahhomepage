@@ -23,7 +23,6 @@
             transition: background 0.5s ease;
             line-height: 1.6;
         }
-        /* ... Tema Latar Belakang ... */
         body.theme-home { background: linear-gradient(135deg, #ff9800, #ffcc80); }
         body.theme-menu { background: linear-gradient(135deg, #ff9800, #e65100); }
         body.theme-gallery { background: linear-gradient(135deg, #f6d365, #fda085); }
@@ -48,7 +47,6 @@
         }
         .back-button:hover { transform: scale(1.05); }
 
-        /* --- Layar Loading --- */
         .loading-screen {
             position: fixed; width: 100%; height: 100%;
             background: white; display: flex; justify-content: center;
@@ -67,10 +65,9 @@
             font-size: 18px; margin-top: 10px; font-weight: bold; color: #ff9800;
         }
 
-        /* --- Gaya Halaman Utama (Home) --- */
         #page-home .header-gallery {
             width: 100%; position: fixed; top: 0; left: 0; 
-            z-index: 1000; /* Header memiliki z-index tinggi */
+            z-index: 1000;
             background: white; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
         #page-home .header-gallery img {
@@ -79,16 +76,14 @@
             object-fit: cover;
         }
         
-        /* == PERBAIKAN UTAMA DI SINI == */
         #page-home .main-container {
             max-width: 800px;
-            margin: 0 auto; /* Konten tetap di tengah */
-            padding: 220px 20px 50px; /* Padding atas memberi ruang untuk header */
+            margin: 0 auto;
+            padding: 220px 20px 50px;
             background: white; 
             border-radius: 15px;
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15); /* Shadow sedikit lebih netral */
-            position: relative; /* Diperlukan agar tidak 'kabur' */
-            /* z-index dan margin-top negatif sudah dihapus */
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
         }
         
         #page-home h1 { 
@@ -123,8 +118,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* ... Sisa CSS (Menu, Galeri, Reguler, Popup) tidak berubah ... */
-        /* --- Gaya Halaman Menu Reservasi --- */
         #page-menu .container { max-width: 600px; margin: auto; background: #111; padding: 20px; border-radius: 12px; box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8); color: white; }
         #page-menu h1 { font-size: clamp(1.8rem, 5vw, 2.2rem); color: #ff9800; text-shadow: 0 0 10px rgba(255, 152, 0, 0.8); margin-bottom: 20px; }
         #page-menu h2 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: #fbc02d; margin-top: 30px; margin-bottom: 15px; }
@@ -132,25 +125,21 @@
         #page-menu .image-container img { width: 100%; max-width: 100%; border-radius: 10px; border: 3px solid #ff9800; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
         #page-menu .image-container img:hover { transform: scale(1.05); box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8); }
 
-        /* --- Gaya Halaman Galeri --- */
         #page-gallery .container { max-width: 95%; margin: 20px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15); }
         #page-gallery h1 { font-size: clamp(1.8rem, 5vw, 2.2rem); }
         #page-gallery .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; padding: 10px; }
         #page-gallery .gallery img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1 / 1; border-radius: 10px; cursor: pointer; transition: transform 0.3s ease-in-out; }
         #page-gallery .gallery img:hover { transform: scale(1.05); }
 
-        /* --- Mode Fullscreen untuk Galeri --- */
         .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out; z-index: 5000; }
         .fullscreen-modal.show { display: flex; opacity: 1; visibility: visible; }
         .fullscreen-modal img { max-width: 90%; max-height: 90%; border-radius: 10px; }
         .close-btn { position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; background: red; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.3s; }
         .close-btn:hover { background: darkred; }
 
-        /* --- Gaya Halaman Jadwal Buka --- */
         #page-jadwal .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2); max-width: 400px; width: 90%; margin: 20px auto; }
         #page-jadwal h1 { font-size: clamp(1.5rem, 5vw, 1.8rem); color: #ff5733; margin-top: 15px; }
 
-        /* --- Gaya Halaman Menu Reguler --- */
         #page-reguler .menu-container { max-width: 800px; margin: 0 auto; }
         #page-reguler h1 { color: #2c3e50; margin-bottom: 25px; font-size: clamp(2rem, 6vw, 2.5rem); }
         #page-reguler .menu-category { background: white; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 20px; text-align: left; overflow: hidden; }
@@ -161,7 +150,6 @@
         #page-reguler .item-dots { flex-grow: 1; border-bottom: 2px dotted #bdc3c7; margin: 0 10px; transform: translateY(-4px); }
         #page-reguler .item-price { font-size: clamp(0.9rem, 3vw, 1rem); color: #2c3e50; font-weight: bold; background-color: #f1c40f; padding: 3px 8px; border-radius: 5px; flex-shrink: 0; }
 
-        /* --- GAYA POPUP --- */
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 4000; padding: 20px; animation: fadeInPopup 0.3s ease-out; }
         .popup-overlay.show { display: flex; }
         .popup-content { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); max-width: 500px; width: 100%; text-align: center; position: relative; }
@@ -172,7 +160,6 @@
         .popup-button:hover { transform: scale(1.05); background: #e64a19; }
         @keyframes fadeInPopup { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
-        /* --- GAYA RESPONSIVE --- */
         @media screen and (max-width: 768px) {
             #page-home .main-container {
                 padding-top: 180px;
@@ -184,7 +171,7 @@
         @media screen and (max-width: 480px) {
             .page-content { padding: 15px 10px; }
             #page-home .main-container {
-                padding-top: 160px; /* Sedikit lebih banyak ruang */
+                padding-top: 160px;
                 padding-left: 15px;
                 padding-right: 15px;
             }
@@ -208,9 +195,34 @@
     <div id="page-reguler" class="page-content"><div class="menu-container"><h1>Daftar Menu Reguler</h1><div class="menu-category"><h2 class="category-title">Daging, ayam dan bebek</h2><div class="menu-item"><span class="item-name">Iga bakar</span><span class="item-dots"></span><span class="item-price">Rp 55.000</span></div><div class="menu-item"><span class="item-name">Opor bebek</span><span class="item-dots"></span><span class="item-price">Rp 38.000</span></div><div class="menu-item"><span class="item-name">Bebek goreng</span><span class="item-dots"></span><span class="item-price">Rp 35.000</span></div><div class="menu-item"><span class="item-name">Ayam rempah</span><span class="item-dots"></span><span class="item-price">Rp 35.000</span></div><div class="menu-item"><span class="item-name">Ayam kampung goreng</span><span class="item-dots"></span><span class="item-price">Rp 30.000</span></div><div class="menu-item"><span class="item-name">Opor ayam kampung</span><span class="item-dots"></span><span class="item-price">Rp 30.000</span></div><div class="menu-item"><span class="item-name">Garang asem ayam kampung</span><span class="item-dots"></span><span class="item-price">Rp 30.000</span></div><div class="menu-item"><span class="item-name">Ayam bakar besar</span><span class="item-dots"></span><span class="item-price">Rp 25.000</span></div><div class="menu-item"><span class="item-name">Galantin</span><span class="item-dots"></span><span class="item-price">Rp 25.000</span></div><div class="menu-item"><span class="item-name">Gemak</span><span class="item-dots"></span><span class="item-price">Rp 25.000</span></div><div class="menu-item"><span class="item-name">Ayam geprek besar</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Ayam Bledek</span><span class="item-dots"></span><span class="item-price">Rp 16.000</span></div><div class="menu-item"><span class="item-name">Ayam geprek kecil</span><span class="item-dots"></span><span class="item-price">Rp 16.000</span></div><div class="menu-item"><span class="item-name">Ayam bakar kecil</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Ayam kremes besar</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Ayam lada hitam</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Ayam asam manis</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Kepala bebek</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Ayam goreng mentega</span><span class="item-dots"></span><span class="item-price">Rp 14.000</span></div><div class="menu-item"><span class="item-name">Bistik Sapi</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Daging kelem</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Ayam kremes</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Ayam cabe ijo</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div></div><div class="menu-category"><h2 class="category-title">Gongso & Pedas</h2><div class="menu-item"><span class="item-name">Cumi Gongso</span><span class="item-dots"></span><span class="item-price">Rp 25.000</span></div><div class="menu-item"><span class="item-name">Babat gongso</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Tetelan Gongso</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Tetelan Mercon</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Kikil Gongso</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Bakso mercon</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div></div><div class="menu-category"><h2 class="category-title">Ikan & Seafood</h2><div class="menu-item"><span class="item-name">Nila Pesmol</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Nila cabe ijo</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Nila bumbu rujak</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Nila Bakar</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Nila asam manis</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Ikan Bawal</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Bandeng Utuh</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Belut</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Lele Bakar</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Bandeng 1/2</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Lele mangut</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Lele bumbu rujak</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Kakap asam manis</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Mangut sambal</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div></div><div class="menu-category"><h2 class="category-title">Aneka Sayuran & Tumis</h2><div class="menu-item"><span class="item-name">Tumis Buncis daging sapi</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Capcay</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Sayur Labu Siam</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Sambel goreng kentang</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Terong balado</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Cah brokoli</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Sop jagung</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Tumis pare</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Tumis kacang panjang</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Cah Tauge</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Sayur asem</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Sop Sosis Jamur</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Bunga Pepaya</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Orak-arik telur</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Daun pepaya</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Tumis kembang kol</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Jantung pisang</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Gudangan</span><span class="item-dots"></span><span class="item-price">Rp 4.000</span></div></div><div class="menu-category"><h2 class="category-title">Lauk Tambahan & Pelengkap</h2><div class="menu-item"><span class="item-name">Gudeg krecek</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Sambel goreng ati</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Telur Barendo</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Ampela-Ati</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Telur Balado</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Telur bacem</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Telur asam manis</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Sosis besar</span><span class="item-dots"></span><span class="item-price">Rp 7.000</span></div><div class="menu-item"><span class="item-name">Risol Mayo</span><span class="item-dots"></span><span class="item-price">Rp 6.000</span></div><div class="menu-item"><span class="item-name">Lumpia Semarang</span><span class="item-dots"></span><span class="item-price">Rp 6.000</span></div><div class="menu-item"><span class="item-name">Telur Ceplok</span><span class="item-dots"></span><span class="item-price">Rp 6.000</span></div><div class="menu-item"><span class="item-name">Bakmi goreng</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Bihun goreng</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Sate ayam/tusuk</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Sate-satean kecil</span><span class="item-dots"></span><span class="item-price">Rp 4.000</span></div><div class="menu-item"><span class="item-name">Tahu/Tempe bacem</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div><div class="menu-item"><span class="item-name">Bakwan jagung</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div></div><div class="menu-category"><h2 class="category-title">Sambal & Lalapan</h2><div class="menu-item"><span class="item-name">Sambal Matah</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Lalapan</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div><div class="menu-item"><span class="item-name">Sambal Bawang</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div><div class="menu-item"><span class="item-name">Sambal kecap</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div><div class="menu-item"><span class="item-name">Sambal tomat</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div></div><div class="menu-category"><h2 class="category-title">Minuman</h2><div class="menu-item"><span class="item-name">Naruna Coffee</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Dolan Sawah Breeze</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Susu Jelly</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Flavoured Latte</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Jus Buah</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div></div><button class="back-button" onclick="showPage('page-home')">Kembali ke Home</button></div></div>
     <div class="fullscreen-modal" id="fullscreen-modal"><button class="close-btn" onclick="closeFullscreen()">X</button><img id="fullscreen-img" src="" alt="Gambar besar"></div>
     <div id="generic-popup" class="popup-overlay" onclick="closePopup()"><div class="popup-content" onclick="event.stopPropagation()"><h2 id="popup-title"></h2><div id="popup-body"></div><button id="popup-button" class="popup-button" onclick="closePopup()">Tutup</button></div></div>
+    
     <script>
         // --- SCRIPT GABUNGAN UNTUK SEMUA FUNGSI ---
-        const genericPopup=document.getElementById("generic-popup"),popupTitle=document.getElementById("popup-title"),popupBody=document.getElementById("popup-body"),popupButton=document.getElementById("popup-button");function openPopup(e,t,o="Tutup"){popupTitle.innerText=e,popupBody.innerHTML=t,popupButton.innerText=o,genericPopup.classList.add("show")}function closePopup(){genericPopup.classList.remove("show")}function showPrasmananTerms(){openPopup("Ketentuan Menu Prasmanan","<ul><li>Minimum 20 pax untuk tiap menu.</li><li>Kombinasi varian maksimal 2 jenis menu paket untuk tiap grup reservasi (minimal 20 paket tiap reservasi).</li><li>Harga belum termasuk PPN 10%.</li></ul>")}function showKembulanTerms(){openPopup("Ketentuan Menu Kembulan","<ul><li>Reservasi maksimal H-1.</li><li>Tersedia paket untuk 5 dan 10 orang, serta kelipatannya.</li><li>DP minimal 50% dari total pesanan.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}function showRantangTerms(){openPopup("Ketentuan Paket Rantang","<ul><li>Untuk jumlah di atas 15 pax, diwajibkan reservasi maksimal H-1.</li><li>DP minimal 50% dari total pesanan.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}function showGrillTerms(){openPopup("Ketentuan Paket Grill","<ul><li>Lokasi yang bisa digunakan untuk paket ini adalah area Barbeque ground di bagian belakang resto.</li><li>Maksimum 6 Pax per reservasi.</li><li>DP untuk semua paket grill adalah Rp 100.000.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}function showPage(e){document.querySelectorAll(".page-content").forEach(e=>{e.style.display="none"});const t=document.getElementById(e);t&&(t.style.display="block"),document.body.className=e.replace("page-","theme-"),window.scrollTo(0,0),document.body.style.overflow="page-home"===e?"hidden":"auto","page-menu"===e?setTimeout(()=>{openPopup("Informasi Menu Reservasi","<p>Klik pada gambar menu untuk membaca ketentuan reservasi tiap jenis menu.</p>","Mengerti")},300):"page-reguler"===e&&setTimeout(()=>{openPopup("Informasi Harga","<p>Harga yang tertera belum termasuk PPN 10%.</p>","OK")},300)}const fullscreenModal=document.getElementById("fullscreen-modal"),fullscreenImg=document.getElementById("fullscreen-img");function openFullscreen(e){fullscreenImg.src=e.src,fullscreenModal.classList.add("show")}function closeFullscreen(){fullscreenModal.classList.remove("show")}document.addEventListener("DOMContentLoaded",()=>{const e=document.querySelector(".loading-text"),t=document.querySelector(".loading-fill"),o=document.querySelector(".loading-screen");let n=0;function a(){o.style.display="none";const e=window.location.hash.substring(1);e&&document.getElementById(e)?showPage(e):(showPage("page-home"),openPopup("Mohon Perhatian 🙏","<h3>Syarat Dan Ketentuan Reservasi</h3><ul><li>DP Reservasi minimum 50% dari total pesanan.</li><li>Reservasi akan dikonfirmasi setelah bukti DP telah dikirimkan.</li><li>Waktu penggunaan tempat untuk tiap Reservasi adalah 2 jam.</li><li>Dilarang membawa makanan atau minuman apapun dari luar Resto.</li><li>Reservasi minimum H-3 dari tanggal Reservasi.</li><li>Request tambahan harap dikoordinasikan saat melakukan pemesanan (maksimum H-3).</li></ul>","Lanjutkan"))}function i(){100>n?(n+=Math.floor(5*Math.random())+5,n>100&&(n=100),t.style.width=n+"%",e.textContent=n+"%",setTimeout(i,200*Math.random())):setTimeout(a,500)}setTimeout(i,500)});
+        const genericPopup=document.getElementById("generic-popup"),popupTitle=document.getElementById("popup-title"),popupBody=document.getElementById("popup-body"),popupButton=document.getElementById("popup-button");function openPopup(e,t,o="Tutup"){popupTitle.innerText=e,popupBody.innerHTML=t,popupButton.innerText=o,genericPopup.classList.add("show")}function closePopup(){genericPopup.classList.remove("show")}function showPrasmananTerms(){openPopup("Ketentuan Menu Prasmanan","<ul><li>Minimum 20 pax untuk tiap menu.</li><li>Kombinasi varian maksimal 2 jenis menu paket untuk tiap grup reservasi (minimal 20 paket tiap reservasi).</li><li>Harga belum termasuk PPN 10%.</li></ul>")}function showKembulanTerms(){openPopup("Ketentuan Menu Kembulan","<ul><li>Reservasi maksimal H-1.</li><li>Tersedia paket untuk 5 dan 10 orang, serta kelipatannya.</li><li>DP minimal 50% dari total pesanan.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}function showRantangTerms(){openPopup("Ketentuan Paket Rantang","<ul><li>Untuk jumlah di atas 15 pax, diwajibkan reservasi maksimal H-1.</li><li>DP minimal 50% dari total pesanan.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}function showGrillTerms(){openPopup("Ketentuan Paket Grill","<ul><li>Lokasi yang bisa digunakan untuk paket ini adalah area Barbeque ground di bagian belakang resto.</li><li>Maksimum 6 Pax per reservasi.</li><li>DP untuk semua paket grill adalah Rp 100.000.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}
+        
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.style.display = 'block';
+            }
+            document.body.className = pageId.replace('page-', 'theme-');
+            window.scrollTo(0, 0);
+
+            // == PERBAIKAN UTAMA DI SINI ==
+            // Selalu izinkan scroll, browser akan menampilkannya jika perlu.
+            document.body.style.overflow = "auto"; 
+            
+            if (pageId === 'page-menu') {
+                setTimeout(() => { openPopup("Informasi Menu Reservasi", "<p>Klik pada gambar menu untuk membaca ketentuan reservasi tiap jenis menu.</p>", "Mengerti"); }, 300);
+            } else if (pageId === 'page-reguler') {
+                setTimeout(() => { openPopup("Informasi Harga", "<p>Harga yang tertera belum termasuk PPN 10%.</p>", "OK"); }, 300);
+            }
+        }
+        
+        const fullscreenModal=document.getElementById("fullscreen-modal"),fullscreenImg=document.getElementById("fullscreen-img");function openFullscreen(e){fullscreenImg.src=e.src,fullscreenModal.classList.add("show")}function closeFullscreen(){fullscreenModal.classList.remove("show")}document.addEventListener("DOMContentLoaded",()=>{const e=document.querySelector(".loading-text"),t=document.querySelector(".loading-fill"),o=document.querySelector(".loading-screen");let n=0;function a(){o.style.display="none";const e=window.location.hash.substring(1);e&&document.getElementById(e)?showPage(e):(showPage("page-home"),openPopup("Mohon Perhatian 🙏","<h3>Syarat Dan Ketentuan Reservasi</h3><ul><li>DP Reservasi minimum 50% dari total pesanan.</li><li>Reservasi akan dikonfirmasi setelah bukti DP telah dikirimkan.</li><li>Waktu penggunaan tempat untuk tiap Reservasi adalah 2 jam.</li><li>Dilarang membawa makanan atau minuman apapun dari luar Resto.</li><li>Reservasi minimum H-3 dari tanggal Reservasi.</li><li>Request tambahan harap dikoordinasikan saat melakukan pemesanan (maksimum H-3).</li></ul>","Lanjutkan"))}function i(){100>n?(n+=Math.floor(5*Math.random())+5,n>100&&(n=100),t.style.width=n+"%",e.textContent=n+"%",setTimeout(i,200*Math.random())):setTimeout(a,500)}setTimeout(i,500)});
     </script>
 </body>
 </html>
