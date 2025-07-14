@@ -127,7 +127,7 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* --- Gaya Halaman Menu Prasmanan --- */
+        /* --- Gaya Halaman Menu Reservasi --- */
         #page-menu .container {
             max-width: 600px; margin: auto; background: #111; padding: 20px;
             border-radius: 12px; box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8);
@@ -137,7 +137,10 @@
             font-size: 24px; color: #ff9800;
             text-shadow: 0 0 10px rgba(255, 152, 0, 0.8); margin-bottom: 20px;
         }
-        #page-menu .image-container { display: flex; justify-content: center; }
+        #page-menu h2 { /* Gaya untuk judul paket baru */
+            font-size: 20px; color: #fbc02d; margin-top: 30px; margin-bottom: 15px;
+        }
+        #page-menu .image-container { display: flex; justify-content: center; margin-bottom: 20px;}
         #page-menu .image-container img {
             width: 100%; max-width: 100%; border-radius: 10px;
             border: 3px solid #ff9800;
@@ -263,7 +266,7 @@
             <p>Jelajahi berbagai menu dan tempat menarik kami.</p>
             
             <a href="#" onclick="showPage('page-reguler')" class="button orange">Menu Reguler</a>
-            <a href="#" onclick="showPage('page-menu')" class="button green">Menu Paket Prasmanan</a>
+            <a href="#" onclick="showPage('page-menu')" class="button green">Menu Reservasi</a>
             <a href="#" onclick="showPage('page-gallery')" class="button orange">Gallery Lokasi</a>
             <a href="#" onclick="showPage('page-jadwal')" class="button green">Jadwal Buka</a>
 
@@ -277,10 +280,33 @@
 
     <div id="page-menu" class="page-content">
         <div class="container">
-            <h1>Menu Paket Prasmanan</h1>
+            <h1>Menu Reservasi</h1>
+
+            <h2>Paket Prasmanan</h2>
             <div class="image-container">
                 <img src="http://dolansawah.hexat.com/images/IMG_3494.png" alt="Menu Prasmanan" />
             </div>
+
+            <h2>Paket Kembulan</h2>
+            <div class="image-container">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461119/91d77689-1e31-4293-921e-3b52b6e61a2e_mb4ft3.jpg" alt="Paket Kembulan" />
+            </div>
+
+            <h2>Paket Rantang</h2>
+            <div class="image-container">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461212/ec438e76-f56a-417c-97f6-6b68cb62c85d_pw5uxi.jpg" alt="Paket Rantang" />
+            </div>
+
+            <h2>Paket Grill - Hemat Berdua</h2>
+            <div class="image-container">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461305/560cbf7f-85b2-4ce9-81ce-8f5f9f0ed0ba_jx5cph.jpg" alt="Paket Grill Hemat Berdua" />
+            </div>
+            
+            <h2>Paket Grill - Hemat Berempat</h2>
+            <div class="image-container">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461385/3e5de018-b6b1-4da4-a0e3-2302aac49e78_gu8aai.jpg" alt="Paket Grill Hemat Berempat" />
+            </div>
+
             <button class="back-button" onclick="showPage('page-home')">Kembali ke Home</button>
         </div>
     </div>
