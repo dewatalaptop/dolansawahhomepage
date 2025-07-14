@@ -270,7 +270,7 @@
             <a href="#" onclick="showPage('page-gallery')" class="button orange">Gallery Lokasi</a>
             <a href="#" onclick="showPage('page-jadwal')" class="button green">Jadwal Buka</a>
 
-            <a href="https://dewatalaptop.github.io/checkerds" target="_blank" rel="noopener noreferrer" class="button orange">Periksa Ketersediaan Tempat Di Tanggal Yang Anda Pilih</a>
+            <a href="https://dewatalaptop.github.io/checkerds" target="_blank" rel="noopener noreferrer" class="button orange">Kalender Reservasi Dolan Sawah</a>
 
             <a href="https://wa.me/6285601393640?text=Nama%20%3A%0AAlamat%20%3A%0ATanggal%20acara%20%3A%0AJam%20acara%20%3A%0AJumlah%20peserta%20%3A%0APilihan%20Tempat%20%3A%0APilihan%20Menu%20%3A" class="floating-button">
                 Reservasi via WhatsApp
@@ -316,11 +316,11 @@
             <h1>Galeri Dolan Sawah</h1>
             <p>Klik gambar untuk memperbesar tampilan.</p>
             <div class="gallery">
-                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0001.jpg" alt="Tempat 1" onclick="openFullscreen(this)">
-                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0002.jpg" alt="Tempat 2" onclick="openFullscreen(this)">
-                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0003.jpg" alt="Tempat 3" onclick="openFullscreen(this)">
-                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0004.jpg" alt="Tempat 4" onclick="openFullscreen(this)">
-                <img src="http://dolansawah.hexat.com/images/PILIHAN TEMPAT DI DOLAN SAWAH_page-0005.jpg" alt="Tempat 5" onclick="openFullscreen(this)">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465151/IMG_5179_gaqxnv.jpg" alt="Lantai 1 (Depan)" onclick="openFullscreen(this)">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465454/IMG_5180_ws8xwl.jpg" alt="Lantai 1 (Belakang)" onclick="openFullscreen(this)">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465530/IMG_5181_dpmb4o.jpg" alt="Gazebo" onclick="openFullscreen(this)">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465622/IMG_5182_rh1bgp.jpg" alt="Gubug 2" onclick="openFullscreen(this)">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465685/IMG_5183_ui1zi0.jpg" alt="Lantai 3" onclick="openFullscreen(this)">
             </div>
             <button class="back-button" onclick="showPage('page-home')">Kembali ke Home</button>
         </div>
@@ -490,7 +490,6 @@
             window.scrollTo(0, 0);
             
             // Pastikan scrollbar muncul jika bukan di halaman home
-            // (progress < 100) tidak relevan di sini, cukup cek pageId
             document.body.style.overflow = (pageId === 'page-home') ? "hidden" : "auto";
         }
 
@@ -518,7 +517,6 @@
             function finishLoadingAndShowPage() {
                 loadingScreen.style.display = "none";
                 
-                // **KODE BARU DIMULAI DI SINI**
                 // Dapatkan hash dari URL (misal: #page-menu)
                 const hash = window.location.hash;
                 // Hapus tanda '#' untuk mendapatkan ID halaman
@@ -531,7 +529,6 @@
                     // Jika tidak, tampilkan halaman utama sebagai default
                     showPage('page-home');
                 }
-                // **KODE BARU SELESAI DI SINI**
             }
 
             function updateLoading() {
