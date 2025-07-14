@@ -490,7 +490,8 @@
             window.scrollTo(0, 0);
             
             // Pastikan scrollbar muncul jika bukan di halaman home
-            document.body.style.overflow = (pageId === 'page-home' && progress < 100) ? "hidden" : "auto";
+            // (progress < 100) tidak relevan di sini, cukup cek pageId
+            document.body.style.overflow = (pageId === 'page-home') ? "hidden" : "auto";
         }
 
         // --- Fungsi untuk Galeri ---
@@ -506,12 +507,32 @@
             fullscreenModal.classList.remove("show");
         }
 
-        // --- Fungsi untuk Layar Loading ---
-        let progress = 0; // make progress global
+        // --- Fungsi untuk Layar Loading dan Navigasi Awal ---
         document.addEventListener("DOMContentLoaded", () => {
             const loadingText = document.querySelector(".loading-text");
             const loadingFill = document.querySelector(".loading-fill");
             const loadingScreen = document.querySelector(".loading-screen");
+            let progress = 0;
+
+            // Fungsi untuk menyelesaikan loading dan menampilkan halaman yang sesuai
+            function finishLoadingAndShowPage() {
+                loadingScreen.style.display = "none";
+                
+                // **KODE BARU DIMULAI DI SINI**
+                // Dapatkan hash dari URL (misal: #page-menu)
+                const hash = window.location.hash;
+                // Hapus tanda '#' untuk mendapatkan ID halaman
+                const pageIdFromHash = hash.substring(1);
+
+                // Jika ada hash di URL dan elemen dengan ID tersebut ada, tampilkan halaman itu
+                if (pageIdFromHash && document.getElementById(pageIdFromHash)) {
+                    showPage(pageIdFromHash);
+                } else {
+                    // Jika tidak, tampilkan halaman utama sebagai default
+                    showPage('page-home');
+                }
+                // **KODE BARU SELESAI DI SINI**
+            }
 
             function updateLoading() {
                 if (progress < 100) {
@@ -521,11 +542,8 @@
                     loadingText.textContent = progress + "%";
                     setTimeout(updateLoading, Math.random() * 200);
                 } else {
-                    setTimeout(() => {
-                        loadingScreen.style.display = "none";
-                        // Tampilkan halaman utama setelah loading selesai
-                        showPage('page-home');
-                    }, 500);
+                    // Panggil fungsi yang telah diperbarui
+                    setTimeout(finishLoadingAndShowPage, 500);
                 }
             }
             setTimeout(updateLoading, 500);
