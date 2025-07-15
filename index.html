@@ -152,11 +152,12 @@
         .popup-button:hover { transform: scale(1.05); background: #e64a19; }
         @keyframes fadeInPopup { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         
+        /* === MODIFIKASI POSISI PENANDA SCROLL === */
         #scroll-indicator {
             position: fixed;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 20px; /* Diubah dari left: 50% */
+            /* transform: translateX(-50%); Dihapus */
             background: rgba(0, 0, 0, 0.6);
             color: white;
             padding: 8px 15px;
@@ -170,23 +171,23 @@
             transition: opacity 0.3s;
         }
         @keyframes bounce {
-            0%, 100% { transform: translate(-50%, 0); }
-            50% { transform: translate(-50%, -10px); }
+            /* Dihilangkan transform horizontal */
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
-        /* === MODIFIKASI STYLE TOMBOL KEMBALI KE HOME === */
         #floating-home-button {
             position: fixed;
             bottom: 20px;
             left: 20px;
             background: linear-gradient(45deg, #ff9800, #ff5722);
             color: white;
-            border-radius: 30px; /* Diubah menjadi kapsul */
+            border-radius: 30px;
             border: none;
-            display: none;
+            display: none; /* Default disembunyikan, diatur oleh JS */
             align-items: center;
-            gap: 8px; /* Jarak antara ikon dan teks */
-            padding: 10px 20px; /* Padding agar lebih lebar */
+            gap: 8px;
+            padding: 10px 20px;
             font-weight: bold;
             font-size: 14px;
             cursor: pointer;
@@ -281,18 +282,17 @@
             window.scrollTo(0, 0);
             document.body.style.overflow = "auto";
             
-            if (pageId === 'page-jadwal') {
+            // === MODIFIKASI LOGIKA TOMBOL KEMBALI ===
+            // Sembunyikan tombol hanya di halaman utama ('page-home')
+            if (pageId === 'page-home') {
                 floatingHomeButton.style.display = 'none';
             } else {
                 floatingHomeButton.style.display = 'flex';
             }
 
-            // --- MODIFIKASI LOGIKA PENANDA SCROLL ---
-            // Daftar halaman yang selalu menampilkan penanda scroll
             const forceShowScrollPages = ['page-home', 'page-menu', 'page-reguler', 'page-gallery'];
 
             setTimeout(() => {
-                // Tampilkan jika halaman ada di daftar ATAU jika memang perlu scroll
                 if (forceShowScrollPages.includes(pageId) || targetPage.scrollHeight > window.innerHeight) {
                     scrollIndicator.style.display = 'flex';
                     scrollIndicator.style.opacity = '1';
