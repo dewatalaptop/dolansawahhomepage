@@ -132,7 +132,7 @@
         #page-jadwal .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2); max-width: 400px; width: 90%; margin: 20px auto; }
         #page-jadwal h1 { font-size: clamp(1.5rem, 5vw, 1.8rem); color: #ff5733; margin-top: 15px; }
 
-        #page-reguler .menu-container { max-width: 800px; margin: 0 auto; padding-bottom: 80px; /* Tambahan padding agar tidak tertutup tombol floating */ }
+        #page-reguler .menu-container { max-width: 800px; margin: 0 auto; padding-bottom: 80px; }
         #page-reguler h1 { color: #2c3e50; margin-bottom: 25px; font-size: clamp(2rem, 6vw, 2.5rem); }
         #page-reguler .menu-category { background: white; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 20px; text-align: left; overflow: hidden; }
         #page-reguler .category-title { color: #e67e22; padding-bottom: 10px; margin-bottom: 20px; border-bottom: 2px solid #f39c12; font-size: clamp(1.4rem, 5vw, 1.8rem); }
@@ -152,7 +152,6 @@
         .popup-button:hover { transform: scale(1.05); background: #e64a19; }
         @keyframes fadeInPopup { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         
-        /* === STYLE BARU UNTUK SCROLL INDICATOR === */
         #scroll-indicator {
             position: fixed;
             bottom: 20px;
@@ -164,7 +163,7 @@
             border-radius: 20px;
             font-size: 14px;
             z-index: 3000;
-            display: none; /* Sembunyi secara default */
+            display: none;
             align-items: center;
             gap: 5px;
             animation: bounce 2s infinite ease-in-out;
@@ -175,20 +174,21 @@
             50% { transform: translate(-50%, -10px); }
         }
 
-        /* === STYLE BARU UNTUK TOMBOL KEMBALI KE HOME === */
+        /* === MODIFIKASI STYLE TOMBOL KEMBALI KE HOME === */
         #floating-home-button {
             position: fixed;
             bottom: 20px;
             left: 20px;
-            width: 55px;
-            height: 55px;
             background: linear-gradient(45deg, #ff9800, #ff5722);
             color: white;
-            border-radius: 50%;
+            border-radius: 30px; /* Diubah menjadi kapsul */
             border: none;
-            display: none; /* Sembunyi secara default */
-            justify-content: center;
+            display: none;
             align-items: center;
+            gap: 8px; /* Jarak antara ikon dan teks */
+            padding: 10px 20px; /* Padding agar lebih lebar */
+            font-weight: bold;
+            font-size: 14px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
             z-index: 3500;
@@ -199,8 +199,8 @@
             background: linear-gradient(45deg, #e65100, #ff5722);
         }
         #floating-home-button svg {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
         }
 
         @media screen and (max-width: 768px) {
@@ -241,16 +241,15 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
         </svg>
+        <span>Kembali</span>
     </button>
     
     <script>
         // --- SCRIPT GABUNGAN UNTUK SEMUA FUNGSI ---
         
-        // --- AMBIL ELEMEN BARU ---
         const scrollIndicator = document.getElementById('scroll-indicator');
         const floatingHomeButton = document.getElementById('floating-home-button');
         
-        // Fungsi Popup
         const genericPopup = document.getElementById("generic-popup");
         const popupTitle = document.getElementById("popup-title");
         const popupBody = document.getElementById("popup-body");
@@ -265,7 +264,6 @@
             genericPopup.classList.remove("show");
         }
 
-        // Fungsi Ketentuan Menu Reservasi
         function showPrasmananTerms(){openPopup("Ketentuan Menu Prasmanan","<ul><li>Minimum 20 pax untuk tiap menu.</li><li>Kombinasi varian maksimal 2 jenis menu paket untuk tiap grup reservasi (minimal 20 paket tiap reservasi).</li><li>Harga belum termasuk PPN 10%.</li></ul>")}
         function showKembulanTerms(){openPopup("Ketentuan Menu Kembulan","<ul><li>Reservasi maksimal H-1.</li><li>Tersedia paket untuk 5 dan 10 orang, serta kelipatannya.</li><li>DP minimal 50% dari total pesanan.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}
         function showRantangTerms(){openPopup("Ketentuan Paket Rantang","<ul><li>Untuk jumlah di atas 15 pax, diwajibkan reservasi maksimal H-1.</li><li>DP minimal 50% dari total pesanan.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}
@@ -283,25 +281,26 @@
             window.scrollTo(0, 0);
             document.body.style.overflow = "auto";
             
-            // --- LOGIKA BARU UNTUK TOMBOL HOME & SCROLL INDICATOR ---
-            // Tampilkan/sembunyikan tombol kembali ke Home
-            if (pageId === 'page-home') {
+            if (pageId === 'page-jadwal') {
                 floatingHomeButton.style.display = 'none';
             } else {
                 floatingHomeButton.style.display = 'flex';
             }
 
-            // Tampilkan/sembunyikan scroll indicator
-            // Diberi sedikit delay agar browser selesai render dan mendapat tinggi halaman yang akurat
+            // --- MODIFIKASI LOGIKA PENANDA SCROLL ---
+            // Daftar halaman yang selalu menampilkan penanda scroll
+            const forceShowScrollPages = ['page-home', 'page-menu', 'page-reguler', 'page-gallery'];
+
             setTimeout(() => {
-                if (targetPage.scrollHeight > window.innerHeight) {
+                // Tampilkan jika halaman ada di daftar ATAU jika memang perlu scroll
+                if (forceShowScrollPages.includes(pageId) || targetPage.scrollHeight > window.innerHeight) {
                     scrollIndicator.style.display = 'flex';
+                    scrollIndicator.style.opacity = '1';
                 } else {
                     scrollIndicator.style.display = 'none';
                 }
-            }, 100);
+            }, 150);
             
-            // Logika untuk menampilkan popup informasi per halaman
             if (pageId === 'page-menu') {
                 setTimeout(() => { openPopup("Informasi Menu Reservasi", "<p>Klik pada gambar menu untuk membaca ketentuan reservasi tiap jenis menu.</p>", "Mengerti"); }, 300);
             } else if (pageId === 'page-reguler') {
@@ -309,7 +308,6 @@
             }
         }
         
-        // Fungsi Galeri Fullscreen
         const fullscreenModal = document.getElementById("fullscreen-modal");
         const fullscreenImg = document.getElementById("fullscreen-img");
         function openFullscreen(imgElement) {
@@ -320,20 +318,17 @@
             fullscreenModal.classList.remove("show");
         }
         
-        // --- LOGIKA BARU UNTUK SEMBUNYIKAN INDIKATOR SAAT SCROLL ---
         let isScrolling;
         window.addEventListener('scroll', () => {
-            scrollIndicator.style.opacity = '0'; // Mulai sembunyikan saat scroll
+            scrollIndicator.style.opacity = '0';
             window.clearTimeout(isScrolling);
             isScrolling = setTimeout(() => {
-                // Sembunyikan permanen jika sudah scroll cukup jauh
                 if (window.scrollY > 50) {
                      scrollIndicator.style.display = 'none';
                 }
             }, 100);
         }, false);
         
-        // Fungsi Loading Screen
         document.addEventListener("DOMContentLoaded", () => {
             const loadingText = document.querySelector(".loading-text");
             const loadingFill = document.querySelector(".loading-fill");
