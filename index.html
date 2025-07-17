@@ -78,28 +78,42 @@
             position: relative;
         }
         
-        #page-home h1 { 
-            color: #ff9800; 
-            font-size: clamp(2rem, 6vw, 2.8rem);
-            margin-bottom: 10px;
+        /* --- CSS BARU UNTUK SLIDESHOW --- */
+        .slideshow-container {
+            width: 100%;
+            aspect-ratio: 16 / 9; /* Menjaga rasio agar responsif */
+            position: relative;
+            overflow: hidden; /* Sembunyikan bagian gambar yang berlebih */
+            border-radius: 10px; /* Sudut melengkung */
+            margin-bottom: 25px; /* Jarak ke tombol di bawahnya */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
+        .slide-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Memastikan gambar menutupi frame tanpa distorsi */
+            opacity: 0; /* Semua gambar disembunyikan awalnya */
+            transition: opacity 1.5s ease-in-out; /* Animasi fade halus */
+        }
+        .slide-image.active {
+            opacity: 1; /* Hanya gambar aktif yang terlihat */
+        }
+        /* --- AKHIR CSS BARU --- */
+        
         /* --- MODIFIKASI CSS UNTUK TOMBOL --- */
         #page-home .button {
-            display: flex; /* Menggunakan flexbox */
-            justify-content: center; /* Teks dan ikon ke tengah */
-            align-items: center; /* Sejajar vertikal */
-            gap: 10px; /* Jarak antara ikon dan teks */
+            display: flex; justify-content: center; align-items: center; gap: 10px;
             width: 90%; max-width: 300px; padding: 14px; margin: 12px auto;
             font-size: clamp(1rem, 4vw, 1.1rem);
             font-weight: bold; text-decoration: none; color: white;
             border-radius: 10px; text-align: center; border: none; cursor: pointer;
             transition: transform 0.3s, opacity 0.3s;
         }
-        /* Style untuk SVG di dalam tombol */
         #page-home .button svg {
-            width: 22px;
-            height: 22px;
-            fill: currentColor; /* Warna ikon mengikuti warna teks (putih) */
+            width: 22px; height: 22px; fill: currentColor;
         }
         
         #page-home .orange { background: linear-gradient(45deg, #ff9800, #ff5722); }
@@ -107,23 +121,15 @@
         #page-home .button:hover { transform: scale(1.05); opacity: 0.9; }
         
         #page-home .floating-button {
-            display: flex; /* Menggunakan flexbox */
-            justify-content: center; /* Teks dan ikon ke tengah */
-            align-items: center; /* Sejajar vertikal */
-            gap: 10px; /* Jarak antara ikon dan teks */
-            width: 90%; max-width: 320px; padding: 14px;
-            margin: 30px auto 10px; 
-            font-size: clamp(1rem, 4vw, 1.1rem);
-            font-weight: bold; text-decoration: none;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            width: 90%; max-width: 320px; padding: 14px; margin: 30px auto 10px; 
+            font-size: clamp(1rem, 4vw, 1.1rem); font-weight: bold; text-decoration: none;
             color: black; background: linear-gradient(45deg, #ffeb3b, #fbc02d);
             border-radius: 10px; text-align: center; border: none; cursor: pointer;
             box-shadow: 0px 5px 15px rgba(255, 235, 59, 0.7);
             animation: blink-effect 1.5s infinite alternate;
         }
-        #page-home .floating-button svg {
-             width: 24px;
-             height: 24px;
-        }
+        #page-home .floating-button svg { width: 24px; height: 24px; }
         @keyframes blink-effect {
             from { opacity: 1; transform: scale(1); }
             50% { opacity: 0.7; transform: scale(1.02); }
@@ -173,19 +179,10 @@
         @keyframes fadeInPopup { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         
         #scroll-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            z-index: 3000;
-            display: none;
-            align-items: center;
-            gap: 5px;
-            animation: bounce 2s infinite ease-in-out;
+            position: fixed; bottom: 20px; right: 20px;
+            background: rgba(0, 0, 0, 0.6); color: white; padding: 8px 15px;
+            border-radius: 20px; font-size: 14px; z-index: 3000; display: none;
+            align-items: center; gap: 5px; animation: bounce 2s infinite ease-in-out;
             transition: opacity 0.3s;
         }
         @keyframes bounce {
@@ -194,32 +191,18 @@
         }
 
         #floating-home-button {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: linear-gradient(45deg, #ff9800, #ff5722);
-            color: white;
-            border-radius: 30px;
-            border: none;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 3500;
+            position: fixed; bottom: 20px; left: 20px;
+            background: linear-gradient(45deg, #ff9800, #ff5722); color: white;
+            border-radius: 30px; border: none; display: none; align-items: center;
+            gap: 8px; padding: 10px 20px; font-weight: bold; font-size: 14px;
+            cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 3500;
             transition: transform 0.2s, background-color 0.2s;
         }
         #floating-home-button:hover {
             transform: scale(1.1);
             background: linear-gradient(45deg, #e65100, #ff5722);
         }
-        #floating-home-button svg {
-            width: 20px;
-            height: 20px;
-        }
+        #floating-home-button svg { width: 20px; height: 20px; }
 
         @media screen and (max-width: 768px) {
             #page-home .main-container { padding-top: 180px; }
@@ -241,9 +224,15 @@
     <div id="page-home" class="page-content">
         <div class="header-gallery"><img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752467234/IMG_5184_qcsvrt.jpg" alt="Gallery Image" /></div>
         <div class="main-container">
-            <h1>Selamat Datang di Dolan Sawah</h1>
-            <p>Jelajahi berbagai menu dan tempat menarik kami.</p>
-            
+            <div class="slideshow-container">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5218_k3sgqn.jpg" class="slide-image" alt="Suasana Dolan Sawah 1">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5217_ui0bir.jpg" class="slide-image" alt="Suasana Dolan Sawah 2">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5223_gaiovo.jpg" class="slide-image" alt="Suasana Dolan Sawah 3">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5225_zfzmsi.jpg" class="slide-image" alt="Suasana Dolan Sawah 4">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755557/IMG_5221_aku2vp.jpg" class="slide-image" alt="Suasana Dolan Sawah 5">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755557/IMG_5226_eokpod.jpg" class="slide-image" alt="Suasana Dolan Sawah 6">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755559/IMG_5222_rhdzta.jpg" class="slide-image" alt="Suasana Dolan Sawah 7">
+            </div>
             <a href="#" onclick="showPage('page-reguler')" class="button orange">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
                 <span>Menu Reguler</span>
@@ -380,6 +369,30 @@
             const loadingFill = document.querySelector(".loading-fill");
             const loadingScreen = document.querySelector(".loading-screen");
             let progress = 0;
+            
+            // --- JAVASCRIPT BARU UNTUK SLIDESHOW ---
+            const slideImages = document.querySelectorAll('.slide-image');
+            let currentSlideIndex = 0;
+
+            function showNextSlide() {
+                if (slideImages.length === 0) return;
+                // Sembunyikan slide yang sedang aktif
+                slideImages[currentSlideIndex].classList.remove('active');
+                // Pindah ke slide berikutnya, kembali ke awal jika sudah di akhir
+                currentSlideIndex = (currentSlideIndex + 1) % slideImages.length;
+                // Tampilkan slide baru
+                slideImages[currentSlideIndex].classList.add('active');
+            }
+            
+            // Tampilkan slide pertama saat halaman dimuat
+            if (slideImages.length > 0) {
+                slideImages[0].classList.add('active');
+            }
+            
+            // Atur interval untuk mengganti slide setiap 4 detik (4000 milidetik)
+            setInterval(showNextSlide, 4000);
+            // --- AKHIR JAVASCRIPT BARU ---
+
 
             function hideLoading() {
                 loadingScreen.style.display = "none";
