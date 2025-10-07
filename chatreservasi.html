@@ -59,6 +59,7 @@
             border-radius: 18px;
             max-width: 80%;
             line-height: 1.5;
+            word-wrap: break-word;
         }
         .user-message {
             background-color: var(--primary);
@@ -95,6 +96,7 @@
             font-weight: 500;
         }
         #sendButton:hover { background-color: var(--primary-dark); }
+        #sendButton:disabled { background-color: #6c757d; cursor: not-allowed; }
         .loading-dots { font-size: 1.5rem; }
     </style>
 </head>
@@ -105,8 +107,8 @@
             <div class="message bot-message">Halo! Ada yang bisa saya bantu untuk reservasi di Dolan Sawah? Anda bisa bertanya tentang paket menu yang tersedia.</div>
         </div>
         <div class="input-area">
-            <input type="text" id="userInput" placeholder="Ketik pesan Anda..." onkeydown="if(event.key === 'Enter') sendMessage()">
-            <button id="sendButton" onclick="sendMessage()">Kirim</button>
+            <input type="text" id="userInput" placeholder="Ketik pesan Anda...">
+            <button id="sendButton">Kirim</button>
         </div>
     </div>
 
@@ -114,10 +116,7 @@
         // Import Gemini AI SDK
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-        // =================================================================
-        // LANGKAH 2: KONEKSI KE FIREBASE ANDA
-        // Salin konfigurasi Firebase dari file HTML lama Anda ke sini
-        // =================================================================
+        // Konfigurasi Firebase Anda (tidak perlu diubah)
         const firebaseConfig = {
             apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
             authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -131,21 +130,31 @@
         const db = firebase.firestore();
 
         // =================================================================
-        // LANGKAH 3: KONEKSI KE GEMINI API
-        // Ganti "YOUR_API_KEY" dengan kunci API yang sudah Anda dapatkan
+        // PERBAIKAN 1: Kunci API sekarang berada di dalam tanda kutip ("")
         // =================================================================
-        const API_KEY = AIzaSyDKHEq0AzGBo_L7VOg5TlImEx10ifOGFmc; // <-- PENTING! GANTI INI!
+        const API_KEY = "AIzaSyDKHEq0AzGBo_L7VOg5TlImEx10ifOGFmc";
         const genAI = new GoogleGenerativeAI(API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
-        // =================================================================
-        // LANGKAH 4: LOGIKA UTAMA APLIKASI CHAT
-        // =================================================================
+        // Mendefinisikan elemen-elemen dari HTML
         const chatBox = document.getElementById('chatBox');
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
 
-        window.sendMessage = async function() {
+        // =================================================================
+        // PERBAIKAN 2: Kode ini ditambahkan untuk menangani klik tombol dan 'Enter'
+        // =================================================================
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // =================================================================
+        // PERBAIKAN 3: "window." dihapus dari depan fungsi ini
+        // =================================================================
+        async function sendMessage() {
             const userText = userInput.value.trim();
             if (userText === "") return;
 
@@ -154,11 +163,9 @@
             setLoading(true);
 
             try {
-                // Ambil data menu terbaru dari Firebase
                 const menuData = await getMenuFromFirebase();
                 const menuListString = menuData.map(menu => `- ${menu.name}: ${menu.details.join(', ')}`).join('\n');
 
-                // Buat prompt yang "pintar" untuk Gemini
                 const prompt = `
                     Anda adalah asisten virtual yang ramah untuk restoran bernama "Dolan Sawah".
                     Tugas Anda adalah membantu pelanggan melakukan reservasi.
@@ -172,7 +179,6 @@
                     Pertanyaan Pelanggan: "${userText}"
                 `;
 
-                // Kirim prompt ke Gemini
                 const result = await model.generateContent(prompt);
                 const response = await result.response;
                 const botText = response.text();
@@ -181,7 +187,7 @@
 
             } catch (error) {
                 console.error("Error:", error);
-                appendMessage("Maaf, sepertinya ada sedikit gangguan. Coba beberapa saat lagi ya.", 'bot');
+                appendMessage("Maaf, sepertinya ada sedikit gangguan pada sistem AI kami. Silakan coba beberapa saat lagi.", 'bot');
             } finally {
                 setLoading(false);
             }
@@ -203,7 +209,7 @@
                 return menus;
             } catch (e) {
                 console.error("Gagal memuat menu:", e);
-                return []; // Kembalikan array kosong jika gagal
+                return [];
             }
         }
 
@@ -236,7 +242,6 @@
                 sendButton.textContent = 'Kirim';
             }
         }
-
     </script>
 </body>
 </html>
