@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reservasi Mandiri - Dolan Sawah</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <style>
+        :root {
+            --primary: #2a9d8f; --primary-dark: #264653; --secondary: #e9c46a; 
+            --accent: #f4a261; --danger: #e76f51; --light: #f8f9fa; --dark: #343a40;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f5;
+            color: var(--dark);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        header { text-align: center; margin-bottom: 25px; }
+        header h1 { color: var(--primary-dark); }
+        .step { margin-bottom: 30px; }
+        .step h2 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-top: 5px;
+        }
+        label { font-weight: 500; }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: var(--primary-dark); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        #availability-container .location {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .location h3 { margin: 0 0 10px 0; }
+        .time-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
+        .time-slot {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .time-slot:hover { background-color: #f0f0f0; }
+        .time-slot.selected { background-color: var(--primary); color: white; border-color: var(--primary-dark); font-weight: 600; }
+        .time-slot.disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; text-decoration: line-through; }
+        .hidden { display: none; }
+        .loader { text-align: center; padding: 20px; }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #confirmation-message {
+            text-align: center;
+            padding: 20px;
+            background-color: #e8f5e9;
+            border-left: 5px solid #4caf50;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Reservasi Tempat</h1>
+            <p>Silakan isi form di bawah untuk melakukan reservasi</p>
+        </header>
+
+        <div id="reservation-form-section">
+            <div class="step">
+                <h2>Langkah 1: Pilih Tanggal</h2>
+                <label for="reservation-date">Tanggal Reservasi:</label>
+                <input type="date" id="reservation-date">
+            </div>
+
+            <div id="step-2" class="step hidden">
+                <h2>Langkah 2: Pilih Tempat & Waktu yang Tersedia</h2>
+                <div id="availability-loader" class="loader hidden">
+                    <div class="spinner"></div>
+                    <p>Mengecek ketersediaan...</p>
+                </div>
+                <div id="availability-container">
+                    </div>
+            </div>
+
+            <div id="step-3" class="step hidden">
+                <h2>Langkah 3: Isi Data Anda</h2>
+                <label for="customer-name">Nama:</label>
+                <input type="text" id="customer-name" placeholder="Masukkan nama lengkap Anda" required>
+                
+                <label for="customer-phone">Nomor HP (WhatsApp):</label>
+                <input type="tel" id="customer-phone" placeholder="Contoh: 08123456789" required>
+                
+                <label for="customer-pax">Jumlah Orang:</label>
+                <input type="number" id="customer-pax" min="1" placeholder="Jumlah peserta" required>
+            </div>
+
+            <div id="step-4" class="step hidden">
+                <button id="submit-reservation-btn" onclick="submitReservation()">Reservasi Sekarang</button>
+            </div>
+        </div>
+
+        <div id="confirmation-section" class="hidden">
+             <div id="confirmation-message">
+                <h3>Terima Kasih!</h3>
+                <p>Reservasi Anda telah kami terima dan sedang diproses. Status saat ini adalah <strong>Menunggu Pembayaran DP</strong>.</p>
+                <p>Silakan lakukan pembayaran DP ke [Nomor Rekening/QRIS Anda di sini].</p>
+                <p>Admin kami akan segera menghubungi Anda melalui WhatsApp untuk konfirmasi lebih lanjut.</p>
+             </div>
+        </div>
+    </div>
+
+<script>
+    // --- 1. Konfigurasi Firebase & Inisialisasi ---
+    const firebaseConfig = {
+      // !!! PENTING: SALIN KONFIGURASI FIREBASE ANDA DARI FILE ADMIN DAN PASTE DI SINI !!!
+      apiKey: "AIzaSyA_...",
+      authDomain: "reservasi-dolan-sawah.firebaseapp.com",
+      projectId: "reservasi-dolan-sawah",
+      storageBucket: "reservasi-dolan-sawah.appspot.com",
+      messagingSenderId: "213151400721",
+      appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- 2. Variabel Global & State ---
+    let allLocations = {}; // Untuk menyimpan data master tempat
+    let selectedDate = null;
+    let selectedLocation = null;
+    let selectedTime = null;
+
+    // --- 3. DOM Elements ---
+    const dateInput = document.getElementById('reservation-date');
+    const step2 = document.getElementById('step-2');
+    const step3 = document.getElementById('step-3');
+    const step4 = document.getElementById('step-4');
+    const availabilityLoader = document.getElementById('availability-loader');
+    const availabilityContainer = document.getElementById('availability-container');
+
+    // --- 4. Fungsi Utama (Lifecycle) ---
+    window.onload = function() {
+        // Set tanggal minimal adalah hari ini
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+        
+        // Memuat data master (tempat) saat halaman dibuka
+        fetchLocations();
+
+        // Listener ketika tanggal diubah
+        dateInput.addEventListener('change', handleDateSelection);
+    };
+
+    // --- 5. Fungsi Pengambilan Data (Fetch) dari Firebase ---
+    async function fetchLocations() {
+        try {
+            const snapshot = await db.collection('locations').get();
+            snapshot.forEach(doc => {
+                allLocations[doc.id] = { id: doc.id, ...doc.data() };
+            });
+            console.log("Data lokasi berhasil dimuat:", allLocations);
+        } catch (error) {
+            console.error("Error memuat lokasi: ", error);
+            availabilityContainer.innerHTML = "<p style='color:red;'>Gagal memuat data tempat. Coba muat ulang halaman.</p>";
+        }
+    }
+
+    // --- 6. LOGIKA INTI SINKRONISASI ---
+    async function handleDateSelection() {
+        selectedDate = dateInput.value;
+        if (!selectedDate) return;
+
+        // Reset pilihan sebelumnya
+        resetSelection();
+        step2.classList.remove('hidden');
+        availabilityLoader.classList.remove('hidden');
+
+        try {
+            // 1. Ambil semua reservasi yang sudah ada pada tanggal yang dipilih
+            const reservationsOnDate = [];
+            const snapshot = await db.collection('reservations').where('date', '==', selectedDate).get();
+            snapshot.forEach(doc => {
+                // Hanya ambil reservasi yang sudah dikonfirmasi (jika perlu)
+                // if (doc.data().status === 'confirmed') {
+                    reservationsOnDate.push(doc.data());
+                // }
+            });
+            
+            console.log(`Ditemukan ${reservationsOnDate.length} reservasi pada ${selectedDate}`);
+
+            // 2. Tentukan slot waktu yang tersedia
+            // (Contoh: Buka dari jam 10:00 - 21:00 dengan interval 1 jam)
+            const timeSlots = [];
+            for (let hour = 10; hour <= 21; hour++) {
+                timeSlots.push(`${String(hour).padStart(2, '0')}:00`);
+            }
+            
+            // 3. Render ketersediaan untuk setiap lokasi
+            renderAvailability(reservationsOnDate, timeSlots);
+
+        } catch (error) {
+            console.error("Error mengecek ketersediaan: ", error);
+            availabilityContainer.innerHTML = "<p style='color:red;'>Terjadi kesalahan saat memeriksa ketersediaan.</p>";
+        } finally {
+            availabilityLoader.classList.add('hidden');
+        }
+    }
+
+    function renderAvailability(reservations, timeSlots) {
+        availabilityContainer.innerHTML = ''; // Kosongkan kontainer
+        if (Object.keys(allLocations).length === 0) {
+            availabilityContainer.innerHTML = "<p>Data tempat tidak ditemukan.</p>";
+            return;
+        }
+
+        for (const locId in allLocations) {
+            const location = allLocations[locId];
+            let locationHTML = `<div class="location">
+                                    <h3>${location.name} (Kapasitas: ${location.capacity} orang)</h3>
+                                    <div class="time-slots">`;
+
+            timeSlots.forEach(time => {
+                // Cek apakah slot waktu ini sudah dipesan untuk lokasi ini
+                const isBooked = reservations.some(res => res.tempat === location.name && res.jam === time);
+                
+                if (isBooked) {
+                    locationHTML += `<div class="time-slot disabled">${time}</div>`;
+                } else {
+                    locationHTML += `<div class="time-slot" onclick="selectTimeSlot(this, '${location.name}', '${time}')">${time}</div>`;
+                }
+            });
+
+            locationHTML += `</div></div>`;
+            availabilityContainer.innerHTML += locationHTML;
+        }
+    }
+
+    // --- 7. Fungsi UI & Interaksi ---
+    function selectTimeSlot(element, locationName, time) {
+        // Hapus kelas 'selected' dari semua slot waktu
+        document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
+        
+        // Tambahkan kelas 'selected' ke slot yang diklik
+        element.classList.add('selected');
+
+        // Simpan pilihan
+        selectedLocation = locationName;
+        selectedTime = time;
+
+        // Tampilkan langkah berikutnya
+        step3.classList.remove('hidden');
+        step4.classList.remove('hidden');
+        
+        // Set kapasitas maksimal untuk input jumlah orang
+        const locationData = Object.values(allLocations).find(loc => loc.name === locationName);
+        if(locationData) {
+            document.getElementById('customer-pax').setAttribute('max', locationData.capacity);
+        }
+    }
+    
+    function resetSelection() {
+        availabilityContainer.innerHTML = '';
+        step3.classList.add('hidden');
+        step4.classList.add('hidden');
+        selectedLocation = null;
+        selectedTime = null;
+    }
+
+    // --- 8. Fungsi Submit Reservasi ---
+    async function submitReservation() {
+        // Ambil dan validasi data dari form
+        const name = document.getElementById('customer-name').value.trim();
+        const phone = document.getElementById('customer-phone').value.trim();
+        const pax = parseInt(document.getElementById('customer-pax').value);
+
+        if (!selectedDate || !selectedLocation || !selectedTime) {
+            alert("Silakan pilih tanggal, tempat, dan waktu terlebih dahulu."); return;
+        }
+        if (!name || !phone || !pax) {
+            alert("Harap isi semua data diri (Nama, No HP, Jumlah Orang)."); return;
+        }
+        
+        const locationData = Object.values(allLocations).find(loc => loc.name === selectedLocation);
+        if (pax > locationData.capacity) {
+            alert(`Jumlah orang (${pax}) melebihi kapasitas tempat (${locationData.capacity}).`); return;
+        }
+
+        const submitButton = document.getElementById('submit-reservation-btn');
+        submitButton.disabled = true;
+        submitButton.textContent = "Memproses...";
+
+        try {
+            // Siapkan data untuk disimpan ke Firestore
+            const newReservation = {
+                nama: name,
+                nomorHp: phone,
+                jumlah: pax,
+                date: selectedDate,
+                jam: selectedTime,
+                tempat: selectedLocation,
+                status: "pending_payment", // Status awal
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                // Anda bisa menambahkan detail menu di sini nanti
+                menus: [] 
+            };
+
+            await db.collection('reservations').add(newReservation);
+
+            // Tampilkan pesan sukses
+            document.getElementById('reservation-form-section').classList.add('hidden');
+            document.getElementById('confirmation-section').classList.remove('hidden');
+
+        } catch (error) {
+            console.error("Gagal menyimpan reservasi: ", error);
+            alert("Terjadi kesalahan. Gagal menyimpan reservasi Anda. Silakan coba lagi.");
+            submitButton.disabled = false;
+            submitButton.textContent = "Reservasi Sekarang";
+        }
+    }
+</script>
+
+</body>
+</html>
