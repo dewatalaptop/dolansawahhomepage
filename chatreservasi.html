@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Asisten Reservasi AI - Dolan Sawah (DEBUG MODE)</title>
+    <title>Asisten Reservasi AI - Dolan Sawah</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    
-    <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-    </script>
 
     <style>
         :root {
@@ -71,8 +67,7 @@
     </div>
 
     <script type="module">
-        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-
+        // Konfigurasi Firebase Anda
         const firebaseConfig = {
             apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
             authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -85,10 +80,15 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // --- PENGATURAN UNTUK PENDEKATAN BARU (VERTEX AI) ---
         const API_KEY = "AIzaSyDKHEq0AzGBo_L7VOg5TlImEx10ifOGFmc";
-        const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro"});
+        const PROJECT_ID = "reservasi-dolan-sawah"; // <-- Pastikan ini ID Proyek Google Cloud Anda
+        const MODEL_NAME = "gemini-1.0-pro"; // Menggunakan model yang sangat stabil
+        
+        // Alamat API Vertex AI yang stabil (bukan v1beta)
+        const VERTEX_AI_ENDPOINT = `https://us-central1-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/us-central1/publishers/google/models/${MODEL_NAME}:streamGenerateContent`;
 
+        // Mendefinisikan elemen-elemen dari HTML
         const chatBox = document.getElementById('chatBox');
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
@@ -112,7 +112,7 @@
                 const menuData = await getMenuFromFirebase();
                 const menuListString = menuData.map(menu => `- ${menu.name}: ${menu.details.join(', ')}`).join('\n');
 
-                const prompt = `
+                const systemPrompt = `
                     Anda adalah asisten virtual yang ramah untuk restoran bernama "Dolan Sawah".
                     Tugas Anda adalah membantu pelanggan melakukan reservasi.
                     Jawab pertanyaan pelanggan berdasarkan informasi yang diberikan.
@@ -121,26 +121,47 @@
 
                     Berikut adalah daftar paket menu yang tersedia saat ini:
                     ${menuListString}
-
-                    Pertanyaan Pelanggan: "${userText}"
                 `;
 
-                const result = await model.generateContent(prompt);
-                const response = await result.response;
-                const botText = response.text();
+                // Struktur body request yang dibutuhkan oleh Vertex AI
+                const requestBody = {
+                    "contents": {
+                        "role": "user",
+                        "parts": [{ "text": `${systemPrompt}\n\nPertanyaan Pelanggan: "${userText}"` }]
+                    },
+                    "generationConfig": {
+                        "temperature": 0.7,
+                        "topP": 1.0,
+                        "maxOutputTokens": 256
+                    }
+                };
 
+                // Memanggil API menggunakan fetch
+                const response = await fetch(VERTEX_AI_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                // Ekstrak teks dari struktur respons Vertex AI yang kompleks
+                const botText = data[0].candidates[0].content.parts[0].text;
+                
                 appendMessage(botText, 'bot');
 
-            // =================================================================
-            // PERUBAHAN UNTUK DEBUGGING: Menampilkan error asli di layar chat
-            // =================================================================
             } catch (error) {
                 console.error("Error:", error);
-                
-                // Menampilkan pesan error yang asli di dalam chat
-                const pesanErrorAsli = `DEBUG: Terjadi kesalahan teknis. Pesan: ${error.message}`;
+                // Kita aktifkan lagi mode debug untuk melihat error dari pendekatan baru ini
+                const pesanErrorAsli = `DEBUG: Terjadi kesalahan. Pesan: ${error.message}`;
                 appendMessage(pesanErrorAsli, 'bot');
-                
             } finally {
                 setLoading(false);
             }
@@ -193,3 +214,4 @@
     </script>
 </body>
 </html>
+
