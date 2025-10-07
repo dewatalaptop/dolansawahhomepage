@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Asisten Reservasi AI - Dolan Sawah</title>
+    <title>Asisten Reservasi AI - Dolan Sawah (DEBUG MODE)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -87,10 +87,6 @@
 
         const API_KEY = "AIzaSyDKHEq0AzGBo_L7VOg5TlImEx10ifOGFmc";
         const genAI = new GoogleGenerativeAI(API_KEY);
-
-        // =================================================================
-        // PERBAIKAN FINAL: Mengganti model ke 'gemini-pro' yang stabil
-        // =================================================================
         const model = genAI.getGenerativeModel({ model: "gemini-pro"});
 
         const chatBox = document.getElementById('chatBox');
@@ -135,10 +131,16 @@
 
                 appendMessage(botText, 'bot');
 
+            // =================================================================
+            // PERUBAHAN UNTUK DEBUGGING: Menampilkan error asli di layar chat
+            // =================================================================
             } catch (error) {
                 console.error("Error:", error);
-                // Mengembalikan pesan error yang ramah untuk pengguna
-                appendMessage("Maaf, sepertinya ada sedikit gangguan pada sistem AI kami. Silakan coba beberapa saat lagi.", 'bot');
+                
+                // Menampilkan pesan error yang asli di dalam chat
+                const pesanErrorAsli = `DEBUG: Terjadi kesalahan teknis. Pesan: ${error.message}`;
+                appendMessage(pesanErrorAsli, 'bot');
+                
             } finally {
                 setLoading(false);
             }
