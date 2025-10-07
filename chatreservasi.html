@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Asisten Reservasi AI - Dolan Sawah (DEBUG MODE)</title>
+    <title>Asisten Reservasi AI - Dolan Sawah</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -18,82 +18,40 @@
             --primary: #2a9d8f; --primary-dark: #264653; --secondary: #e9c46a; --light: #f8f9fa;
         }
         body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            font-family: 'Poppins', sans-serif; margin: 0; background-color: #f5f5f5; display: flex;
+            justify-content: center; align-items: center; min-height: 100vh;
         }
         .chat-container {
-            width: 90%;
-            max-width: 600px;
-            height: 80vh;
-            max-height: 700px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            width: 90%; max-width: 600px; height: 80vh; max-height: 700px; background: white;
+            border-radius: 12px; box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); display: flex;
+            flex-direction: column; overflow: hidden;
         }
         .chat-header {
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 1.2rem;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white;
+            padding: 15px 20px; text-align: center; font-weight: 600; font-size: 1.2rem;
         }
         .chat-box {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+            flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
         }
         .message {
-            padding: 10px 15px;
-            border-radius: 18px;
-            max-width: 80%;
-            line-height: 1.5;
-            word-wrap: break-word;
+            padding: 10px 15px; border-radius: 18px; max-width: 80%; line-height: 1.5; word-wrap: break-word;
         }
         .user-message {
-            background-color: var(--primary);
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
+            background-color: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px;
         }
         .bot-message {
-            background-color: #e9ecef;
-            color: var(--primary-dark);
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
+            background-color: #e9ecef; color: var(--primary-dark); align-self: flex-start; border-bottom-left-radius: 4px;
         }
         .input-area {
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid #eee;
+            display: flex; padding: 15px; border-top: 1px solid #eee;
         }
         #userInput {
-            flex-grow: 1;
-            border: 1px solid #ddd;
-            padding: 10px 15px;
-            border-radius: 20px;
-            font-size: 1rem;
-            margin-right: 10px;
+            flex-grow: 1; border: 1px solid #ddd; padding: 10px 15px; border-radius: 20px;
+            font-size: 1rem; margin-right: 10px;
         }
         #sendButton {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: 500;
+            background-color: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 20px; cursor: pointer; font-weight: 500;
         }
         #sendButton:hover { background-color: var(--primary-dark); }
         #sendButton:disabled { background-color: #6c757d; cursor: not-allowed; }
@@ -129,7 +87,11 @@
 
         const API_KEY = "AIzaSyDKHEq0AzGBo_L7VOg5TlImEx10ifOGFmc";
         const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+
+        // =================================================================
+        // PERBAIKAN FINAL: Mengganti model ke 'gemini-pro' yang stabil
+        // =================================================================
+        const model = genAI.getGenerativeModel({ model: "gemini-pro"});
 
         const chatBox = document.getElementById('chatBox');
         const userInput = document.getElementById('userInput');
@@ -173,16 +135,10 @@
 
                 appendMessage(botText, 'bot');
 
-            // =================================================================
-            // PERUBAHAN UNTUK DEBUGGING: Menampilkan error asli di layar chat
-            // =================================================================
             } catch (error) {
-                console.error("Error:", error); // Biarkan ini untuk catatan
-                
-                // Ganti pesan generik dengan pesan error yang asli
-                const pesanErrorAsli = `DEBUG: Terjadi kesalahan teknis. Pesan: ${error.message}`;
-                appendMessage(pesanErrorAsli, 'bot');
-                
+                console.error("Error:", error);
+                // Mengembalikan pesan error yang ramah untuk pengguna
+                appendMessage("Maaf, sepertinya ada sedikit gangguan pada sistem AI kami. Silakan coba beberapa saat lagi.", 'bot');
             } finally {
                 setLoading(false);
             }
