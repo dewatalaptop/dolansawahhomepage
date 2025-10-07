@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Asisten Reservasi AI - Dolan Sawah</title>
+    <title>Asisten Reservasi AI - Dolan Sawah (DEBUG MODE)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -113,10 +113,8 @@
     </div>
 
     <script type="module">
-        // Import Gemini AI SDK
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-        // Konfigurasi Firebase Anda (tidak perlu diubah)
         const firebaseConfig = {
             apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
             authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -129,21 +127,14 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // =================================================================
-        // PERBAIKAN 1: Kunci API sekarang berada di dalam tanda kutip ("")
-        // =================================================================
         const API_KEY = "AIzaSyDKHEq0AzGBo_L7VOg5TlImEx10ifOGFmc";
         const genAI = new GoogleGenerativeAI(API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
 
-        // Mendefinisikan elemen-elemen dari HTML
         const chatBox = document.getElementById('chatBox');
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
 
-        // =================================================================
-        // PERBAIKAN 2: Kode ini ditambahkan untuk menangani klik tombol dan 'Enter'
-        // =================================================================
         sendButton.addEventListener('click', sendMessage);
         userInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
@@ -151,9 +142,6 @@
             }
         });
 
-        // =================================================================
-        // PERBAIKAN 3: "window." dihapus dari depan fungsi ini
-        // =================================================================
         async function sendMessage() {
             const userText = userInput.value.trim();
             if (userText === "") return;
@@ -185,17 +173,21 @@
 
                 appendMessage(botText, 'bot');
 
+            // =================================================================
+            // PERUBAHAN UNTUK DEBUGGING: Menampilkan error asli di layar chat
+            // =================================================================
             } catch (error) {
-                console.error("Error:", error);
-                appendMessage("Maaf, sepertinya ada sedikit gangguan pada sistem AI kami. Silakan coba beberapa saat lagi.", 'bot');
+                console.error("Error:", error); // Biarkan ini untuk catatan
+                
+                // Ganti pesan generik dengan pesan error yang asli
+                const pesanErrorAsli = `DEBUG: Terjadi kesalahan teknis. Pesan: ${error.message}`;
+                appendMessage(pesanErrorAsli, 'bot');
+                
             } finally {
                 setLoading(false);
             }
         }
 
-        // --- Fungsi Bantuan ---
-
-        // Fungsi untuk mengambil data menu dari Firestore
         async function getMenuFromFirebase() {
             try {
                 const snapshot = await db.collection('menus').get();
@@ -213,7 +205,6 @@
             }
         }
 
-        // Fungsi untuk menampilkan pesan di chat box
         function appendMessage(text, sender) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}-message`;
@@ -222,7 +213,6 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
         
-        // Fungsi untuk menampilkan indikator loading
         function setLoading(isLoading) {
             sendButton.disabled = isLoading;
             const existingLoading = document.getElementById('loading-indicator');
