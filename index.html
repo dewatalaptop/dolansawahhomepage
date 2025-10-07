@@ -211,6 +211,37 @@
             background: linear-gradient(45deg, #e65100, #ff5722);
         }
         #floating-home-button svg { width: 20px; height: 20px; }
+        
+        /* --- CSS UNTUK TOMBOL MEMBER BARU --- */
+        #floating-member-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #28a745, #218838);
+            color: white;
+            border-radius: 30px;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 3500;
+            transition: transform 0.2s;
+            text-decoration: none;
+        }
+        #floating-member-button:hover {
+            transform: scale(1.1);
+        }
+        #floating-member-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        /* --- AKHIR CSS TOMBOL MEMBER BARU --- */
 
         @media screen and (max-width: 768px) {
             #page-home .main-container { padding-top: 180px; }
@@ -321,6 +352,14 @@
         </svg>
         <span>Kembali</span>
     </button>
+    
+    <a id="floating-member-button" href="https://www.dolansawah.my.id/daftarmember.html" target="_blank" rel="noopener noreferrer">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+            <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+            <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5"/>
+        </svg>
+        <span>Daftar Member</span>
+    </a>
     
     <script>
         // --- SCRIPT GABUNGAN UNTUK SEMUA FUNGSI ---
