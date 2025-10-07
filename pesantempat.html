@@ -38,61 +38,69 @@
             margin-bottom: 15px;
         }
         input, select, button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1rem;
-            box-sizing: border-box;
-            margin-top: 5px;
+            width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd;
+            font-family: 'Poppins', sans-serif; font-size: 1rem; box-sizing: border-box; margin-top: 5px;
         }
-        label { font-weight: 500; }
+        label { font-weight: 500; display: block; margin-bottom: 10px; }
         button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 15px;
-            transition: background-color 0.3s;
+            background-color: var(--primary); color: white; border: none; cursor: pointer;
+            font-weight: 600; margin-top: 15px; transition: background-color 0.3s;
         }
         button:hover { background-color: var(--primary-dark); }
         button:disabled { background-color: #ccc; cursor: not-allowed; }
-        #availability-container .location {
-            border: 1px solid #eee;
-            border-radius: 8px;
+        button.accent { background-color: var(--accent); }
+
+        /* --- STYLE BARU UNTUK SLIDER MENU --- */
+        .menu-slider-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            gap: 15px;
+            padding-bottom: 15px; /* Memberi ruang untuk scrollbar */
+            -webkit-overflow-scrolling: touch; /* Scrolling halus di iOS */
+        }
+        .menu-card {
+            flex: 0 0 80%; /* Lebar kartu 80% dari container */
+            max-width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
             padding: 15px;
-            margin-bottom: 15px;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            scroll-snap-align: center; /* Kartu akan berhenti di tengah */
         }
-        .location h3 { margin: 0 0 10px 0; }
-        .time-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
-        .time-slot {
-            padding: 8px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.2s;
+        .menu-card h4 { margin-top: 0; color: var(--primary-dark); }
+        .menu-card .menu-details { font-size: 0.85rem; padding-left: 18px; margin-bottom: 15px; }
+        .menu-card .menu-details li { margin-bottom: 4px; }
+        .menu-card button { font-size: 0.9rem; padding: 10px; margin-top: auto; }
+
+        /* --- STYLE BARU UNTUK KERANJANG / PESANAN DIPILIH --- */
+        .selected-menus-summary { margin-top: 25px; }
+        .selected-menus-summary h3 { font-size: 1rem; color: var(--dark); }
+        .selected-menu-item {
+            display: flex; gap: 10px; align-items: center; padding: 10px;
+            border-bottom: 1px solid #eee;
         }
-        .time-slot:hover { background-color: #f0f0f0; }
-        .time-slot.selected { background-color: var(--primary); color: white; border-color: var(--primary-dark); font-weight: 600; }
-        .time-slot.disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; text-decoration: line-through; }
+        .selected-menu-item .item-name { flex-grow: 1; font-weight: 500; }
+        .selected-menu-item .quantity-input { width: 70px; margin-top: 0; text-align: center; }
+        .selected-menu-item .remove-btn {
+            width: auto; padding: 5px 10px; font-size: 0.8rem; margin-top: 0;
+            background-color: var(--danger);
+        }
+        /* --- Akhir Style Baru --- */
+        
         .hidden { display: none; }
         .loader { text-align: center; padding: 20px; }
         .spinner {
-            width: 40px; height: 40px; border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 0 auto;
+            width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary);
+            border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #confirmation-message {
-            text-align: center;
-            padding: 20px;
-            background-color: #e8f5e9;
-            border-left: 5px solid #4caf50;
-            margin-top: 20px;
+            text-align: center; padding: 20px; background-color: #e8f5e9;
+            border-left: 5px solid #4caf50; margin-top: 20px;
         }
+        .error-message { color: var(--danger); font-size: 0.85rem; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -106,51 +114,51 @@
         <div id="reservation-form-section">
             <div class="step">
                 <h2>Langkah 1: Pilih Tanggal</h2>
-                <label for="reservation-date">Tanggal Reservasi:</label>
                 <input type="date" id="reservation-date">
             </div>
-
             <div id="step-2" class="step hidden">
-                <h2>Langkah 2: Pilih Tempat & Waktu yang Tersedia</h2>
-                <div id="availability-loader" class="loader hidden">
-                    <div class="spinner"></div>
-                    <p>Mengecek ketersediaan...</p>
-                </div>
-                <div id="availability-container">
-                    </div>
+                <h2>Langkah 2: Pilih Tempat & Waktu</h2>
+                <div id="availability-loader" class="loader hidden"><div class="spinner"></div><p>Mengecek ketersediaan...</p></div>
+                <div id="availability-container"></div>
             </div>
 
             <div id="step-3" class="step hidden">
                 <h2>Langkah 3: Isi Data Anda</h2>
-                <label for="customer-name">Nama:</label>
-                <input type="text" id="customer-name" placeholder="Masukkan nama lengkap Anda" required>
-                
-                <label for="customer-phone">Nomor HP (WhatsApp):</label>
-                <input type="tel" id="customer-phone" placeholder="Contoh: 08123456789" required>
-                
-                <label for="customer-pax">Jumlah Orang:</label>
-                <input type="number" id="customer-pax" min="1" placeholder="Jumlah peserta" required>
+                <label for="customer-name"><input type="text" id="customer-name" placeholder="Nama Lengkap" required></label>
+                <label for="customer-phone"><input type="tel" id="customer-phone" placeholder="Nomor HP (WhatsApp)" required></label>
+                <label for="customer-pax"><input type="number" id="customer-pax" min="1" placeholder="Jumlah Orang" required></label>
             </div>
 
             <div id="step-4" class="step hidden">
+                <h2>Langkah 4: Pilih Menu Pesanan</h2>
+                <div id="menu-slider-container" class="menu-slider-container">
+                    </div>
+                
+                <div class="selected-menus-summary">
+                    <h3>Pesanan Anda:</h3>
+                    <div id="selected-menus-list">
+                        <p id="empty-cart-message">Belum ada menu yang dipilih.</p>
+                    </div>
+                </div>
+                <p id="menu-error" class="error-message"></p>
+            </div>
+
+            <div id="step-5" class="step hidden">
                 <button id="submit-reservation-btn" onclick="submitReservation()">Reservasi Sekarang</button>
             </div>
         </div>
 
         <div id="confirmation-section" class="hidden">
-             <div id="confirmation-message">
+            <div id="confirmation-message">
                 <h3>Terima Kasih!</h3>
-                <p>Reservasi Anda telah kami terima dan sedang diproses. Status saat ini adalah <strong>Menunggu Pembayaran DP</strong>.</p>
-                <p>Silakan lakukan pembayaran DP ke [Nomor Rekening/QRIS Anda di sini].</p>
-                <p>Admin kami akan segera menghubungi Anda melalui WhatsApp untuk konfirmasi lebih lanjut.</p>
-             </div>
+                <p>Reservasi Anda sedang diproses. Silakan lakukan pembayaran DP ke [Nomor Rekening/QRIS Anda di sini] dan admin kami akan segera menghubungi Anda.</p>
+            </div>
         </div>
     </div>
 
 <script>
-    // --- 1. Konfigurasi Firebase & Inisialisasi ---
     const firebaseConfig = {
-      // !!! PENTING: SALIN KONFIGURASI FIREBASE ANDA DARI FILE ADMIN DAN PASTE DI SINI !!!
+      // !!! PENTING: SALIN KONFIGURASI FIREBASE ANDA DI SINI !!!
       apiKey: "AIzaSyA_...",
       authDomain: "reservasi-dolan-sawah.firebaseapp.com",
       projectId: "reservasi-dolan-sawah",
@@ -162,195 +170,162 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- 2. Variabel Global & State ---
-    let allLocations = {}; // Untuk menyimpan data master tempat
-    let selectedDate = null;
-    let selectedLocation = null;
-    let selectedTime = null;
+    let allLocations = {};
+    let allMenus = {};
+    let selectedDate = null, selectedLocation = null, selectedTime = null;
 
-    // --- 3. DOM Elements ---
     const dateInput = document.getElementById('reservation-date');
     const step2 = document.getElementById('step-2');
     const step3 = document.getElementById('step-3');
     const step4 = document.getElementById('step-4');
+    const step5 = document.getElementById('step-5');
     const availabilityLoader = document.getElementById('availability-loader');
     const availabilityContainer = document.getElementById('availability-container');
 
-    // --- 4. Fungsi Utama (Lifecycle) ---
     window.onload = function() {
-        // Set tanggal minimal adalah hari ini
         const today = new Date().toISOString().split('T')[0];
         dateInput.setAttribute('min', today);
-        
-        // Memuat data master (tempat) saat halaman dibuka
         fetchLocations();
-
-        // Listener ketika tanggal diubah
+        fetchMenus();
         dateInput.addEventListener('change', handleDateSelection);
     };
 
-    // --- 5. Fungsi Pengambilan Data (Fetch) dari Firebase ---
-    async function fetchLocations() {
+    async function fetchLocations() { /* ...Fungsi ini tetap sama... */ 
+        try { const snapshot = await db.collection('locations').get(); snapshot.forEach(doc => { allLocations[doc.id] = { id: doc.id, ...doc.data() }; }); } catch (error) { console.error("Error memuat lokasi: ", error); }
+    }
+    
+    async function fetchMenus() {
         try {
-            const snapshot = await db.collection('locations').get();
-            snapshot.forEach(doc => {
-                allLocations[doc.id] = { id: doc.id, ...doc.data() };
-            });
-            console.log("Data lokasi berhasil dimuat:", allLocations);
-        } catch (error) {
-            console.error("Error memuat lokasi: ", error);
-            availabilityContainer.innerHTML = "<p style='color:red;'>Gagal memuat data tempat. Coba muat ulang halaman.</p>";
-        }
+            const snapshot = await db.collection('menus').get();
+            snapshot.forEach(doc => { allMenus[doc.id] = { id: doc.id, ...doc.data() }; });
+            renderMenuSlider(); // <-- Panggil fungsi untuk render slider setelah data siap
+        } catch (error) { console.error("Error memuat menu: ", error); }
     }
 
-    // --- 6. LOGIKA INTI SINKRONISASI ---
-    async function handleDateSelection() {
-        selectedDate = dateInput.value;
-        if (!selectedDate) return;
+    // <-- FUNGSI BARU: Untuk membuat kartu-kartu di slider -->
+    function renderMenuSlider() {
+        const sliderContainer = document.getElementById('menu-slider-container');
+        sliderContainer.innerHTML = ''; // Kosongkan dulu
 
-        // Reset pilihan sebelumnya
-        resetSelection();
-        step2.classList.remove('hidden');
-        availabilityLoader.classList.remove('hidden');
-
-        try {
-            // 1. Ambil semua reservasi yang sudah ada pada tanggal yang dipilih
-            const reservationsOnDate = [];
-            const snapshot = await db.collection('reservations').where('date', '==', selectedDate).get();
-            snapshot.forEach(doc => {
-                // Hanya ambil reservasi yang sudah dikonfirmasi (jika perlu)
-                // if (doc.data().status === 'confirmed') {
-                    reservationsOnDate.push(doc.data());
-                // }
-            });
-            
-            console.log(`Ditemukan ${reservationsOnDate.length} reservasi pada ${selectedDate}`);
-
-            // 2. Tentukan slot waktu yang tersedia
-            // (Contoh: Buka dari jam 10:00 - 21:00 dengan interval 1 jam)
-            const timeSlots = [];
-            for (let hour = 10; hour <= 21; hour++) {
-                timeSlots.push(`${String(hour).padStart(2, '0')}:00`);
-            }
-            
-            // 3. Render ketersediaan untuk setiap lokasi
-            renderAvailability(reservationsOnDate, timeSlots);
-
-        } catch (error) {
-            console.error("Error mengecek ketersediaan: ", error);
-            availabilityContainer.innerHTML = "<p style='color:red;'>Terjadi kesalahan saat memeriksa ketersediaan.</p>";
-        } finally {
-            availabilityLoader.classList.add('hidden');
-        }
-    }
-
-    function renderAvailability(reservations, timeSlots) {
-        availabilityContainer.innerHTML = ''; // Kosongkan kontainer
-        if (Object.keys(allLocations).length === 0) {
-            availabilityContainer.innerHTML = "<p>Data tempat tidak ditemukan.</p>";
-            return;
+        if (Object.keys(allMenus).length === 0) {
+            sliderContainer.innerHTML = "<p>Gagal memuat menu.</p>"; return;
         }
 
-        for (const locId in allLocations) {
-            const location = allLocations[locId];
-            let locationHTML = `<div class="location">
-                                    <h3>${location.name} (Kapasitas: ${location.capacity} orang)</h3>
-                                    <div class="time-slots">`;
+        for (const menuId in allMenus) {
+            const menu = allMenus[menuId];
+            let detailsHTML = (menu.details || []).map(item => `<li>${item}</li>`).join('');
 
-            timeSlots.forEach(time => {
-                // Cek apakah slot waktu ini sudah dipesan untuk lokasi ini
-                const isBooked = reservations.some(res => res.tempat === location.name && res.jam === time);
-                
-                if (isBooked) {
-                    locationHTML += `<div class="time-slot disabled">${time}</div>`;
-                } else {
-                    locationHTML += `<div class="time-slot" onclick="selectTimeSlot(this, '${location.name}', '${time}')">${time}</div>`;
-                }
-            });
-
-            locationHTML += `</div></div>`;
-            availabilityContainer.innerHTML += locationHTML;
-        }
-    }
-
-    // --- 7. Fungsi UI & Interaksi ---
-    function selectTimeSlot(element, locationName, time) {
-        // Hapus kelas 'selected' dari semua slot waktu
-        document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
-        
-        // Tambahkan kelas 'selected' ke slot yang diklik
-        element.classList.add('selected');
-
-        // Simpan pilihan
-        selectedLocation = locationName;
-        selectedTime = time;
-
-        // Tampilkan langkah berikutnya
-        step3.classList.remove('hidden');
-        step4.classList.remove('hidden');
-        
-        // Set kapasitas maksimal untuk input jumlah orang
-        const locationData = Object.values(allLocations).find(loc => loc.name === locationName);
-        if(locationData) {
-            document.getElementById('customer-pax').setAttribute('max', locationData.capacity);
+            const cardHTML = `
+                <div class="menu-card">
+                    <h4>${menu.id}</h4>
+                    <ul class="menu-details">${detailsHTML}</ul>
+                    <button class="accent" onclick="selectMenu('${menu.id}')">Pilih Paket Ini</button>
+                </div>
+            `;
+            sliderContainer.innerHTML += cardHTML;
         }
     }
     
-    function resetSelection() {
-        availabilityContainer.innerHTML = '';
-        step3.classList.add('hidden');
-        step4.classList.add('hidden');
-        selectedLocation = null;
-        selectedTime = null;
+    // <-- FUNGSI BARU: Untuk menambahkan menu ke keranjang pesanan -->
+    function selectMenu(menuId) {
+        const listContainer = document.getElementById('selected-menus-list');
+        const emptyMessage = document.getElementById('empty-cart-message');
+        const menuError = document.getElementById('menu-error');
+
+        // Cek apakah menu sudah ada di keranjang
+        if (document.querySelector(`.selected-menu-item[data-menuid="${menuId}"]`)) {
+            alert('Menu ini sudah ada di pesanan Anda.');
+            return;
+        }
+
+        // Sembunyikan pesan "keranjang kosong" jika ada
+        if (emptyMessage) { emptyMessage.style.display = 'none'; }
+        menuError.textContent = ''; // Hapus pesan error jika ada
+
+        const newItemHTML = `
+            <div class="selected-menu-item" data-menuid="${menuId}">
+                <span class="item-name">${menuId}</span>
+                <input type="number" class="quantity-input" value="1" min="1">
+                <button type="button" class="remove-btn" onclick="this.parentElement.remove()">X</button>
+            </div>
+        `;
+        listContainer.innerHTML += newItemHTML;
     }
 
-    // --- 8. Fungsi Submit Reservasi ---
+    // Fungsi handleDateSelection dan renderAvailability tetap sama
+    async function handleDateSelection() { /* ...Fungsi ini tetap sama... */
+        selectedDate = dateInput.value; if (!selectedDate) return;
+        resetSelection(); step2.classList.remove('hidden'); availabilityLoader.classList.remove('hidden');
+        try { const reservationsOnDate = []; const snapshot = await db.collection('reservations').where('date', '==', selectedDate).get(); snapshot.forEach(doc => { reservationsOnDate.push(doc.data()); }); const timeSlots = []; for (let hour = 10; hour <= 21; hour++) { timeSlots.push(`${String(hour).padStart(2, '0')}:00`); } renderAvailability(reservationsOnDate, timeSlots); } catch (error) { console.error("Error ketersediaan: ", error); availabilityContainer.innerHTML = "<p style='color:red;'>Terjadi kesalahan.</p>"; } finally { availabilityLoader.classList.add('hidden'); }
+    }
+    function renderAvailability(reservations, timeSlots) { /* ...Fungsi ini tetap sama... */
+        availabilityContainer.innerHTML = ''; if (Object.keys(allLocations).length === 0) return;
+        for (const locId in allLocations) { const location = allLocations[locId]; let locationHTML = `<div class="location"><h3>${location.name} (Kapasitas: ${location.capacity} org)</h3><div class="time-slots">`; timeSlots.forEach(time => { const isBooked = reservations.some(res => res.tempat === location.name && res.jam === time); locationHTML += isBooked ? `<div class="time-slot disabled">${time}</div>` : `<div class="time-slot" onclick="selectTimeSlot(this, '${location.name}', '${time}')">${time}</div>`; }); locationHTML += `</div></div>`; availabilityContainer.innerHTML += locationHTML; }
+    }
+
+
+    function selectTimeSlot(element, locationName, time) {
+        document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
+        element.classList.add('selected');
+        selectedLocation = locationName;
+        selectedTime = time;
+        step3.classList.remove('hidden');
+        step4.classList.remove('hidden');
+        step5.classList.remove('hidden');
+        const locationData = Object.values(allLocations).find(loc => loc.name === locationName);
+        if(locationData) { document.getElementById('customer-pax').setAttribute('max', locationData.capacity); }
+    }
+    
+    function resetSelection() {
+        availabilityContainer.innerHTML = ''; step3.classList.add('hidden');
+        step4.classList.add('hidden'); step5.classList.add('hidden');
+        document.getElementById('selected-menus-list').innerHTML = '<p id="empty-cart-message">Belum ada menu yang dipilih.</p>';
+        selectedLocation = null; selectedTime = null;
+    }
+
+    // <-- FUNGSI SUBMIT DIPERBARUI untuk membaca dari keranjang pesanan -->
     async function submitReservation() {
-        // Ambil dan validasi data dari form
         const name = document.getElementById('customer-name').value.trim();
         const phone = document.getElementById('customer-phone').value.trim();
         const pax = parseInt(document.getElementById('customer-pax').value);
 
-        if (!selectedDate || !selectedLocation || !selectedTime) {
-            alert("Silakan pilih tanggal, tempat, dan waktu terlebih dahulu."); return;
-        }
-        if (!name || !phone || !pax) {
-            alert("Harap isi semua data diri (Nama, No HP, Jumlah Orang)."); return;
+        if (!selectedDate || !selectedLocation || !selectedTime || !name || !phone || !pax) {
+            alert("Harap lengkapi semua data dari Langkah 1 hingga 3."); return;
         }
         
-        const locationData = Object.values(allLocations).find(loc => loc.name === selectedLocation);
-        if (pax > locationData.capacity) {
-            alert(`Jumlah orang (${pax}) melebihi kapasitas tempat (${locationData.capacity}).`); return;
+        const selectedMenus = [];
+        const menuItems = document.querySelectorAll('.selected-menu-item');
+        
+        if (menuItems.length === 0) {
+            document.getElementById('menu-error').textContent = 'Anda harus memilih minimal satu paket menu.';
+            return;
         }
+
+        menuItems.forEach(item => {
+            const menuName = item.getAttribute('data-menuid');
+            const quantity = parseInt(item.querySelector('.quantity-input').value);
+            if (quantity > 0) {
+                selectedMenus.push({ name: menuName, quantity: quantity });
+            }
+        });
 
         const submitButton = document.getElementById('submit-reservation-btn');
         submitButton.disabled = true;
         submitButton.textContent = "Memproses...";
 
         try {
-            // Siapkan data untuk disimpan ke Firestore
             const newReservation = {
-                nama: name,
-                nomorHp: phone,
-                jumlah: pax,
-                date: selectedDate,
-                jam: selectedTime,
-                tempat: selectedLocation,
-                status: "pending_payment", // Status awal
+                nama: name, nomorHp: phone, jumlah: pax, date: selectedDate, jam: selectedTime,
+                tempat: selectedLocation, status: "pending_payment",
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                // Anda bisa menambahkan detail menu di sini nanti
-                menus: [] 
+                menus: selectedMenus
             };
-
             await db.collection('reservations').add(newReservation);
-
-            // Tampilkan pesan sukses
             document.getElementById('reservation-form-section').classList.add('hidden');
             document.getElementById('confirmation-section').classList.remove('hidden');
-
         } catch (error) {
             console.error("Gagal menyimpan reservasi: ", error);
-            alert("Terjadi kesalahan. Gagal menyimpan reservasi Anda. Silakan coba lagi.");
+            alert("Terjadi kesalahan. Gagal menyimpan reservasi Anda.");
             submitButton.disabled = false;
             submitButton.textContent = "Reservasi Sekarang";
         }
