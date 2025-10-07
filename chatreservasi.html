@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asisten Reservasi AI - Dolan Sawah</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+    </script>
+
+    <style>
+        :root {
+            --primary: #2a9d8f; --primary-dark: #264653; --secondary: #e9c46a; --light: #f8f9fa;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            height: 80vh;
+            max-height: 700px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        .chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+        .user-message {
+            background-color: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .bot-message {
+            background-color: #e9ecef;
+            color: var(--primary-dark);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+        #userInput {
+            flex-grow: 1;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+        #sendButton {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        #sendButton:hover { background-color: var(--primary-dark); }
+        .loading-dots { font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Asisten Reservasi Dolan Sawah</div>
+        <div class="chat-box" id="chatBox">
+            <div class="message bot-message">Halo! Ada yang bisa saya bantu untuk reservasi di Dolan Sawah? Anda bisa bertanya tentang paket menu yang tersedia.</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Ketik pesan Anda..." onkeydown="if(event.key === 'Enter') sendMessage()">
+            <button id="sendButton" onclick="sendMessage()">Kirim</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Gemini AI SDK
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+
+        // =================================================================
+        // LANGKAH 2: KONEKSI KE FIREBASE ANDA
+        // Salin konfigurasi Firebase dari file HTML lama Anda ke sini
+        // =================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
+            authDomain: "reservasi-dolan-sawah.firebaseapp.com",
+            projectId: "reservasi-dolan-sawah",
+            storageBucket: "reservasi-dolan-sawah.appspot.com",
+            messagingSenderId: "213151400721",
+            appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // =================================================================
+        // LANGKAH 3: KONEKSI KE GEMINI API
+        // Ganti "YOUR_API_KEY" dengan kunci API yang sudah Anda dapatkan
+        // =================================================================
+        const API_KEY = AIzaSyDKHEq0AzGBo_L7VOg5TlImEx10ifOGFmc; // <-- PENTING! GANTI INI!
+        const genAI = new GoogleGenerativeAI(API_KEY);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash"});
+
+        // =================================================================
+        // LANGKAH 4: LOGIKA UTAMA APLIKASI CHAT
+        // =================================================================
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        window.sendMessage = async function() {
+            const userText = userInput.value.trim();
+            if (userText === "") return;
+
+            appendMessage(userText, 'user');
+            userInput.value = "";
+            setLoading(true);
+
+            try {
+                // Ambil data menu terbaru dari Firebase
+                const menuData = await getMenuFromFirebase();
+                const menuListString = menuData.map(menu => `- ${menu.name}: ${menu.details.join(', ')}`).join('\n');
+
+                // Buat prompt yang "pintar" untuk Gemini
+                const prompt = `
+                    Anda adalah asisten virtual yang ramah untuk restoran bernama "Dolan Sawah".
+                    Tugas Anda adalah membantu pelanggan melakukan reservasi.
+                    Jawab pertanyaan pelanggan berdasarkan informasi yang diberikan.
+                    Jangan menjawab pertanyaan di luar topik reservasi restoran.
+                    Selalu gunakan bahasa Indonesia yang sopan dan bersahabat.
+
+                    Berikut adalah daftar paket menu yang tersedia saat ini:
+                    ${menuListString}
+
+                    Pertanyaan Pelanggan: "${userText}"
+                `;
+
+                // Kirim prompt ke Gemini
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                const botText = response.text();
+
+                appendMessage(botText, 'bot');
+
+            } catch (error) {
+                console.error("Error:", error);
+                appendMessage("Maaf, sepertinya ada sedikit gangguan. Coba beberapa saat lagi ya.", 'bot');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // --- Fungsi Bantuan ---
+
+        // Fungsi untuk mengambil data menu dari Firestore
+        async function getMenuFromFirebase() {
+            try {
+                const snapshot = await db.collection('menus').get();
+                const menus = [];
+                snapshot.forEach(doc => {
+                    menus.push({
+                        name: doc.id,
+                        details: doc.data().details
+                    });
+                });
+                return menus;
+            } catch (e) {
+                console.error("Gagal memuat menu:", e);
+                return []; // Kembalikan array kosong jika gagal
+            }
+        }
+
+        // Fungsi untuk menampilkan pesan di chat box
+        function appendMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        // Fungsi untuk menampilkan indikator loading
+        function setLoading(isLoading) {
+            sendButton.disabled = isLoading;
+            const existingLoading = document.getElementById('loading-indicator');
+            if (existingLoading) {
+                existingLoading.remove();
+            }
+
+            if (isLoading) {
+                sendButton.textContent = '...';
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loading-indicator';
+                loadingDiv.className = 'message bot-message loading-dots';
+                loadingDiv.innerHTML = `<span>.</span><span>.</span><span>.</span>`;
+                chatBox.appendChild(loadingDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                sendButton.textContent = 'Kirim';
+            }
+        }
+
+    </script>
+</body>
+</html>
