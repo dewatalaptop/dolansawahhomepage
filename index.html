@@ -28,7 +28,6 @@
         body.theme-gallery { background: linear-gradient(135deg, #f6d365, #fda085); }
         body.theme-jadwal { background: linear-gradient(135deg, #f6d365, #fda085); }
         body.theme-reguler { background: linear-gradient(135deg, #f5f7fa, #c3cfe2); }
-        /* CSS BARU UNTUK TEMA JEEP */
         body.theme-jeep { background: linear-gradient(135deg, #414345, #232526); }
         
         .page-content {
@@ -220,7 +219,7 @@
         #floating-member-button:hover { transform: scale(1.1); }
         #floating-member-button svg { width: 20px; height: 20px; fill: currentColor; }
 
-        /* --- CSS BARU UNTUK HALAMAN JEEP ADVENTURE --- */
+        /* --- CSS UNTUK HALAMAN JEEP ADVENTURE --- */
         #page-jeep .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -240,31 +239,42 @@
         }
         .jeep-packages-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
         }
         .jeep-package-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 15px;
-            padding: 20px;
             color: white;
             cursor: pointer;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            overflow: hidden; /* Penting untuk border-radius pada gambar */
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 150px;
         }
         .jeep-package-card:hover {
             transform: translateY(-10px) scale(1.03);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(243, 156, 18, 0.7);
             background: rgba(255, 255, 255, 0.1);
         }
+        .jeep-package-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .jeep-package-card .card-content {
+            padding: 20px;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
         .jeep-package-card h3 {
-            font-size: clamp(1.2rem, 4vw, 1.4rem);
+            font-size: clamp(1.1rem, 4vw, 1.3rem);
             margin-bottom: 10px;
             color: #fff;
         }
@@ -274,7 +284,7 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        /* --- AKHIR CSS BARU --- */
+        /* --- AKHIR CSS JEEP --- */
 
 
         @media screen and (max-width: 768px) {
@@ -380,40 +390,62 @@
             <h1>Paket Jeep Adventure</h1>
             <p class="subtitle">Jelajahi keindahan alam dengan paket wisata Jeep kami. Klik paket untuk melihat brosur.</p>
             <div class="jeep-packages-grid">
+                
                 <div class="jeep-package-card" data-src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066030/IMG_6559_bvqd6w.jpg">
-                    <h3>Paket Jeep Short Trip</h3>
-                    <span class="view-brochure">Lihat Brosur</span>
+                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill,g_auto,q_auto/v1760066030/IMG_6559_bvqd6w.jpg" alt="Thumbnail Jeep Short Trip" loading="lazy">
+                    <div class="card-content">
+                        <h3>Paket Jeep Short Trip</h3>
+                        <span class="view-brochure">Lihat Brosur</span>
+                    </div>
                 </div>
+                
                 <div class="jeep-package-card" data-src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066034/IMG_6560_laiobh.jpg">
-                    <h3>Paket Jeep Medium Trip</h3>
-                    <span class="view-brochure">Lihat Brosur</span>
+                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill,g_auto,q_auto/v1760066034/IMG_6560_laiobh.jpg" alt="Thumbnail Jeep Medium Trip" loading="lazy">
+                    <div class="card-content">
+                        <h3>Paket Jeep Medium Trip</h3>
+                        <span class="view-brochure">Lihat Brosur</span>
+                    </div>
                 </div>
+    
                 <div class="jeep-package-card" data-src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066034/IMG_6561_ljijy0.jpg">
-                    <h3>Paket Jeep Off-road Kering</h3>
-                    <span class="view-brochure">Lihat Brosur</span>
+                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill,g_auto,q_auto/v1760066034/IMG_6561_ljijy0.jpg" alt="Thumbnail Jeep Off-road Kering" loading="lazy">
+                    <div class="card-content">
+                        <h3>Paket Jeep Off-road Kering</h3>
+                        <span class="view-brochure">Lihat Brosur</span>
+                    </div>
                 </div>
+    
                 <div class="jeep-package-card" data-src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066035/IMG_6563_xg0oov.jpg">
-                    <h3>Paket Jeep Long Trip</h3>
-                    <span class="view-brochure">Lihat Brosur</span>
+                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill,g_auto,q_auto/v1760066035/IMG_6563_xg0oov.jpg" alt="Thumbnail Jeep Long Trip" loading="lazy">
+                    <div class="card-content">
+                        <h3>Paket Jeep Long Trip</h3>
+                        <span class="view-brochure">Lihat Brosur</span>
+                    </div>
                 </div>
+    
                 <div class="jeep-package-card" data-src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066041/IMG_6562_vhmizt.jpg">
-                    <h3>Paket Jeep Off-road Sungai</h3>
-                    <span class="view-brochure">Lihat Brosur</span>
+                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill,g_auto,q_auto/v1760066041/IMG_6562_vhmizt.jpg" alt="Thumbnail Jeep Off-road Sungai" loading="lazy">
+                    <div class="card-content">
+                        <h3>Paket Jeep Off-road Sungai</h3>
+                        <span class="view-brochure">Lihat Brosur</span>
+                    </div>
                 </div>
+    
                  <div class="jeep-package-card" data-src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066037/IMG_6564_qn8zru.jpg">
-                    <h3>Paket Jeep Sunrise Adventure</h3>
-                    <span class="view-brochure">Lihat Brosur</span>
+                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill,g_auto,q_auto/v1760066037/IMG_6564_qn8zru.jpg" alt="Thumbnail Jeep Sunrise Adventure" loading="lazy">
+                    <div class="card-content">
+                        <h3>Paket Jeep Sunrise Adventure</h3>
+                        <span class="view-brochure">Lihat Brosur</span>
+                    </div>
                 </div>
+    
             </div>
         </div>
     </div>
     
     <div id="page-reguler" class="page-content"><div class="menu-container"><h1>Daftar Menu Reguler</h1><div class="menu-category"><h2 class="category-title">Daging, Ayam Dan Bebek</h2><div class="menu-item"><span class="item-name">Iga Bakar</span><span class="item-dots"></span><span class="item-price">Rp 55.000</span></div><div class="menu-item"><span class="item-name">Opor Bebek</span><span class="item-dots"></span><span class="item-price">Rp 38.000</span></div><div class="menu-item"><span class="item-name">Bebek Goreng</span><span class="item-dots"></span><span class="item-price">Rp 35.000</span></div><div class="menu-item"><span class="item-name">Ayam Rempah</span><span class="item-dots"></span><span class="item-price">Rp 35.000</span></div><div class="menu-item"><span class="item-name">Ayam Kampung Goreng</span><span class="item-dots"></span><span class="item-price">Rp 30.000</span></div><div class="menu-item"><span class="item-name">Opor Ayam Kampung</span><span class="item-dots"></span><span class="item-price">Rp 30.000</span></div><div class="menu-item"><span class="item-name">Garang Asem Ayam Kampung</span><span class="item-dots"></span><span class="item-price">Rp 30.000</span></div><div class="menu-item"><span class="item-name">Ayam Bakar Besar</span><span class="item-dots"></span><span class="item-price">Rp 25.000</span></div><div class="menu-item"><span class="item-name">Galantin</span><span class="item-dots"></span><span class="item-price">Rp 25.000</span></div><div class="menu-item"><span class="item-name">Gemak</span><span class="item-dots"></span><span class="item-price">Rp 25.000</span></div><div class="menu-item"><span class="item-name">Ayam Geprek Besar</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Ayam Bledek</span><span class="item-dots"></span><span class="item-price">Rp 16.000</span></div><div class="menu-item"><span class="item-name">Ayam Geprek Kecil</span><span class="item-dots"></span><span class="item-price">Rp 16.000</span></div><div class="menu-item"><span class="item-name">Ayam Bakar Kecil</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Ayam Kremes Besar</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Ayam Lada Hitam</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Ayam Asam Manis</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Kepala Bebek</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Ayam Goreng Mentega</span><span class="item-dots"></span><span class="item-price">Rp 14.000</span></div><div class="menu-item"><span class="item-name">Bistik Sapi</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Daging Kelem</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Ayam Kremes</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Ayam Cabe Ijo</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div></div><div class="menu-category"><h2 class="category-title">Gongso & Pedas</h2><div class="menu-item"><span class="item-name">Cumi Gongso</span><span class="item-dots"></span><span class="item-price">Rp 25.000</span></div><div class="menu-item"><span class="item-name">Babat Gongso</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Tetelan Gongso</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Tetelan Mercon</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Kikil Gongso</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Bakso Mercon</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div></div><div class="menu-category"><h2 class="category-title">Ikan & Seafood</h2><div class="menu-item"><span class="item-name">Nila Pesmol</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Nila Cabe Ijo</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Nila Bumbu Rujak</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Nila Bakar</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Nila Asam Manis</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Ikan Bawal</span><span class="item-dots"></span><span class="item-price">Rp 22.000</span></div><div class="menu-item"><span class="item-name">Bandeng Utuh</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Belut</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Lele Bakar</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Bandeng 1/2</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Lele Mangut</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Lele Bumbu Rujak</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Kakap Asam Manis</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Mangut Sambal</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div></div><div class="menu-category"><h2 class="category-title">Aneka Sayuran & Tumis</h2><div class="menu-item"><span class="item-name">Tumis Buncis Daging Sapi</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Capcay</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Sayur Labu Siam</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Sambel Goreng Kentang</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Terong Balado</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Cah Brokoli</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Sop Jagung</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Tumis Pare</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Tumis Kacang Panjang</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Cah Tauge</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Sayur Asem</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Sop Sosis Jamur</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Bunga Pepaya</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Orak-Arik Telur</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Daun Pepaya</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Tumis Kembang Kol</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Jantung Pisang</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Gudangan</span><span class="item-dots"></span><span class="item-price">Rp 4.000</span></div></div><div class="menu-category"><h2 class="category-title">Lauk Tambahan & Pelengkap</h2><div class="menu-item"><span class="item-name">Gudeg Krecek</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Sambel Goreng Ati</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Telur Barendo</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Ampela-Ati</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Telur Balado</span><span class="item-dots"></span><span class="item-price">Rp 10.000</span></div><div class="menu-item"><span class="item-name">Telur Bacem</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Telur Asam Manis</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Sosis Besar</span><span class="item-dots"></span><span class="item-price">Rp 7.000</span></div><div class="menu-item"><span class="item-name">Risol Mayo</span><span class="item-dots"></span><span class="item-price">Rp 6.000</span></div><div class="menu-item"><span class="item-name">Lumpia Semarang</span><span class="item-dots"></span><span class="item-price">Rp 6.000</span></div><div class="menu-item"><span class="item-name">Telur Ceplok</span><span class="item-dots"></span><span class="item-price">Rp 6.000</span></div><div class="menu-item"><span class="item-name">Bakmi Goreng</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Bihun Goreng</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Sate Ayam/Tusuk</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Sate-Satean Kecil</span><span class="item-dots"></span><span class="item-price">Rp 4.000</span></div><div class="menu-item"><span class="item-name">Tahu/Tempe Bacem</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div><div class="menu-item"><span class="item-name">Bakwan Jagung</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div></div><div class="menu-category"><h2 class="category-title">Sambal & Lalapan</h2><div class="menu-item"><span class="item-name">Sambal Matah</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div><div class="menu-item"><span class="item-name">Lalapan</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div><div class="menu-item"><span class="item-name">Sambal Bawang</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div><div class="menu-item"><span class="item-name">Sambal Kecap</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div><div class="menu-item"><span class="item-name">Sambal Tomat</span><span class="item-dots"></span><span class="item-price">Rp 3.000</span></div></div><div class="menu-category"><h2 class="category-title">Minuman</h2><div class="menu-item"><span class="item-name">Naruna Coffee</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Dolan Sawah Breeze</span><span class="item-dots"></span><span class="item-price">Rp 20.000</span></div><div class="menu-item"><span class="item-name">Susu Jelly</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Flavoured Latte</span><span class="item-dots"></span><span class="item-price">Rp 15.000</span></div><div class="menu-item"><span class="item-name">Jus Buah</span><span class="item-dots"></span><span class="item-price">Rp 12.000</span></div><div class="menu-item"><span class="item-name">Jeruk</span><span class="item-dots"></span><span class="item-price">Rp 8.000</span></div><div class="menu-item"><span class="item-name">Lemon Tea</span><span class="item-dots"></span><span class="item-price">Rp 6.000</span></div><div class="menu-item"><span class="item-name">Teh</span><span class="item-dots"></span><span class="item-price">Rp 5.000</span></div></div></div></div>
     
-   <div class="fullscreen-modal" id="fullscreen-modal">
-    <button class="close-btn" onclick="closeFullscreen()">X</button>
-    <img id="fullscreen-img" src="" alt="Gambar besar" referrerpolicy="no-referrer">
-</div>
+    <div class="fullscreen-modal" id="fullscreen-modal"><button class="close-btn" onclick="closeFullscreen()">X</button><img id="fullscreen-img" src="" alt="Gambar besar" referrerpolicy="no-referrer"></div>
     <div id="generic-popup" class="popup-overlay" onclick="closePopup()"><div class="popup-content" onclick="event.stopPropagation()"><h2 id="popup-title"></h2><div id="popup-body"></div><button id="popup-button" class="popup-button" onclick="closePopup()">Tutup</button></div></div>
     
     <div id="scroll-indicator">
@@ -468,17 +500,19 @@
             if (targetPage) {
                 targetPage.style.display = 'block';
             }
+            
+            history.pushState(null, null, '#' + pageId);
             document.body.className = pageId.replace('page-', 'theme-');
             window.scrollTo(0, 0);
             document.body.style.overflow = "auto";
             
             if (pageId === 'page-home') {
                 floatingHomeButton.style.display = 'none';
+                history.pushState(null, null, ' '); 
             } else {
                 floatingHomeButton.style.display = 'flex';
             }
             
-            // PENAMBAHAN 'page-jeep'
             const forceShowScrollPages = ['page-home', 'page-menu', 'page-reguler', 'page-gallery', 'page-jeep'];
 
             setTimeout(() => {
@@ -540,7 +574,6 @@
             
             setInterval(showNextSlide, 4000);
             
-            // --- SCRIPT BARU UNTUK KARTU JEEP ---
             document.querySelectorAll('.jeep-package-card').forEach(card => {
                 card.addEventListener('click', function() {
                     const imageUrl = this.dataset.src;
@@ -550,7 +583,6 @@
                     }
                 });
             });
-            // --- AKHIR SCRIPT BARU ---
 
             function hideLoading() {
                 loadingScreen.style.display = "none";
