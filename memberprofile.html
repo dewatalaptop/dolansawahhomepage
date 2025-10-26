@@ -53,48 +53,200 @@
         #lookup-status.success {background:#DFF0D8; color:#3C763D; border:1px solid #D6E9C6}
         #lookup-status.error {background:#F2DEDE; color:#A94442; border:1px solid #EBCCD1}
 
-        /* CSS KHUSUS UNTUK KARTU MEMBER */
-        #card-view { display: none; }
+
+        /* ========================================
+        /* MODIFIKASI CSS KARTU MEMBER DIMULAI */
+        ========================================
+        */
+
+        /* Keyframes untuk animasi */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes staggerIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-150%) skewX(-25deg); }
+            100% { transform: translateX(150%) skewX(-25deg); }
+        }
+
+        /* Wrapper untuk view kartu */
+        #card-view { 
+            display: none; 
+            opacity: 0;
+            transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        #card-view.visible {
+            opacity: 1;
+        }
+
+        /* Wrapper untuk animasi kartu */
+        .member-card-wrapper {
+            opacity: 0;
+            transform-origin: top center;
+        }
+        #card-view.visible .member-card-wrapper {
+            /* Menerapkan animasi saat .visible ditambahkan */
+            animation: fadeInUp 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        /* Desain Ulang Kartu Member */
         .member-card {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            background: linear-gradient(145deg, var(--primary-color), #005a4d);
             color: var(--text-light);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 25px;
-            box-shadow: var(--shadow);
+            box-shadow: 0 10px 30px -10px rgba(0, 121, 107, 0.6);
             margin-top: 20px;
             margin-bottom: 25px;
-            text-align: center;
+            
+            /* Penting untuk layout & animasi */
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            overflow: hidden; /* Untuk efek kilau */
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        .member-card h3 {
-            color: var(--text-light);
-            margin: 0;
-            font-weight: 400;
-            font-size: 1em;
+
+        .member-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px -10px rgba(0, 121, 107, 0.8);
+        }
+        
+        /* Elemen-elemen di dalam kartu (untuk animasi stagger) */
+        .member-card-header,
+        .member-card-body,
+        .member-card-footer {
+            opacity: 0; /* Sembunyi by default */
+            animation-fill-mode: forwards;
+        }
+
+        /* Menerapkan animasi stagger saat .visible */
+        #card-view.visible .member-card-header {
+            animation: staggerIn 0.5s 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+        #card-view.visible .member-card-body {
+            animation: staggerIn 0.5s 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+        #card-view.visible .member-card-footer {
+            animation: staggerIn 0.5s 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        /* Efek Kilau (Shine) */
+        .card-shine-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
+            transform: translateX(-150%) skewX(-25deg);
             opacity: 0.8;
-            letter-spacing: 0.5px;
+            pointer-events: none;
+        }
+        .member-card:hover .card-shine-effect {
+            animation: shine 1.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Bagian Header Kartu */
+        .member-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .member-card-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        .member-card-logo .material-symbols-outlined {
+            color: var(--accent-color);
+            font-size: 1.4em;
+        }
+        .member-card-tier {
+            font-size: 0.9em;
+            font-weight: 500;
+            background: rgba(255,255,255,0.15);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        
+        /* Bagian Body (Nama) */
+        .member-card-body {
+            text-align: center;
+            margin: 10px 0;
         }
         .member-card-name {
-            font-size: 2em;
+            font-size: 2.2em; /* Lebih besar dan jadi fokus */
             font-weight: 700;
-            margin: 8px 0;
+            margin: 0;
             line-height: 1.2;
+            color: var(--text-light);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        .member-card-points {
-            font-size: 2.8em;
-            font-weight: 700;
-            color: var(--accent-color);
-            background: var(--bg-white);
-            border-radius: 10px;
-            padding: 5px 15px;
-            display: inline-block;
-            margin: 10px 0;
-            color: var(--primary-color);
+
+        /* Bagian Footer (Poin & Durasi) */
+        .member-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.2);
         }
-        .member-card-duration {
+        .member-card-stat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 0.95em;
-            opacity: 0.9;
-            margin-top: 15px;
         }
+        .member-card-stat .material-symbols-outlined {
+            font-size: 1.3em;
+            opacity: 0.8;
+        }
+        .member-card-stat .points-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--accent-color); /* Warna poin mencolok */
+            line-height: 1;
+        }
+        .member-card-stat .duration-value {
+            font-weight: 500;
+        }
+        .member-card-stat:last-child {
+            /* Aligment rata kanan untuk durasi */
+            text-align: right;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+        }
+        .member-card-stat:last-child .material-symbols-outlined {
+            font-size: 1.1em;
+        }
+        .member-card-stat:last-child .duration-value {
+            font-size: 0.9em;
+        }
+
+
+        /* CSS LAMA (Dihapus/Disesuaikan) */
+        /* .member-card h3 { ... }
+        .member-card-name { ... }
+        .member-card-points { ... }
+        .member-card-duration { ... }
+        */
+
+        /* ========================================
+        /* MODIFIKASI CSS KARTU MEMBER SELESAI */
+        ========================================
+        */
+
 
         /* CSS KHUSUS UNTUK DAFTAR REWARD */
         #member-rewards-list {
@@ -107,10 +259,15 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 10px;
-            background: #f7f7f7;
+            background: #fdfdfd;
             border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .reward-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .reward-item strong {
             font-size: 1.1em;
@@ -122,11 +279,15 @@
             color: var(--accent-color);
         }
         .reward-item.disabled {
-            opacity: 0.5;
-            background: #fdfdfd;
+            opacity: 0.6;
+            background: #f9f9f9;
         }
         .reward-item.disabled .points {
             color: #999;
+        }
+        .reward-item.disabled:hover {
+            transform: none;
+            box-shadow: none;
         }
     </style>
 </head>
@@ -160,14 +321,39 @@
                 <span class="btn-text">Cari Nomor Lain</span>
             </button>
             
-            <div class="member-card">
-                <h3>MEMBER DOLAN SAWAH</h3>
-                <h2 id="card-name" class="member-card-name">-</h2>
-                <div class="member-card-points">
-                    <span id="card-poin">0</span> Poin
+            ========================================
+            -->
+            <div class="member-card-wrapper">
+                <div class="member-card">
+                    <div class="member-card-header">
+                        <div class="member-card-logo">
+                            <span class="material-symbols-outlined">stars</span>
+                            <span>Dolan Sawah</span>
+                        </div>
+                        <div class="member-card-tier">Member</div>
+                    </div>
+                    
+                    <div class="member-card-body">
+                        <h2 id="card-name" class="member-card-name">-</h2>
+                    </div>
+
+                    <div class="member-card-footer">
+                        <div class="member-card-stat">
+                            <span class="material-symbols-outlined">monetization_on</span>
+                            <span id="card-poin" class="points-value">0</span> Poin
+                        </div>
+                        <div class="member-card-stat">
+                             <span class="material-symbols-outlined">event</span>
+                            <span id="card-duration" class="duration-value">Member Sejak: -</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-shine-effect"></div>
                 </div>
-                <p id="card-duration" class="member-card-duration">Member Sejak: -</p>
             </div>
+            ========================================
+            -->
+
 
             <h3>Reward yang Bisa Ditukar</h3>
             <p style="text-align: center; margin-top: -15px; font-size: 0.9em;">
@@ -194,14 +380,10 @@
         appId: "1:277683917105:web:d496ee4547f339e2fee010"
     };
     
-    // Inisialisasi Firebase
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
-
-    // Variabel global untuk menyimpan daftar reward
     let allPointRewards = [];
 
-    // Referensi ke elemen-elemen HTML
     const lookupView = document.getElementById('lookup-view');
     const cardView = document.getElementById('card-view');
     const lookupForm = document.getElementById('member-lookup-form');
@@ -216,21 +398,18 @@
 
     // === HELPER FUNCTIONS ===
 
-    // Fungsi untuk menampilkan status (loading) pada tombol
     const showLoading = (button, isLoading) => {
         if (!button) return;
         button.disabled = isLoading;
         button.classList.toggle('loading', isLoading);
     };
 
-    // Fungsi untuk menampilkan pesan error atau sukses
     const showStatus = (message, isError = false) => {
         lookupStatus.textContent = message;
         lookupStatus.className = '';
         lookupStatus.classList.add(isError ? 'error' : 'success', 'visible');
     };
 
-    // Fungsi untuk memformat nomor HP (diambil dari kode admin)
     const formatPhoneNumber = (phoneNumber) => {
         const s = (phoneNumber || '').replace(/\D/g, '');
         if (s.startsWith('08')) return '62' + s.substring(1);
@@ -239,7 +418,6 @@
         return s;
     };
 
-    // Fungsi BARU: Menghitung durasi keanggotaan
     const calculateMembershipDuration = (joinDate) => {
         if (!joinDate) return "-";
         
@@ -248,10 +426,8 @@
         let months = now.getMonth() - joinDate.getMonth();
         let days = now.getDate() - joinDate.getDate();
 
-        // Logika untuk "meminjam" hari atau bulan
         if (days < 0) {
             months--;
-            // Mendapatkan jumlah hari di bulan sebelumnya
             const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
             days += lastDayOfPrevMonth;
         }
@@ -260,26 +436,23 @@
             months += 12;
         }
 
-        // Membuat string output
         const parts = [];
         if (years > 0) parts.push(`${years} tahun`);
         if (months > 0) parts.push(`${months} bulan`);
         
-        // Jika baru beberapa hari
         if (years === 0 && months === 0) {
              if (days === 0) return "Baru terdaftar hari ini";
              return `${days} hari`;
         }
+        if (parts.length === 0) return "Baru terdaftar"; // Fallback
 
         return parts.join(', ');
     };
 
-    // Fungsi BARU: Memuat semua reward dari database
     const loadAllRewards = async () => {
         try {
             const snapshot = await getDocs(collection(db, "rewards"));
             allPointRewards = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-            // Urutkan reward dari poin terendah
             allPointRewards.sort((a, b) => a.points - b.points);
         } catch (err) {
             console.error("Gagal memuat reward:", err);
@@ -287,7 +460,6 @@
         }
     };
     
-    // Fungsi BARU: Menampilkan daftar reward
     const renderRewards = (memberPoin = 0) => {
         if (allPointRewards.length === 0) {
             rewardsList.innerHTML = '<li>Belum ada reward yang tersedia.</li>';
@@ -311,18 +483,15 @@
 
     // === EVENT LISTENERS ===
 
-    // 1. Saat halaman pertama kali dimuat
     document.addEventListener('DOMContentLoaded', () => {
-        // Langsung muat daftar reward di background
         loadAllRewards();
     });
 
-    // 2. Saat form pencarian di-submit
     lookupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button[type="submit"]');
         showLoading(button, true);
-        lookupStatus.classList.remove('visible'); // Sembunyikan status lama
+        lookupStatus.classList.remove('visible'); 
 
         const nomorHp = memberHpInput.value.trim();
         if (!nomorHp) {
@@ -331,7 +500,6 @@
             return;
         }
         
-        // Gunakan nomor HP yang sudah diformat sebagai ID dokumen
         const formattedHp = formatPhoneNumber(nomorHp);
 
         try {
@@ -339,27 +507,35 @@
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                // Data member ditemukan
                 const data = docSnap.data();
                 const memberPoin = data.poin || 0;
                 
-                // 1. Isi Kartu Member
                 cardName.textContent = data.nama;
                 cardPoin.textContent = memberPoin;
                 
-                // 2. Hitung Durasi
-                const joinDate = data.tanggalDaftar?.toDate(); // Konversi Firestore Timestamp ke Date JS
-                cardDuration.textContent = `Member Sejak: ${calculateMembershipDuration(joinDate)}`;
+                const joinDate = data.tanggalDaftar?.toDate(); 
+                
+                /* MODIFIKASI: Ubah teks durasi agar lebih pas di kartu */
+                cardDuration.textContent = `Member: ${calculateMembershipDuration(joinDate)}`;
 
-                // 3. Tampilkan Reward
                 renderRewards(memberPoin);
 
-                // 4. Ganti tampilan
                 lookupView.style.display = 'none';
+                
+                /*
+                ========================================
+                /* MODIFIKASI JAVASCRIPT: Tampilkan kartu dengan animasi */
+                ========================================
+                */
                 cardView.style.display = 'block';
+                // Delay kecil diperlukan agar transisi 'opacity' berjalan
+                setTimeout(() => {
+                    cardView.classList.add('visible');
+                }, 50);
+                /* MODIFIKASI SELESAI */
+
 
             } else {
-                // Data member tidak ditemukan
                 showStatus(`Member dengan No. HP ${nomorHp} tidak ditemukan.`, true);
             }
 
@@ -371,15 +547,24 @@
         }
     });
 
-    // 3. Saat tombol "Kembali" diklik
     backButton.addEventListener('click', () => {
-        cardView.style.display = 'none';
-        lookupView.style.display = 'block';
+        /*
+        ========================================
+        /* MODIFIKASI JAVASCRIPT: Sembunyikan kartu dengan animasi */
+        ========================================
+        */
+        cardView.classList.remove('visible');
         
-        // Kosongkan form dan status
-        lookupForm.reset();
-        lookupStatus.classList.remove('visible');
-        memberHpInput.focus();
+        // Tunggu animasi fade-out (0.4s) selesai sebelum menyembunyikan
+        setTimeout(() => {
+            cardView.style.display = 'none';
+            lookupView.style.display = 'block';
+            
+            lookupForm.reset();
+            lookupStatus.classList.remove('visible');
+            memberHpInput.focus();
+        }, 400); // 400ms = 0.4s (sesuai durasi transisi CSS)
+        /* MODIFIKASI SELESAI */
     });
 
 </script>
