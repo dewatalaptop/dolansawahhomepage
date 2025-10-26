@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartu Member - Dolan Sawah</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0');
+
+        :root{
+            --primary-color:#00796B; --primary-light:#00897B; --accent-color:#F57C00; --accent-hover:#EF6C00;
+            --bg-light:#F4F6F8; --bg-white:#FFFFFF; --text-dark:#333; --text-light:#FFF;
+            --border-color:#E0E0E0; --shadow:0 4px 6px rgba(0,0,0,.1); --font-body:'Poppins',sans-serif;
+            --danger-color:#d9534f; --danger-hover:#c9302c; --info-color:#5bc0de; --info-hover:#31b0d5;
+            --warning-color:#f0ad4e; --warning-hover:#ec971f;
+        }
+
+        *{box-sizing:border-box}
+        body{font-family:var(--font-body); background:var(--bg-light); color:var(--text-dark); margin:0; padding:20px}
+        .container{width:100%; max-width:700px; margin:0 auto; background:var(--bg-white); border-radius:12px; box-shadow:var(--shadow); overflow:hidden}
+
+        header{background:linear-gradient(135deg,var(--primary-light),var(--primary-color)); color:var(--text-light); padding:20px; text-align:center}
+        header h1{margin:0; font-size:1.8em; font-weight:700}
+
+        main{padding:25px}
+        h2,h3{color:var(--primary-color); text-align:center}
+        h3{margin-bottom: 20px;}
+        h4{margin-top:25px; border-top:1px solid var(--border-color); padding-top:20px}
+
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block; margin-bottom:8px; font-weight:500}
+        .form-group input{width:100%; padding:12px; border:1px solid var(--border-color); border-radius:8px; font-size:1em}
+        .form-group input:focus{border-color:var(--primary-color); outline:none}
+
+        .btn{width:100%; padding:15px; border:none; border-radius:8px; cursor:pointer; font-size:1.05em; font-weight:600; transition:all .3s; display:flex; justify-content:center; align-items:center; gap:8px}
+        .btn .material-symbols-outlined{font-size:1.2em}
+        .btn-primary{background:var(--accent-color); color:var(--text-light)}
+        .btn-primary:hover{background:var(--accent-hover)}
+        .btn-secondary{background:var(--bg-white); color:var(--accent-color); border:2px solid var(--accent-color); padding:13px}
+        .btn-secondary:hover{background:var(--accent-color); color:var(--text-light)}
+        .btn:disabled{opacity:.7; cursor:not-allowed}
+        
+        .spinner{width:20px; height:20px; border:3px solid rgba(255,255,255,.3); border-top-color:var(--text-light); border-radius:50%; display:none; animation:spin 1s linear infinite}
+        .btn-secondary .spinner{border-color:rgba(0,0,0,.2); border-top-color:var(--accent-color)}
+        .btn.loading .btn-text{display:none}
+        .btn.loading .spinner{display:block}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        #lookup-status {padding:14px; margin-top:16px; border-radius:8px; opacity:0; visibility:hidden; transform:translateY(6px); transition:all .25s ease}
+        #lookup-status.visible {opacity:1; visibility:visible; transform:translateY(0)}
+        #lookup-status.success {background:#DFF0D8; color:#3C763D; border:1px solid #D6E9C6}
+        #lookup-status.error {background:#F2DEDE; color:#A94442; border:1px solid #EBCCD1}
+
+        /* CSS KHUSUS UNTUK KARTU MEMBER */
+        #card-view { display: none; }
+        .member-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            color: var(--text-light);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-top: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        .member-card h3 {
+            color: var(--text-light);
+            margin: 0;
+            font-weight: 400;
+            font-size: 1em;
+            opacity: 0.8;
+            letter-spacing: 0.5px;
+        }
+        .member-card-name {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 8px 0;
+            line-height: 1.2;
+        }
+        .member-card-points {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: var(--accent-color);
+            background: var(--bg-white);
+            border-radius: 10px;
+            padding: 5px 15px;
+            display: inline-block;
+            margin: 10px 0;
+            color: var(--primary-color);
+        }
+        .member-card-duration {
+            font-size: 0.95em;
+            opacity: 0.9;
+            margin-top: 15px;
+        }
+
+        /* CSS KHUSUS UNTUK DAFTAR REWARD */
+        #member-rewards-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+        .reward-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #f7f7f7;
+            border: 1px solid var(--border-color);
+        }
+        .reward-item strong {
+            font-size: 1.1em;
+            color: var(--text-dark);
+        }
+        .reward-item .points {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        .reward-item.disabled {
+            opacity: 0.5;
+            background: #fdfdfd;
+        }
+        .reward-item.disabled .points {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Kartu Member Dolan Sawah</h1>
+    </header>
+
+    <main>
+        <section id="lookup-view">
+            <h2>Cek Kartu Member Anda</h2>
+            <form id="member-lookup-form" autocomplete="off">
+                <div class="form-group">
+                    <label for="member-hp">Masukkan Nomor HP Terdaftar</label>
+                    <input type="tel" id="member-hp" placeholder="Contoh: 081234567890" required autofocus>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Cek Kartu Member</span>
+                    <span class="material-symbols-outlined">search</span>
+                    <span class="spinner"></span>
+                </button>
+            </form>
+            <div id="lookup-status"></div>
+        </section>
+
+        <section id="card-view">
+            <button id="back-to-lookup" class="btn btn-secondary" style="width:auto; margin-bottom: 20px;">
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span class="btn-text">Cari Nomor Lain</span>
+            </button>
+            
+            <div class="member-card">
+                <h3>MEMBER DOLAN SAWAH</h3>
+                <h2 id="card-name" class="member-card-name">-</h2>
+                <div class="member-card-points">
+                    <span id="card-poin">0</span> Poin
+                </div>
+                <p id="card-duration" class="member-card-duration">Member Sejak: -</p>
+            </div>
+
+            <h3>Reward yang Bisa Ditukar</h3>
+            <p style="text-align: center; margin-top: -15px; font-size: 0.9em;">
+                Tukarkan poin Anda di kasir!
+            </p>
+            <ul id="member-rewards-list">
+                <li>Memuat reward...</li>
+            </ul>
+        </section>
+    </main>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Konfigurasi Firebase Anda
+    const firebaseConfig = {
+        apiKey: "AIzaSyAEzWDI9ZWlc7NnUTDBbx7wednnUVeS9Ao",
+        authDomain: "member-hp-dolansawah.firebaseapp.com",
+        projectId: "member-hp-dolansawah",
+        storageBucket: "member-hp-dolansawah.appspot.com",
+        messagingSenderId: "277683917105",
+        appId: "1:277683917105:web:d496ee4547f339e2fee010"
+    };
+    
+    // Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // Variabel global untuk menyimpan daftar reward
+    let allPointRewards = [];
+
+    // Referensi ke elemen-elemen HTML
+    const lookupView = document.getElementById('lookup-view');
+    const cardView = document.getElementById('card-view');
+    const lookupForm = document.getElementById('member-lookup-form');
+    const memberHpInput = document.getElementById('member-hp');
+    const lookupStatus = document.getElementById('lookup-status');
+    const backButton = document.getElementById('back-to-lookup');
+    
+    const cardName = document.getElementById('card-name');
+    const cardPoin = document.getElementById('card-poin');
+    const cardDuration = document.getElementById('card-duration');
+    const rewardsList = document.getElementById('member-rewards-list');
+
+    // === HELPER FUNCTIONS ===
+
+    // Fungsi untuk menampilkan status (loading) pada tombol
+    const showLoading = (button, isLoading) => {
+        if (!button) return;
+        button.disabled = isLoading;
+        button.classList.toggle('loading', isLoading);
+    };
+
+    // Fungsi untuk menampilkan pesan error atau sukses
+    const showStatus = (message, isError = false) => {
+        lookupStatus.textContent = message;
+        lookupStatus.className = '';
+        lookupStatus.classList.add(isError ? 'error' : 'success', 'visible');
+    };
+
+    // Fungsi untuk memformat nomor HP (diambil dari kode admin)
+    const formatPhoneNumber = (phoneNumber) => {
+        const s = (phoneNumber || '').replace(/\D/g, '');
+        if (s.startsWith('08')) return '62' + s.substring(1);
+        if (s.startsWith('62')) return s;
+        if (s.startsWith('8')) return '62' + s;
+        return s;
+    };
+
+    // Fungsi BARU: Menghitung durasi keanggotaan
+    const calculateMembershipDuration = (joinDate) => {
+        if (!joinDate) return "-";
+        
+        const now = new Date();
+        let years = now.getFullYear() - joinDate.getFullYear();
+        let months = now.getMonth() - joinDate.getMonth();
+        let days = now.getDate() - joinDate.getDate();
+
+        // Logika untuk "meminjam" hari atau bulan
+        if (days < 0) {
+            months--;
+            // Mendapatkan jumlah hari di bulan sebelumnya
+            const lastDayOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+            days += lastDayOfPrevMonth;
+        }
+        if (months < 0) {
+            years--;
+            months += 12;
+        }
+
+        // Membuat string output
+        const parts = [];
+        if (years > 0) parts.push(`${years} tahun`);
+        if (months > 0) parts.push(`${months} bulan`);
+        
+        // Jika baru beberapa hari
+        if (years === 0 && months === 0) {
+             if (days === 0) return "Baru terdaftar hari ini";
+             return `${days} hari`;
+        }
+
+        return parts.join(', ');
+    };
+
+    // Fungsi BARU: Memuat semua reward dari database
+    const loadAllRewards = async () => {
+        try {
+            const snapshot = await getDocs(collection(db, "rewards"));
+            allPointRewards = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            // Urutkan reward dari poin terendah
+            allPointRewards.sort((a, b) => a.points - b.points);
+        } catch (err) {
+            console.error("Gagal memuat reward:", err);
+            rewardsList.innerHTML = '<li>Gagal memuat reward.</li>';
+        }
+    };
+    
+    // Fungsi BARU: Menampilkan daftar reward
+    const renderRewards = (memberPoin = 0) => {
+        if (allPointRewards.length === 0) {
+            rewardsList.innerHTML = '<li>Belum ada reward yang tersedia.</li>';
+            return;
+        }
+
+        rewardsList.innerHTML = allPointRewards.map(reward => {
+            const canClaim = memberPoin >= reward.points;
+            return `
+                <li class="reward-item ${canClaim ? '' : 'disabled'}">
+                    <div>
+                        <strong>${reward.name}</strong>
+                        <br>
+                        <small>${canClaim ? 'Poin Anda Cukup' : 'Poin tidak cukup'}</small>
+                    </div>
+                    <span class="points">${reward.points} Poin</span>
+                </li>
+            `;
+        }).join('');
+    };
+
+    // === EVENT LISTENERS ===
+
+    // 1. Saat halaman pertama kali dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+        // Langsung muat daftar reward di background
+        loadAllRewards();
+    });
+
+    // 2. Saat form pencarian di-submit
+    lookupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const button = e.target.querySelector('button[type="submit"]');
+        showLoading(button, true);
+        lookupStatus.classList.remove('visible'); // Sembunyikan status lama
+
+        const nomorHp = memberHpInput.value.trim();
+        if (!nomorHp) {
+            showStatus("Nomor HP tidak boleh kosong.", true);
+            showLoading(button, false);
+            return;
+        }
+        
+        // Gunakan nomor HP yang sudah diformat sebagai ID dokumen
+        const formattedHp = formatPhoneNumber(nomorHp);
+
+        try {
+            const docRef = doc(db, "members", formattedHp);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                // Data member ditemukan
+                const data = docSnap.data();
+                const memberPoin = data.poin || 0;
+                
+                // 1. Isi Kartu Member
+                cardName.textContent = data.nama;
+                cardPoin.textContent = memberPoin;
+                
+                // 2. Hitung Durasi
+                const joinDate = data.tanggalDaftar?.toDate(); // Konversi Firestore Timestamp ke Date JS
+                cardDuration.textContent = `Member Sejak: ${calculateMembershipDuration(joinDate)}`;
+
+                // 3. Tampilkan Reward
+                renderRewards(memberPoin);
+
+                // 4. Ganti tampilan
+                lookupView.style.display = 'none';
+                cardView.style.display = 'block';
+
+            } else {
+                // Data member tidak ditemukan
+                showStatus(`Member dengan No. HP ${nomorHp} tidak ditemukan.`, true);
+            }
+
+        } catch (err) {
+            console.error("Error mencari member:", err);
+            showStatus("Terjadi kesalahan. Periksa koneksi internet Anda.", true);
+        } finally {
+            showLoading(button, false);
+        }
+    });
+
+    // 3. Saat tombol "Kembali" diklik
+    backButton.addEventListener('click', () => {
+        cardView.style.display = 'none';
+        lookupView.style.display = 'block';
+        
+        // Kosongkan form dan status
+        lookupForm.reset();
+        lookupStatus.classList.remove('visible');
+        memberHpInput.focus();
+    });
+
+</script>
+
+</body>
+</html>
