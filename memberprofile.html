@@ -53,7 +53,6 @@
         #lookup-status.success {background:#DFF0D8; color:#3C763D; border:1px solid #D6E9C6}
         #lookup-status.error {background:#F2DEDE; color:#A94442; border:1px solid #EBCCD1}
 
-
         /* CSS KARTU MEMBER (DARI MODIFIKASI SEBELUMNYA) */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px) scale(0.95); }
@@ -359,16 +358,11 @@
     };
 
     /*
-      Fungsi formatPhoneNumber tidak lagi digunakan untuk pencarian,
-      tapi mungkin berguna nanti, jadi bisa dibiarkan saja.
+      Fungsi formatPhoneNumber tidak diperlukan lagi untuk pencarian,
+      jadi saya HAPUS untuk menghindari kebingungan.
+    
+      const formatPhoneNumber = (phoneNumber) => { ... };
     */
-    const formatPhoneNumber = (phoneNumber) => {
-        const s = (phoneNumber || '').replace(/\D/g, '');
-        if (s.startsWith('08')) return '62' + s.substring(1);
-        if (s.startsWith('62')) return s;
-        if (s.startsWith('8')) return '62' + s;
-        return s;
-    };
 
     const calculateMembershipDuration = (joinDate) => {
         if (!joinDate) return "-";
@@ -440,7 +434,7 @@
     });
 
     lookupForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+        e.preventDefault(); // <-- Penting agar halaman tidak refresh
         const button = e.target.querySelector('button[type="submit"]');
         showLoading(button, true);
         lookupStatus.classList.remove('visible'); 
@@ -452,20 +446,26 @@
             return;
         }
         
-        /* ========================================
-        /* PERBAIKAN BUG UTAMA ADA DI SINI */
-        ========================================
+        // ========================================
+        // INI ADALAH PERBAIKAN UTAMA
+        // ========================================
         
-        // HAPUS BARIS INI: const formattedHp = formatPhoneNumber(nomorHp);
-        
+        // Dulu (BUGGY):
+        // const formattedHp = formatPhoneNumber(nomorHp); 
+        // const docRef = doc(db, "members", formattedHp);
+
+        // Sekarang (FIXED):
+        // Kita gunakan 'nomorHp' mentah, sama seperti di file admin Anda
         try {
-            // GUNAKAN 'nomorHp' (mentah) sebagai ID Dokumen,
-            // agar cocok dengan cara data disimpan oleh form admin.
             const docRef = doc(db, "members", nomorHp); 
             const docSnap = await getDoc(docRef);
-        /* PERBAIKAN SELESAI */
         
+        // ========================================
+        // AKHIR DARI PERBAIKAN
+        // ========================================
+
             if (docSnap.exists()) {
+                // DATA DITEMUKAN!
                 const data = docSnap.data();
                 const memberPoin = data.poin || 0;
                 
@@ -486,8 +486,8 @@
                 }, 50);
 
             } else {
-                // Sekarang ini akan menampilkan error dengan benar jika member tidak ada
-                showStatus(`Member dengan No. HP ${nomorHp} tidak ditemukan.`, true);
+                // DATA TIDAK DITEMUKAN
+                showStatus(`Member dengan No. HP ${nomorHp} tidak ditemukan. Pastikan nomor sudah benar.`, true);
             }
 
         } catch (err) {
@@ -509,7 +509,7 @@
             lookupForm.reset();
             lookupStatus.classList.remove('visible');
             memberHpInput.focus();
-        }, 400); // 400ms = 0.4s (sesuai durasi transisi CSS)
+        }, 400); 
     });
 
 </script>
