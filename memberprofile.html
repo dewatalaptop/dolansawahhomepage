@@ -54,28 +54,19 @@
         #lookup-status.error {background:#F2DEDE; color:#A94442; border:1px solid #EBCCD1}
 
 
-        /* ========================================
-        /* MODIFIKASI CSS KARTU MEMBER DIMULAI */
-        ========================================
-        */
-
-        /* Keyframes untuk animasi */
+        /* CSS KARTU MEMBER (DARI MODIFIKASI SEBELUMNYA) */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-
         @keyframes staggerIn {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes shine {
             0% { transform: translateX(-150%) skewX(-25deg); }
             100% { transform: translateX(150%) skewX(-25deg); }
         }
-
-        /* Wrapper untuk view kartu */
         #card-view { 
             display: none; 
             opacity: 0;
@@ -84,18 +75,13 @@
         #card-view.visible {
             opacity: 1;
         }
-
-        /* Wrapper untuk animasi kartu */
         .member-card-wrapper {
             opacity: 0;
             transform-origin: top center;
         }
         #card-view.visible .member-card-wrapper {
-            /* Menerapkan animasi saat .visible ditambahkan */
             animation: fadeInUp 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
         }
-
-        /* Desain Ulang Kartu Member */
         .member-card {
             background: linear-gradient(145deg, var(--primary-color), #005a4d);
             color: var(--text-light);
@@ -104,30 +90,23 @@
             box-shadow: 0 10px 30px -10px rgba(0, 121, 107, 0.6);
             margin-top: 20px;
             margin-bottom: 25px;
-            
-            /* Penting untuk layout & animasi */
             display: flex;
             flex-direction: column;
             gap: 15px;
             position: relative;
-            overflow: hidden; /* Untuk efek kilau */
+            overflow: hidden; 
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-
         .member-card:hover {
             transform: translateY(-5px) scale(1.02);
             box-shadow: 0 15px 35px -10px rgba(0, 121, 107, 0.8);
         }
-        
-        /* Elemen-elemen di dalam kartu (untuk animasi stagger) */
         .member-card-header,
         .member-card-body,
         .member-card-footer {
-            opacity: 0; /* Sembunyi by default */
+            opacity: 0; 
             animation-fill-mode: forwards;
         }
-
-        /* Menerapkan animasi stagger saat .visible */
         #card-view.visible .member-card-header {
             animation: staggerIn 0.5s 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
         }
@@ -137,8 +116,6 @@
         #card-view.visible .member-card-footer {
             animation: staggerIn 0.5s 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
         }
-
-        /* Efek Kilau (Shine) */
         .card-shine-effect {
             position: absolute;
             top: 0;
@@ -153,8 +130,6 @@
         .member-card:hover .card-shine-effect {
             animation: shine 1.2s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-
-        /* Bagian Header Kartu */
         .member-card-header {
             display: flex;
             justify-content: space-between;
@@ -178,22 +153,18 @@
             padding: 4px 10px;
             border-radius: 20px;
         }
-        
-        /* Bagian Body (Nama) */
         .member-card-body {
             text-align: center;
             margin: 10px 0;
         }
         .member-card-name {
-            font-size: 2.2em; /* Lebih besar dan jadi fokus */
+            font-size: 2.2em; 
             font-weight: 700;
             margin: 0;
             line-height: 1.2;
             color: var(--text-light);
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-
-        /* Bagian Footer (Poin & Durasi) */
         .member-card-footer {
             display: flex;
             justify-content: space-between;
@@ -214,14 +185,13 @@
         .member-card-stat .points-value {
             font-size: 1.8em;
             font-weight: 700;
-            color: var(--accent-color); /* Warna poin mencolok */
+            color: var(--accent-color); 
             line-height: 1;
         }
         .member-card-stat .duration-value {
             font-weight: 500;
         }
         .member-card-stat:last-child {
-            /* Aligment rata kanan untuk durasi */
             text-align: right;
             flex-direction: column;
             align-items: flex-end;
@@ -234,21 +204,7 @@
             font-size: 0.9em;
         }
 
-
-        /* CSS LAMA (Dihapus/Disesuaikan) */
-        /* .member-card h3 { ... }
-        .member-card-name { ... }
-        .member-card-points { ... }
-        .member-card-duration { ... }
-        */
-
-        /* ========================================
-        /* MODIFIKASI CSS KARTU MEMBER SELESAI */
-        ========================================
-        */
-
-
-        /* CSS KHUSUS UNTUK DAFTAR REWARD */
+        /* CSS DAFTAR REWARD */
         #member-rewards-list {
             list-style: none;
             padding: 0;
@@ -321,8 +277,6 @@
                 <span class="btn-text">Cari Nomor Lain</span>
             </button>
             
-            ========================================
-            -->
             <div class="member-card-wrapper">
                 <div class="member-card">
                     <div class="member-card-header">
@@ -332,11 +286,9 @@
                         </div>
                         <div class="member-card-tier">Member</div>
                     </div>
-                    
                     <div class="member-card-body">
                         <h2 id="card-name" class="member-card-name">-</h2>
                     </div>
-
                     <div class="member-card-footer">
                         <div class="member-card-stat">
                             <span class="material-symbols-outlined">monetization_on</span>
@@ -347,13 +299,9 @@
                             <span id="card-duration" class="duration-value">Member Sejak: -</span>
                         </div>
                     </div>
-                    
                     <div class="card-shine-effect"></div>
                 </div>
             </div>
-            ========================================
-            -->
-
 
             <h3>Reward yang Bisa Ditukar</h3>
             <p style="text-align: center; margin-top: -15px; font-size: 0.9em;">
@@ -410,6 +358,10 @@
         lookupStatus.classList.add(isError ? 'error' : 'success', 'visible');
     };
 
+    /*
+      Fungsi formatPhoneNumber tidak lagi digunakan untuk pencarian,
+      tapi mungkin berguna nanti, jadi bisa dibiarkan saja.
+    */
     const formatPhoneNumber = (phoneNumber) => {
         const s = (phoneNumber || '').replace(/\D/g, '');
         if (s.startsWith('08')) return '62' + s.substring(1);
@@ -444,7 +396,7 @@
              if (days === 0) return "Baru terdaftar hari ini";
              return `${days} hari`;
         }
-        if (parts.length === 0) return "Baru terdaftar"; // Fallback
+        if (parts.length === 0) return "Baru terdaftar"; 
 
         return parts.join(', ');
     };
@@ -500,12 +452,19 @@
             return;
         }
         
-        const formattedHp = formatPhoneNumber(nomorHp);
-
+        /* ========================================
+        /* PERBAIKAN BUG UTAMA ADA DI SINI */
+        ========================================
+        
+        // HAPUS BARIS INI: const formattedHp = formatPhoneNumber(nomorHp);
+        
         try {
-            const docRef = doc(db, "members", formattedHp);
+            // GUNAKAN 'nomorHp' (mentah) sebagai ID Dokumen,
+            // agar cocok dengan cara data disimpan oleh form admin.
+            const docRef = doc(db, "members", nomorHp); 
             const docSnap = await getDoc(docRef);
-
+        /* PERBAIKAN SELESAI */
+        
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 const memberPoin = data.poin || 0;
@@ -514,28 +473,20 @@
                 cardPoin.textContent = memberPoin;
                 
                 const joinDate = data.tanggalDaftar?.toDate(); 
-                
-                /* MODIFIKASI: Ubah teks durasi agar lebih pas di kartu */
                 cardDuration.textContent = `Member: ${calculateMembershipDuration(joinDate)}`;
 
                 renderRewards(memberPoin);
 
                 lookupView.style.display = 'none';
                 
-                /*
-                ========================================
-                /* MODIFIKASI JAVASCRIPT: Tampilkan kartu dengan animasi */
-                ========================================
-                */
+                // Tampilkan kartu dengan animasi
                 cardView.style.display = 'block';
-                // Delay kecil diperlukan agar transisi 'opacity' berjalan
                 setTimeout(() => {
                     cardView.classList.add('visible');
                 }, 50);
-                /* MODIFIKASI SELESAI */
-
 
             } else {
+                // Sekarang ini akan menampilkan error dengan benar jika member tidak ada
                 showStatus(`Member dengan No. HP ${nomorHp} tidak ditemukan.`, true);
             }
 
@@ -548,14 +499,9 @@
     });
 
     backButton.addEventListener('click', () => {
-        /*
-        ========================================
-        /* MODIFIKASI JAVASCRIPT: Sembunyikan kartu dengan animasi */
-        ========================================
-        */
+        // Sembunyikan kartu dengan animasi
         cardView.classList.remove('visible');
         
-        // Tunggu animasi fade-out (0.4s) selesai sebelum menyembunyikan
         setTimeout(() => {
             cardView.style.display = 'none';
             lookupView.style.display = 'block';
@@ -564,7 +510,6 @@
             lookupStatus.classList.remove('visible');
             memberHpInput.focus();
         }, 400); // 400ms = 0.4s (sesuai durasi transisi CSS)
-        /* MODIFIKASI SELESAI */
     });
 
 </script>
