@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Member - Dolan Sawah</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&family=Material+Icons:wght@400&display=swap" rel="stylesheet" />
     
     <style>
         /* Menggunakan variabel warna yang sama dari website utama Anda */
@@ -39,7 +39,7 @@
             padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
+            /* Hapus align-items: center; agar konten bisa scroll */
             min-height: 100vh;
         }
 
@@ -50,7 +50,7 @@
             background: var(--bg-white);
             border-radius: 16px;
             box-shadow: var(--shadow);
-            overflow: hidden;
+            overflow: hidden; /* Pastikan konten tidak melebihi container */
         }
 
         header {
@@ -126,7 +126,7 @@
             line-height: 1.6;
         }
 
-        /* [BARU] Styling Leaderboard */
+        /* Styling Leaderboard */
         .leaderboard-container {
             margin-top: 25px;
             padding: 20px;
@@ -165,6 +165,7 @@
         .leaderboard-item span:first-child {
             color: var(--text-dark);
             font-weight: 600;
+            width: 25px; /* Memberikan ruang untuk nomor */
         }
         .leaderboard-item strong {
             margin-left: 12px;
@@ -184,6 +185,7 @@
             text-align: center;
             color: #777;
             font-style: italic;
+            padding: 10px 0;
         }
 
 
@@ -263,7 +265,7 @@
         .btn-secondary:hover { background-color: #f1f1f1; }
         .btn:disabled { opacity: .6; cursor: not-allowed; }
 
-        /* [BARU] Tombol sekunder untuk "Cek Profil" yang elegan */
+        /* Tombol sekunder untuk "Cek Profil" yang elegan */
         .btn-outline-primary {
             background-color: var(--bg-white);
             color: var(--primary-color);
@@ -297,6 +299,47 @@
         #status-message.success { background: #DFF0D8; color: #3C763D; border: 1px solid #D6E9C6; }
         #status-message.error { background: #F2DEDE; color: #A94442; border: 1px solid #EBCCD1; }
 
+        /* [BARU] Styling untuk Scroll Indicator */
+        #scroll-indicator {
+            position: fixed;
+            bottom: 30px; /* Jarak dari bawah */
+            right: 30px; /* Jarak dari kanan */
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            z-index: 1000;
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            opacity: 1; /* Default visible */
+        }
+
+        #scroll-indicator.hidden {
+            opacity: 0;
+            pointer-events: none; /* Agar tidak bisa diklik saat hidden */
+        }
+
+        #scroll-indicator .material-symbols-outlined {
+            font-size: 28px;
+            animation: bounce 1.5s infinite; /* Animasi bouncing */
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -319,14 +362,14 @@
 
                 <div class="leaderboard-container">
                     <h3>
-                        <span class="material-symbols-outlined">hotel_class</span>
-                        Top 5 Member Loyal
+                        <span class="material-symbols-outlined">trophy</span>
+                        Para Pelanggan Setia Dolan Sawah
                     </h3>
                     <ol class="leaderboard-list" id="leaderboard-list">
                         <li class="leaderboard-loading">Memuat data...</li>
                     </ol>
                 </div>
-                </div>
+            </div>
             <div class="navigation-buttons" style="flex-direction: column; align-items: stretch; gap: 15px; margin-top: 10px;">
                 <button type="button" class="btn btn-primary next-btn">
                     <span class="btn-text">Mulai Pendaftaran</span>
@@ -415,9 +458,12 @@
     </main>
 </div>
 
+<div id="scroll-indicator" class="hidden">
+    <span class="material-symbols-outlined">arrow_downward</span>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    // [UPDATE] Tambahkan impor untuk query
     import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // Ganti dengan konfigurasi Firebase Anda
@@ -434,20 +480,21 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // [BARU] Fungsi untuk mengambil data top 5 member
+    // Fungsi untuk mengambil data top 5 member
     const fetchTopMembers = async () => {
         const listElement = document.getElementById('leaderboard-list');
         if (!listElement) return;
 
         // **PENTING:** Ganti "poin" di bawah ini jika field Anda
         // untuk total pembelanjaan/loyalitas memiliki nama lain.
+        // Asumsi 'poin' adalah indikator loyalitas utama.
         const q = query(collection(db, "members"), orderBy("poin", "desc"), limit(5));
 
         try {
             const querySnapshot = await getDocs(q);
             
             if (querySnapshot.empty) {
-                listElement.innerHTML = '<li class="leaderboard-loading">Belum ada data member.</li>';
+                listElement.innerHTML = '<li class="leaderboard-loading">Belum ada data member. Jadilah yang pertama!</li>';
                 return;
             }
 
@@ -460,23 +507,26 @@
                 const li = document.createElement('li');
                 li.className = 'leaderboard-item';
                 
-                // Masking nama untuk privasi (Contoh: "Ryan Indra" -> "Ryan I.")
+                // Masking nama untuk privasi (Contoh: "Budi Santoso" -> "Budi S.")
                 const nameParts = member.nama.split(' ');
                 const displayName = nameParts.length > 1 
                     ? `${nameParts[0]} ${nameParts[nameParts.length - 1].charAt(0)}.`
                     : member.nama;
 
+                // Memastikan poin adalah angka, jika tidak set ke 0
+                const displayPoin = typeof member.poin === 'number' && !isNaN(member.poin) ? member.poin : 0;
+
                 li.innerHTML = `
                     <span>${index + 1}.</span>
                     <strong>${displayName}</strong>
-                    <span class="points">${member.poin || 0} Poin</span>
+                    <span class="points">${displayPoin} Poin</span>
                 `;
                 listElement.appendChild(li);
             });
 
         } catch (error) {
             console.error("Error fetching top members: ", error);
-            listElement.innerHTML = '<li class="leaderboard-error">Gagal memuat data.</li>';
+            listElement.innerHTML = '<li class="leaderboard-error">Gagal memuat data member.</li>';
         }
     };
 
@@ -487,9 +537,11 @@
         const progressBar = document.getElementById('progressBar');
         const navigationWrapper = document.getElementById('navigation-wrapper');
         const statusMessage = document.getElementById('status-message');
+        const scrollIndicator = document.getElementById('scroll-indicator');
         
         let currentStep = 0;
         const totalFormSteps = steps.filter(s => s.id.startsWith('step-') && s.id !== 'step-0' && s.id !== 'step-final').length;
+        let lastScrollTop = 0; // Untuk mendeteksi arah scroll
 
         const showStep = (stepIndex) => {
             steps.forEach((step, index) => {
@@ -497,6 +549,20 @@
             });
             updateProgressBar();
             updateNavigationButtons();
+            
+            // Tampilkan scroll indicator hanya di step-0 jika kontennya bisa discroll
+            if (stepIndex === 0) {
+                // Periksa apakah konten melebihi tinggi layar
+                const step0ContentHeight = steps[0].scrollHeight;
+                const viewportHeight = window.innerHeight;
+                if (step0ContentHeight > viewportHeight * 0.8) { // Heuristik sederhana
+                    scrollIndicator.classList.remove('hidden');
+                } else {
+                    scrollIndicator.classList.add('hidden'); // Sembunyikan jika tidak perlu scroll
+                }
+            } else {
+                scrollIndicator.classList.add('hidden'); // Sembunyikan di step lain
+            }
         };
         
         const updateProgressBar = () => {
@@ -597,6 +663,10 @@
         wizard.addEventListener('click', (e) => {
             if (e.target.closest('.next-btn')) {
                 if (currentStep === 0 || validateCurrentStep()) {
+                    // Sembunyikan scroll indicator saat pindah dari step-0
+                    if (currentStep === 0) {
+                        scrollIndicator.classList.add('hidden');
+                    }
                     // Cek jika ini langkah terakhir sebelum submit
                     if (currentStep === totalFormSteps) {
                         submitRegistration(e.target.closest('.next-btn'));
@@ -610,13 +680,44 @@
                     currentStep--;
                     showStep(currentStep);
                 }
+                 // Tampilkan kembali scroll indicator jika kembali ke step-0
+                if (currentStep === 0) {
+                    scrollIndicator.classList.remove('hidden');
+                }
             }
         });
         
+        // [BARU] Logika untuk scroll indicator
+        window.addEventListener('scroll', () => {
+            const st = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Hanya tampilkan/sembunyikan indikator jika di step-0
+            if (currentStep === 0) {
+                if (st > lastScrollTop) { // Scroll ke bawah
+                    scrollIndicator.classList.add('hidden');
+                } else if (st < lastScrollTop && st > 0) { // Scroll ke atas, tapi tidak di paling atas
+                    scrollIndicator.classList.remove('hidden');
+                } else if (st === 0) { // Kembali ke paling atas
+                    // Cek apakah konten step-0 memang butuh scroll
+                    const step0ContentHeight = steps[0].scrollHeight;
+                    const viewportHeight = window.innerHeight;
+                    if (step0ContentHeight > viewportHeight * 0.8) {
+                        scrollIndicator.classList.remove('hidden'); // Muncul lagi
+                    } else {
+                        scrollIndicator.classList.add('hidden'); // Sembunyikan jika tidak perlu scroll
+                    }
+                }
+            } else {
+                 scrollIndicator.classList.add('hidden'); // Pastikan hidden di step lain
+            }
+            lastScrollTop = st <= 0 ? 0 : st; // For Mobile or negative scrolling
+        });
+
+
         // Inisialisasi
         showStep(currentStep);
         
-        // [BARU] Panggil fungsi untuk memuat leaderboard saat halaman dibuka
+        // Panggil fungsi untuk memuat leaderboard saat halaman dibuka
         fetchTopMembers();
     });
 </script>
