@@ -511,8 +511,11 @@
         </svg>
         <span>Member Area</span> </a>
     
-    <script>
+       <script>
         // --- SCRIPT GABUNGAN UNTUK SEMUA FUNGSI ---
+        
+        // Variabel global untuk data config
+        let configData = {};
         
         const scrollIndicator = document.getElementById('scroll-indicator');
         const floatingHomeButton = document.getElementById('floating-home-button');
@@ -531,10 +534,136 @@
             genericPopup.classList.remove("show");
         }
 
-        function showPrasmananTerms(){openPopup("Ketentuan Menu Prasmanan","<ul><li>Minimum 20 pax untuk tiap menu.</li><li>Kombinasi varian maksimal 2 jenis menu paket untuk tiap grup reservasi (minimal 20 pax tiap menu).</li><li>Harga belum termasuk PPN 10%.</li></ul>")}
-        function showKembulanTerms(){openPopup("Ketentuan Menu Kembulan","<ul><li>Reservasi maksimal H-1.</li><li>Tersedia paket untuk 5 dan 10 orang, serta kelipatannya.</li><li>DP minimal 50% dari total pesanan.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}
-        function showRantangTerms(){openPopup("Ketentuan Paket Rantang","<ul><li>Untuk jumlah di atas 15 pax, diwajibkan reservasi maksimal H-1.</li><li>DP minimal 50% dari total pesanan.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}
-        function showGrillTerms(){openPopup("Ketentuan Paket Grill","<ul><li>Lokasi yang bisa digunakan untuk paket ini adalah area Barbeque ground di bagian belakang resto.</li><li>Maksimum 6 Pax per reservasi.</li><li>DP untuk semua paket grill adalah Rp 100.000.</li><li>Harga belum termasuk PPN 10%.</li></ul>")}
+        // --- FUNGSI BARU UNTUK MEMBACA DATA DARI JSON ---
+        
+        // Fungsi ini akan dipanggil di `DOMContentLoaded` setelah config.json dimuat
+        function populatePage(data) {
+            configData = data; // Simpan data di global scope
+            
+            // 1. Pengaturan Umum
+            if (data.umum) {
+                document.querySelector('#page-home .header-gallery img').src = data.umum.headerImage;
+                document.querySelector('#page-jadwal .container p.schedule').innerHTML = data.umum.jadwalBuka;
+                document.querySelector('.floating-button').href = data.umum.linkWA; // Tombol WA
+                document.querySelector('#tombol-penting').href = data.umum.linkKetersediaan; // Cek Ketersediaan
+                document.querySelector('#floating-member-button').href = data.umum.linkMember; // Member Area
+            }
+            
+            // 2. Homepage Slideshow
+            if (data.slideshow && data.slideshow.length > 0) {
+                const slideshowContainer = document.querySelector('.slideshow-container');
+                slideshowContainer.innerHTML = ''; // Hapus slide hardcode
+                data.slideshow.forEach((url, index) => {
+                    slideshowContainer.innerHTML += `<img src="${url}" class="slide-image" alt="Suasana Dolan Sawah ${index + 1}">`;
+                });
+                
+                // Aktifkan slide pertama
+                if (slideshowContainer.querySelector('.slide-image')) {
+                    slideshowContainer.querySelector('.slide-image').classList.add('active');
+                }
+            }
+            
+            // 3. Menu Reservasi (Gambar)
+            if (data.menuReservasiImg) {
+                document.querySelector('img[alt="Menu Prasmanan"]').src = data.menuReservasiImg.prasmanan;
+                document.querySelector('img[alt="Paket Kembulan"]').src = data.menuReservasiImg.kembulan;
+                document.querySelector('img[alt="Paket Tumpeng Nasi Kuning"]').src = data.menuReservasiImg.tumpeng;
+                document.querySelector('img[alt="Paket Rantang"]').src = data.menuReservasiImg.rantang;
+                document.querySelector('img[alt="Paket Rantang Nasi Kuning"]').src = data.menuReservasiImg.rantangKuning;
+                document.querySelector('img[alt="Paket Grill Hemat Berdua"]').src = data.menuReservasiImg.grill1;
+                document.querySelector('img[alt="Paket Grill Hemat Berempat"]').src = data.menuReservasiImg.grill2;
+            }
+            
+            // 4. Menu Reservasi (Terms/Ketentuan)
+            // Fungsi-fungsi ini sekarang membaca dari configData
+            window.showPrasmananTerms = () => openPopup("Ketentuan Menu Prasmanan", data.menuReservasiTerms.prasmanan);
+            window.showKembulanTerms = () => openPopup("Ketentuan Menu Kembulan", data.menuReservasiTerms.kembulan);
+            window.showRantangTerms = () => openPopup("Ketentuan Paket Rantang", data.menuReservasiTerms.rantang);
+            window.showGrillTerms = () => openPopup("Ketentuan Paket Grill", data.menuReservasiTerms.grill);
+            
+            // 5. Jeep Adventure
+            if (data.jeep && data.jeep.length > 0) {
+                const jeepGrid = document.querySelector('.jeep-packages-grid');
+                jeepGrid.innerHTML = ''; // Hapus paket hardcode
+                data.jeep.forEach(pkg => {
+                    jeepGrid.innerHTML += `
+                        <div class="jeep-package-card" data-src="${pkg.fullImg}">
+                            <img src="${pkg.thumbImg}" alt="Thumbnail ${pkg.title}" loading="lazy">
+                            <div class="card-content">
+                                <h3>${pkg.title}</h3>
+                                <span class="view-brochure">Lihat Brosur</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                // Re-bind event listener untuk paket jeep yang baru
+                document.querySelectorAll('.jeep-package-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        const imageUrl = this.dataset.src;
+                        if (imageUrl) {
+                            openFullscreenImage(imageUrl);
+                        }
+                    });
+                });
+            }
+            
+            // 6. Menu Reguler
+            if (data.regulerMenu && data.regulerMenu.length > 0) {
+                const regulerContainer = document.querySelector('#page-reguler .menu-container');
+                regulerContainer.innerHTML = '<h1>Daftar Menu Reguler</h1>'; // Hapus menu hardcode
+                data.regulerMenu.forEach(category => {
+                    let itemsHtml = '';
+                    category.items.forEach(item => {
+                        itemsHtml += `
+                            <div class="menu-item">
+                                <span class="item-name">${item.name}</span>
+                                <span class="item-dots"></span>
+                                <span class="item-price">${item.price}</span>
+                            </div>
+                        `;
+                    });
+                    
+                    regulerContainer.innerHTML += `
+                        <div class="menu-category">
+                            <h2 class="category-title">${category.title}</h2>
+                            ${itemsHtml}
+                        </div>
+                    `;
+                });
+            }
+            
+            // 7. Galeri
+            if (data.gallery && data.gallery.length > 0) {
+                const galleryContainer = document.querySelector('#page-gallery .gallery');
+                galleryContainer.innerHTML = ''; // Hapus galeri hardcode
+                data.gallery.forEach(url => {
+                    galleryContainer.innerHTML += `<img src="${url}" alt="Foto Galeri" onclick="openFullscreen(this)">`;
+                });
+            }
+            
+            // 8. Tema Warna
+            if (data.themes) {
+                const styleSheet = document.styleSheets[0]; // Ambil stylesheet pertama (inline)
+                
+                // Hapus aturan CSS lama (jika ada)
+                for (let i = styleSheet.cssRules.length - 1; i >= 0; i--) {
+                    const rule = styleSheet.cssRules[i];
+                    if (rule.selectorText && rule.selectorText.startsWith('body.theme-')) {
+                        styleSheet.deleteRule(i);
+                    }
+                }
+                
+                // Tambahkan aturan CSS baru
+                styleSheet.insertRule(`body.theme-home { background: linear-gradient(135deg, ${data.themes.home[0]}, ${data.themes.home[1]}); }`, styleSheet.cssRules.length);
+                styleSheet.insertRule(`body.theme-menu { background: linear-gradient(135deg, ${data.themes.menu[0]}, ${data.themes.menu[1]}); }`, styleSheet.cssRules.length);
+                styleSheet.insertRule(`body.theme-gallery { background: linear-gradient(135deg, ${data.themes.gallery[0]}, ${data.themes.gallery[1]}); }`, styleSheet.cssRules.length);
+                styleSheet.insertRule(`body.theme-jadwal { background: linear-gradient(135deg, ${data.themes.jadwal[0]}, ${data.themes.jadwal[1]}); }`, styleSheet.cssRules.length);
+                styleSheet.insertRule(`body.theme-reguler { background: linear-gradient(135deg, ${data.themes.reguler[0]}, ${data.themes.reguler[1]}); }`, styleSheet.cssRules.length);
+                styleSheet.insertRule(`body.theme-jeep { background: linear-gradient(135deg, ${data.themes.jeep[0]}, ${data.themes.jeep[1]}); }`, styleSheet.cssRules.length);
+            }
+        }
+        
+        // --------------------------------------------------
         
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(page => {
@@ -577,10 +706,17 @@
         
         const fullscreenModal = document.getElementById("fullscreen-modal");
         const fullscreenImg = document.getElementById("fullscreen-img");
+        
         function openFullscreen(imgElement) {
             fullscreenImg.src = imgElement.src;
             fullscreenModal.classList.add("show");
         }
+        
+        function openFullscreenImage(imageUrl) {
+            fullscreenImg.src = imageUrl;
+            fullscreenModal.classList.add("show");
+        }
+
         function closeFullscreen() {
             fullscreenModal.classList.remove("show");
         }
@@ -596,16 +732,18 @@
             }, 100);
         }, false);
         
+        // --- INI ADALAH BAGIAN UTAMA YANG DIUBAH ---
         document.addEventListener("DOMContentLoaded", () => {
             const loadingText = document.querySelector(".loading-text");
             const loadingFill = document.querySelector(".loading-fill");
             const loadingScreen = document.querySelector(".loading-screen");
             let progress = 0;
             
-            const slideImages = document.querySelectorAll('.slide-image');
+            let slideImages = document.querySelectorAll('.slide-image'); // Ambil slide hardcode dulu
             let currentSlideIndex = 0;
 
             function showNextSlide() {
+                slideImages = document.querySelectorAll('.slide-image'); // Update daftar slide
                 if (slideImages.length === 0) return;
                 slideImages[currentSlideIndex].classList.remove('active');
                 currentSlideIndex = (currentSlideIndex + 1) % slideImages.length;
@@ -618,12 +756,12 @@
             
             setInterval(showNextSlide, 4000);
             
+            // Bind event untuk jeep hardcode (sebelum JSON dimuat)
             document.querySelectorAll('.jeep-package-card').forEach(card => {
                 card.addEventListener('click', function() {
                     const imageUrl = this.dataset.src;
                     if (imageUrl) {
-                        fullscreenImg.src = imageUrl;
-                        fullscreenModal.classList.add("show");
+                        openFullscreenImage(imageUrl);
                     }
                 });
             });
@@ -639,18 +777,41 @@
                 }
             }
 
-            function updateProgress() {
-                if (progress < 100) {
-                    progress += Math.floor(Math.random() * 5) + 5;
-                    if (progress > 100) progress = 100;
-                    loadingFill.style.width = progress + "%";
-                    loadingText.textContent = progress + "%";
-                    setTimeout(updateProgress, Math.random() * 200);
-                } else {
-                    setTimeout(hideLoading, 500);
+            // --- FUNGSI BARU UNTUK MEMUAT DATA ---
+            async function loadContent() {
+                try {
+                    // Tambahkan cache-busting query
+                    const response = await fetch(`config.json?v=${new Date().getTime()}`);
+                    if (!response.ok) {
+                        throw new Error('Gagal memuat config.json. Menampilkan konten default.');
+                    }
+                    const data = await response.json();
+                    populatePage(data); // Isi halaman dengan data dari JSON
+                } catch (error) {
+                    console.warn(error.message);
+                    // Jika gagal, website akan tetap tampil dengan data hardcode
+                } finally {
+                    // Selesaikan loading screen
+                    progress = 100;
+                    loadingFill.style.width = "100%";
+                    loadingText.textContent = "100%";
+                    setTimeout(hideLoading, 300);
                 }
             }
-            setTimeout(updateProgress, 500);
+
+            // Ganti progress bar palsu dengan pemuat data asli
+            (function startLoading() {
+                if (progress < 90) { // Berhenti di 90% sambil menunggu fetch
+                    progress += Math.floor(Math.random() * 5) + 5;
+                    if (progress > 90) progress = 90;
+                    loadingFill.style.width = progress + "%";
+                    loadingText.textContent = progress + "%";
+                    setTimeout(startLoading, Math.random() * 200);
+                }
+            })();
+            
+            // Mulai muat konten
+            loadContent();
         });
     </script>
 </body>
