@@ -126,6 +126,67 @@
             line-height: 1.6;
         }
 
+        /* [BARU] Styling Leaderboard */
+        .leaderboard-container {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: var(--bg-light);
+            border-radius: 12px;
+            text-align: left;
+        }
+        .leaderboard-container h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .leaderboard-container h3 .material-symbols-outlined {
+            font-size: 1.4em;
+        }
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95em;
+        }
+        .leaderboard-list li:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .leaderboard-item span:first-child {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        .leaderboard-item strong {
+            margin-left: 12px;
+            flex-grow: 1;
+            color: var(--text-dark);
+        }
+        .leaderboard-item .points {
+            font-weight: 600;
+            color: var(--accent-color);
+            font-size: 0.9em;
+            padding: 4px 8px;
+            background-color: #fff;
+            border-radius: 6px;
+            border: 1px solid #ffe58f;
+        }
+        .leaderboard-loading, .leaderboard-error {
+            text-align: center;
+            color: #777;
+            font-style: italic;
+        }
+
+
         /* Form Styling */
         .form-group {
             margin-bottom: 20px;
@@ -255,8 +316,18 @@
                 <span class="material-symbols-outlined">celebration</span>
                 <h2>Selamat Datang!</h2>
                 <p>Jadilah bagian dari keluarga Dolan Sawah dan nikmati berbagai keuntungan eksklusif. Pendaftaran ini cepat, mudah, dan gratis!</p>
-            </div>
-            <div class="navigation-buttons" style="flex-direction: column; align-items: stretch; gap: 15px;">
+
+                <div class="leaderboard-container">
+                    <h3>
+                        <span class="material-symbols-outlined">hotel_class</span>
+                        Top 5 Member Loyal
+                    </h3>
+                    <ol class="leaderboard-list" id="leaderboard-list">
+                        <li class="leaderboard-loading">Memuat data...</li>
+                    </ol>
+                </div>
+                </div>
+            <div class="navigation-buttons" style="flex-direction: column; align-items: stretch; gap: 15px; margin-top: 10px;">
                 <button type="button" class="btn btn-primary next-btn">
                     <span class="btn-text">Mulai Pendaftaran</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
@@ -346,7 +417,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // [UPDATE] Tambahkan impor untuk query
+    import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // Ganti dengan konfigurasi Firebase Anda
     const firebaseConfig = {
@@ -361,6 +433,52 @@
     // Inisialisasi Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // [BARU] Fungsi untuk mengambil data top 5 member
+    const fetchTopMembers = async () => {
+        const listElement = document.getElementById('leaderboard-list');
+        if (!listElement) return;
+
+        // **PENTING:** Ganti "poin" di bawah ini jika field Anda
+        // untuk total pembelanjaan/loyalitas memiliki nama lain.
+        const q = query(collection(db, "members"), orderBy("poin", "desc"), limit(5));
+
+        try {
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                listElement.innerHTML = '<li class="leaderboard-loading">Belum ada data member.</li>';
+                return;
+            }
+
+            listElement.innerHTML = ''; // Kosongkan "Memuat data..."
+
+            querySnapshot.forEach((doc, index) => {
+                const member = doc.data();
+                if (!member.nama) return; // Lewati jika tidak ada nama
+
+                const li = document.createElement('li');
+                li.className = 'leaderboard-item';
+                
+                // Masking nama untuk privasi (Contoh: "Ryan Indra" -> "Ryan I.")
+                const nameParts = member.nama.split(' ');
+                const displayName = nameParts.length > 1 
+                    ? `${nameParts[0]} ${nameParts[nameParts.length - 1].charAt(0)}.`
+                    : member.nama;
+
+                li.innerHTML = `
+                    <span>${index + 1}.</span>
+                    <strong>${displayName}</strong>
+                    <span class="points">${member.poin || 0} Poin</span>
+                `;
+                listElement.appendChild(li);
+            });
+
+        } catch (error) {
+            console.error("Error fetching top members: ", error);
+            listElement.innerHTML = '<li class="leaderboard-error">Gagal memuat data.</li>';
+        }
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
         const steps = Array.from(document.querySelectorAll('.registration-step'));
@@ -497,6 +615,9 @@
         
         // Inisialisasi
         showStep(currentStep);
+        
+        // [BARU] Panggil fungsi untuk memuat leaderboard saat halaman dibuka
+        fetchTopMembers();
     });
 </script>
 </body>
