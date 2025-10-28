@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Dolan Sawah</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 240px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar h1 {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .sidebar-nav a {
+            display: block;
+            color: #bdc3c7;
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s;
+        }
+        .sidebar-nav a:hover {
+            background: #34495e;
+            color: white;
+        }
+        .sidebar-nav a.active {
+            background: #ff9800;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        /* --- Main Content Area --- */
+        .content {
+            flex-grow: 1;
+            padding: 30px;
+        }
+        .content-section {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s ease;
+        }
+        .content-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Form Styling --- */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .card h2 {
+            font-size: 1.8rem;
+            color: #e67e22;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f39c12;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="url"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .form-group input[type="color"] {
+            width: 100px;
+            height: 40px;
+            padding: 5px;
+            border-radius: 8px;
+        }
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        /* --- Dynamic List Styling (e.g., Slideshow, Gallery) --- */
+        .dynamic-list .list-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .dynamic-list .list-item input {
+            flex-grow: 1;
+        }
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: scale(1.03); }
+        .btn-remove { background: #e74c3c; color: white; }
+        .btn-add { background: #2ecc71; color: white; margin-top: 10px; }
+        .btn-primary {
+            background: #ff9800;
+            color: white;
+            font-size: 1.1rem;
+            padding: 15px 30px;
+        }
+
+        /* --- Menu Reguler Editor Styling --- */
+        .category-editor {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .category-header input {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .item-editor {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .item-editor input:first-child { flex-grow: 3; } /* Nama */
+        .item-editor input:last-child { flex-grow: 1; } /* Harga */
+        .btn-add-item { background: #3498db; color: white; font-size: 0.9rem; padding: 8px 12px; }
+
+        /* --- Header Controls --- */
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        .header-controls label {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <h1>Admin Dolan Sawah</h1>
+        <div class="sidebar-nav">
+            <a href="#umum" class="nav-link active">⚙️ Pengaturan Umum</a>
+            <a href="#homepage" class="nav-link">🏠 Homepage</a>
+            <a href="#menu-reservasi" class="nav-link">🍽️ Menu Reservasi</a>
+            <a href="#jeep" class="nav-link">🚙 Jeep Adventure</a>
+            <a href="#menu-reguler" class="nav-link">🧾 Menu Reguler</a>
+            <a href="#galeri" class="nav-link">🖼️ Galeri</a>
+            <a href="#tema" class="nav-link">🎨 Tema Warna</a>
+        </div>
+    </nav>
+
+    <main class="content">
+        
+        <div class="header-controls">
+            <label for="load-config">Muat Konfigurasi:</label>
+            <input type="file" id="load-config" accept=".json">
+            <button class="btn btn-primary" id="save-config">Simpan & Unduh config.json</button>
+        </div>
+
+        <section id="umum" class="content-section active">
+            <div class="card">
+                <h2>⚙️ Pengaturan Umum</h2>
+                <div class="form-group">
+                    <label for="header-image">URL Gambar Header (Homepage)</label>
+                    <input type="url" id="header-image" placeholder="https://...jpg">
+                </div>
+                <div class="form-group">
+                    <label for="jadwal-buka">Teks Jadwal Buka</label>
+                    <textarea id="jadwal-buka" placeholder="Senin - Minggu&#10;06.00 - 22.00"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="link-whatsapp">Link WhatsApp (tombol reservasi)</label>
+                    <input type="url" id="link-whatsapp" placeholder="https://wa.me/62...">
+                </div>
+                <div class="form-group">
+                    <label for="link-ketersediaan">Link Cek Ketersediaan</label>
+                    <input type="url" id="link-ketersediaan" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label for="link-member">Link Member Area</label>
+                    <input type="url" id="link-member" placeholder="https://...">
+                </div>
+            </div>
+        </section>
+
+        <section id="homepage" class="content-section">
+            <div class="card">
+                <h2>🏠 Homepage Slideshow</h2>
+                <p style="margin-bottom: 15px;">Masukkan URL gambar untuk slideshow di halaman utama.</p>
+                <div id="slideshow-list" class="dynamic-list">
+                    </div>
+                <button class="btn btn-add" id="add-slide-btn">Tambah Slide</button>
+            </div>
+        </section>
+        
+        <section id="menu-reservasi" class="content-section">
+            <div class="card">
+                <h2>🍽️ Menu Reservasi (Gambar)</h2>
+                <div class="form-group">
+                    <label for="img-prasmanan">URL Gambar Prasmanan</label>
+                    <input type="url" id="img-prasmanan" placeholder="https://...jpg">
+                </div>
+                <div class="form-group">
+                    <label for="img-kembulan">URL Gambar Kembulan</label>
+                    <input type="url" id="img-kembulan" placeholder="https://...jpg">
+                </div>
+                <div class="form-group">
+                    <label for="img-tumpeng">URL Gambar Tumpeng Nasi Kuning</label>
+                    <input type="url" id="img-tumpeng" placeholder="https://...png">
+                </div>
+                <div class="form-group">
+                    <label for="img-rantang">URL Gambar Rantang</label>
+                    <input type="url" id="img-rantang" placeholder="https://...jpg">
+                </div>
+                <div class="form-group">
+                    <label for="img-rantang-kuning">URL Gambar Rantang Nasi Kuning</label>
+                    <input type="url" id="img-rantang-kuning" placeholder="https://...png">
+                </div>
+                <div class="form-group">
+                    <label for="img-grill-1">URL Gambar Grill (Berdua)</label>
+                    <input type="url" id="img-grill-1" placeholder="https://...jpg">
+                </div>
+                <div class="form-group">
+                    <label for="img-grill-2">URL Gambar Grill (Berempat)</label>
+                    <input type="url" id="img-grill-2" placeholder="https://...jpg">
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>🍽️ Menu Reservasi (Teks Popup Ketentuan)</h2>
+                <p style="margin-bottom: 15px;">Gunakan `&lt;li&gt;` untuk membuat list. Contoh: `&lt;ul&gt;&lt;li&gt;Poin 1&lt;/li&gt;&lt;li&gt;Poin 2&lt;/li&gt;&lt;/ul&gt;`</p>
+                <div class="form-group">
+                    <label for="terms-prasmanan">Ketentuan Prasmanan</label>
+                    <textarea id="terms-prasmanan" placeholder="<ul><li>Minimum 20 pax.</li></ul>"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="terms-kembulan">Ketentuan Kembulan & Tumpeng</label>
+                    <textarea id="terms-kembulan" placeholder="<ul><li>Reservasi H-1.</li></ul>"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="terms-rantang">Ketentuan Rantang</label>
+                    <textarea id="terms-rantang" placeholder="<ul><li>Reservasi H-1.</li></ul>"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="terms-grill">Ketentuan Grill</label>
+                    <textarea id="terms-grill" placeholder="<ul><li>DP Rp 100.000.</li></ul>"></textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="jeep" class="content-section">
+            <div class="card">
+                <h2>🚙 Paket Jeep Adventure</h2>
+                <p style="margin-bottom: 15px;">Atur paket-paket Jeep yang tampil.</p>
+                <div id="jeep-list" class="dynamic-list">
+                    </div>
+                <button class="btn btn-add" id="add-jeep-btn">Tambah Paket Jeep</button>
+            </div>
+        </section>
+
+        <section id="menu-reguler" class="content-section">
+            <div class="card">
+                <h2>🧾 Menu Reguler</h2>
+                <p style="margin-bottom: 15px;">Atur kategori dan item menu reguler.</p>
+                <div id="reguler-menu-editor">
+                    </div>
+                <button class="btn btn-add" id="add-category-btn">Tambah Kategori Baru</button>
+            </div>
+        </section>
+
+        <section id="galeri" class="content-section">
+            <div class="card">
+                <h2>🖼️ Galeri</h2>
+                <p style="margin-bottom: 15px;">Masukkan URL gambar untuk galeri.</p>
+                <div id="gallery-list" class="dynamic-list">
+                    </div>
+                <button class="btn btn-add" id="add-gallery-btn">Tambah Gambar</button>
+            </div>
+        </section>
+
+        <section id="tema" class="content-section">
+            <div class="card">
+                <h2>🎨 Tema Warna Latar Belakang</h2>
+                <p style="margin-bottom: 15px;">Pilih 2 warna untuk gradasi di tiap halaman.</p>
+                <div class="color-grid">
+                    <div class="form-group">
+                        <label for="theme-home-1">Home (Warna 1)</label>
+                        <input type="color" id="theme-home-1" value="#ff9800">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-home-2">Home (Warna 2)</label>
+                        <input type="color" id="theme-home-2" value="#ffcc80">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-menu-1">Menu (Warna 1)</label>
+                        <input type="color" id="theme-menu-1" value="#ff9800">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-menu-2">Menu (Warna 2)</label>
+                        <input type="color" id="theme-menu-2" value="#e65100">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-gallery-1">Gallery (Warna 1)</label>
+                        <input type="color" id="theme-gallery-1" value="#f6d365">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-gallery-2">Gallery (Warna 2)</label>
+                        <input type="color" id="theme-gallery-2" value="#fda085">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-jadwal-1">Jadwal (Warna 1)</label>
+                        <input type="color" id="theme-jadwal-1" value="#f6d365">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-jadwal-2">Jadwal (Warna 2)</label>
+                        <input type="color" id="theme-jadwal-2" value="#fda085">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-reguler-1">Reguler (Warna 1)</label>
+                        <input type="color" id="theme-reguler-1" value="#f5f7fa">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-reguler-2">Reguler (Warna 2)</label>
+                        <input type="color" id="theme-reguler-2" value="#c3cfe2">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-jeep-1">Jeep (Warna 1)</label>
+                        <input type="color" id="theme-jeep-1" value="#414345">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-jeep-2">Jeep (Warna 2)</label>
+                        <input type="color" id="theme-jeep-2" value="#232526">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Navigasi ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    
+                    navLinks.forEach(nav => nav.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    sections.forEach(section => {
+                        if (section.id === targetId) {
+                            section.classList.add('active');
+                        } else {
+                            section.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            // --- Generic Function for Dynamic Lists ---
+            function createDynamicList(containerId, addButtonId, createItemHtml) {
+                const container = document.getElementById(containerId);
+                document.getElementById(addButtonId).addEventListener('click', () => {
+                    container.insertAdjacentHTML('beforeend', createItemHtml());
+                });
+                container.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('btn-remove')) {
+                        e.target.closest('.list-item').remove();
+                    }
+                });
+            }
+
+            // --- Slideshow List ---
+            createDynamicList('slideshow-list', 'add-slide-btn', () => `
+                <div class="list-item">
+                    <input type="url" class="form-control" placeholder="URL Gambar Slide">
+                    <button class="btn btn-remove">Hapus</button>
+                </div>
+            `);
+            
+            // --- Gallery List ---
+            createDynamicList('gallery-list', 'add-gallery-btn', () => `
+                <div class="list-item">
+                    <input type="url" class="form-control" placeholder="URL Gambar Galeri">
+                    <button class="btn btn-remove">Hapus</button>
+                </div>
+            `);
+
+            // --- Jeep List ---
+            createDynamicList('jeep-list', 'add-jeep-btn', () => `
+                <div class="list-item category-editor" style="flex-direction: column; align-items: stretch;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong>Paket Jeep Baru</strong>
+                        <button class="btn btn-remove">Hapus Paket</button>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Judul Paket (e.g., Paket Short Trip)">
+                    <input type="url" class="form-control" placeholder="URL Gambar Full (data-src)">
+                    <input type="url" class="form-control" placeholder="URL Gambar Thumbnail (img src)">
+                </div>
+            `);
+
+            // --- Menu Reguler Editor ---
+            const regulerEditor = document.getElementById('reguler-menu-editor');
+            document.getElementById('add-category-btn').addEventListener('click', () => {
+                const categoryId = `cat-${Date.now()}`;
+                const categoryHtml = `
+                    <div class="category-editor" data-id="${categoryId}">
+                        <div class="category-header">
+                            <input type="text" class="form-control category-title" placeholder="Nama Kategori (e.g., Daging, Ayam Dan Bebek)">
+                            <button class="btn btn-remove btn-remove-category">Hapus Kategori</button>
+                        </div>
+                        <div class="items-container">
+                            </div>
+                        <button class="btn btn-add-item" data-target="${categoryId}">Tambah Item</button>
+                    </div>
+                `;
+                regulerEditor.insertAdjacentHTML('beforeend', categoryHtml);
+            });
+
+            regulerEditor.addEventListener('click', (e) => {
+                // Hapus Kategori
+                if (e.target.classList.contains('btn-remove-category')) {
+                    e.target.closest('.category-editor').remove();
+                }
+                // Tambah Item ke Kategori
+                if (e.target.classList.contains('btn-add-item')) {
+                    const container = e.target.closest('.category-editor').querySelector('.items-container');
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="item-editor list-item">
+                            <input type="text" class="form-control item-name" placeholder="Nama Item (e.g., Iga Bakar)">
+                            <input type="text" class="form-control item-price" placeholder="Harga (e.g., Rp 55.000)">
+                            <button class="btn btn-remove btn-remove-item">Hapus</button>
+                        </div>
+                    `);
+                }
+                // Hapus Item
+                if (e.target.classList.contains('btn-remove-item')) {
+                    e.target.closest('.item-editor').remove();
+                }
+            });
+
+            // --- KUMPULKAN DATA (SAVE) ---
+            function collectData() {
+                const data = {};
+                
+                // Umum
+                data.umum = {
+                    headerImage: document.getElementById('header-image').value,
+                    jadwalBuka: document.getElementById('jadwal-buka').value.replace(/\n/g, '<br />'),
+                    linkWA: document.getElementById('link-whatsapp').value,
+                    linkKetersediaan: document.getElementById('link-ketersediaan').value,
+                    linkMember: document.getElementById('link-member').value
+                };
+
+                // Homepage Slideshow
+                data.slideshow = Array.from(document.querySelectorAll('#slideshow-list .list-item input'))
+                                      .map(input => input.value).filter(Boolean);
+                
+                // Menu Reservasi (Gambar)
+                data.menuReservasiImg = {
+                    prasmanan: document.getElementById('img-prasmanan').value,
+                    kembulan: document.getElementById('img-kembulan').value,
+                    tumpeng: document.getElementById('img-tumpeng').value,
+                    rantang: document.getElementById('img-rantang').value,
+                    rantangKuning: document.getElementById('img-rantang-kuning').value,
+                    grill1: document.getElementById('img-grill-1').value,
+                    grill2: document.getElementById('img-grill-2').value,
+                };
+                
+                // Menu Reservasi (Terms)
+                data.menuReservasiTerms = {
+                    prasmanan: document.getElementById('terms-prasmanan').value,
+                    kembulan: document.getElementById('terms-kembulan').value,
+                    rantang: document.getElementById('terms-rantang').value,
+                    grill: document.getElementById('terms-grill').value,
+                };
+
+                // Jeep Adventure
+                data.jeep = Array.from(document.querySelectorAll('#jeep-list .list-item')).map(card => {
+                    const inputs = card.querySelectorAll('input');
+                    return {
+                        title: inputs[0].value,
+                        fullImg: inputs[1].value,
+                        thumbImg: inputs[2].value,
+                    };
+                }).filter(j => j.title && j.fullImg && j.thumbImg);
+
+                // Menu Reguler
+                data.regulerMenu = Array.from(document.querySelectorAll('#reguler-menu-editor .category-editor')).map(catEl => {
+                    const categoryTitle = catEl.querySelector('.category-title').value;
+                    const items = Array.from(catEl.querySelectorAll('.item-editor')).map(itemEl => {
+                        return {
+                            name: itemEl.querySelector('.item-name').value,
+                            price: itemEl.querySelector('.item-price').value
+                        };
+                    }).filter(i => i.name && i.price);
+                    return { title: categoryTitle, items: items };
+                }).filter(c => c.title && c.items.length > 0);
+
+                // Galeri
+                data.gallery = Array.from(document.querySelectorAll('#gallery-list .list-item input'))
+                                     .map(input => input.value).filter(Boolean);
+                
+                // Tema Warna
+                data.themes = {
+                    home: [document.getElementById('theme-home-1').value, document.getElementById('theme-home-2').value],
+                    menu: [document.getElementById('theme-menu-1').value, document.getElementById('theme-menu-2').value],
+                    gallery: [document.getElementById('theme-gallery-1').value, document.getElementById('theme-gallery-2').value],
+                    jadwal: [document.getElementById('theme-jadwal-1').value, document.getElementById('theme-jadwal-2').value],
+                    reguler: [document.getElementById('theme-reguler-1').value, document.getElementById('theme-reguler-2').value],
+                    jeep: [document.getElementById('theme-jeep-1').value, document.getElementById('theme-jeep-2').value],
+                };
+                
+                return data;
+            }
+
+            // --- FUNGSI SAVE ---
+            document.getElementById('save-config').addEventListener('click', () => {
+                const data = collectData();
+                const jsonString = JSON.stringify(data, null, 4); // 'null, 4' untuk format (pretty-print)
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'config.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                alert('File config.json berhasil dibuat! Harap unggah file ini ke server Anda.');
+            });
+
+            // --- FUNGSI LOAD (ISI FORM DARI JSON) ---
+            function populateForms(data) {
+                // Umum
+                if (data.umum) {
+                    document.getElementById('header-image').value = data.umum.headerImage || '';
+                    document.getElementById('jadwal-buka').value = (data.umum.jadwalBuka || '').replace(/<br \/>/g, '\n');
+                    document.getElementById('link-whatsapp').value = data.umum.linkWA || '';
+                    document.getElementById('link-ketersediaan').value = data.umum.linkKetersediaan || '';
+                    document.getElementById('link-member').value = data.umum.linkMember || '';
+                }
+
+                // Slideshow
+                if (data.slideshow) {
+                    const slideshowList = document.getElementById('slideshow-list');
+                    slideshowList.innerHTML = ''; // Clear list
+                    data.slideshow.forEach(url => {
+                        slideshowList.insertAdjacentHTML('beforeend', `
+                            <div class="list-item">
+                                <input type="url" class="form-control" value="${url}">
+                                <button class="btn btn-remove">Hapus</button>
+                            </div>
+                        `);
+                    });
+                }
+                
+                // Menu Reservasi (Gambar)
+                if (data.menuReservasiImg) {
+                    document.getElementById('img-prasmanan').value = data.menuReservasiImg.prasmanan || '';
+                    document.getElementById('img-kembulan').value = data.menuReservasiImg.kembulan || '';
+                    document.getElementById('img-tumpeng').value = data.menuReservasiImg.tumpeng || '';
+                    document.getElementById('img-rantang').value = data.menuReservasiImg.rantang || '';
+                    document.getElementById('img-rantang-kuning').value = data.menuReservasiImg.rantangKuning || '';
+                    document.getElementById('img-grill-1').value = data.menuReservasiImg.grill1 || '';
+                    document.getElementById('img-grill-2').value = data.menuReservasiImg.grill2 || '';
+                }
+                
+                // Menu Reservasi (Terms)
+                if (data.menuReservasiTerms) {
+                    document.getElementById('terms-prasmanan').value = data.menuReservasiTerms.prasmanan || '';
+                    document.getElementById('terms-kembulan').value = data.menuReservasiTerms.kembulan || '';
+                    document.getElementById('terms-rantang').value = data.menuReservasiTerms.rantang || '';
+                    document.getElementById('terms-grill').value = data.menuReservasiTerms.grill || '';
+                }
+
+                // Jeep
+                if (data.jeep) {
+                    const jeepList = document.getElementById('jeep-list');
+                    jeepList.innerHTML = '';
+                    data.jeep.forEach(pkg => {
+                        jeepList.insertAdjacentHTML('beforeend', `
+                            <div class="list-item category-editor" style="flex-direction: column; align-items: stretch;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <strong>Paket Jeep</strong>
+                                    <button class="btn btn-remove">Hapus Paket</button>
+                                </div>
+                                <input type="text" class="form-control" placeholder="Judul Paket" value="${pkg.title}">
+                                <input type="url" class="form-control" placeholder="URL Gambar Full (data-src)" value="${pkg.fullImg}">
+                                <input type="url" class="form-control" placeholder="URL Gambar Thumbnail (img src)" value="${pkg.thumbImg}">
+                            </div>
+                        `);
+                    });
+                }
+
+                // Menu Reguler
+                if (data.regulerMenu) {
+                    regulerEditor.innerHTML = '';
+                    data.regulerMenu.forEach(cat => {
+                        const categoryId = `cat-${Date.now()}-${Math.random()}`;
+                        let itemsHtml = '';
+                        cat.items.forEach(item => {
+                            itemsHtml += `
+                                <div class="item-editor list-item">
+                                    <input type="text" class="form-control item-name" value="${item.name}">
+                                    <input type="text" class="form-control item-price" value="${item.price}">
+                                    <button class="btn btn-remove btn-remove-item">Hapus</button>
+                                </div>
+                            `;
+                        });
+                        
+                        regulerEditor.insertAdjacentHTML('beforeend', `
+                            <div class="category-editor" data-id="${categoryId}">
+                                <div class="category-header">
+                                    <input type="text" class="form-control category-title" value="${cat.title}">
+                                    <button class="btn btn-remove btn-remove-category">Hapus Kategori</button>
+                                </div>
+                                <div class="items-container">${itemsHtml}</div>
+                                <button class="btn btn-add-item" data-target="${categoryId}">Tambah Item</button>
+                            </div>
+                        `);
+                    });
+                }
+                
+                // Galeri
+                if (data.gallery) {
+                    const galleryList = document.getElementById('gallery-list');
+                    galleryList.innerHTML = '';
+                    data.gallery.forEach(url => {
+                        galleryList.insertAdjacentHTML('beforeend', `
+                            <div class="list-item">
+                                <input type="url" class="form-control" value="${url}">
+                                <button class="btn btn-remove">Hapus</button>
+                            </div>
+                        `);
+                    });
+                }
+                
+                // Tema
+                if (data.themes) {
+                    document.getElementById('theme-home-1').value = data.themes.home[0];
+                    document.getElementById('theme-home-2').value = data.themes.home[1];
+                    document.getElementById('theme-menu-1').value = data.themes.menu[0];
+                    document.getElementById('theme-menu-2').value = data.themes.menu[1];
+                    document.getElementById('theme-gallery-1').value = data.themes.gallery[0];
+                    document.getElementById('theme-gallery-2').value = data.themes.gallery[1];
+                    document.getElementById('theme-jadwal-1').value = data.themes.jadwal[0];
+                    document.getElementById('theme-jadwal-2').value = data.themes.jadwal[1];
+                    document.getElementById('theme-reguler-1').value = data.themes.reguler[0];
+                    document.getElementById('theme-reguler-2').value = data.themes.reguler[1];
+                    document.getElementById('theme-jeep-1').value = data.themes.jeep[0];
+                    document.getElementById('theme-jeep-2').value = data.themes.jeep[1];
+                }
+            }
+
+            // Event listener untuk input file
+            document.getElementById('load-config').addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        populateForms(data);
+                        alert('Konfigurasi berhasil dimuat!');
+                    } catch (err) {
+                        alert('Error: Gagal membaca file JSON. Pastikan file tidak rusak.');
+                        console.error(err);
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+        });
+    </script>
+</body>
+</html>
