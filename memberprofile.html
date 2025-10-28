@@ -203,6 +203,37 @@
             font-size: 0.9em;
         }
 
+        /* ========= MODIFIKASI CSS DIMULAI DI SINI ========= */
+        .top-member-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(145deg, var(--accent-color), var(--accent-hover));
+            color: var(--text-light);
+            font-weight: 600;
+            font-size: 1.1em;
+            padding: 10px 16px;
+            border-radius: 12px;
+            margin: 15px auto 0;
+            max-width: 90%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            
+            /* Kontrol visibilitas untuk animasi */
+            display: none;
+            opacity: 0;
+        }
+        .top-member-badge .material-symbols-outlined {
+            font-size: 1.4em;
+        }
+        /* Aturan animasi untuk memunculkan badge */
+        #card-view.visible .top-member-badge.show {
+            display: flex;
+            animation: staggerIn 0.5s 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+        /* ========= MODIFIKASI CSS BERAKHIR DI SINI ========= */
+
+
         /* CSS DAFTAR REWARD */
         #member-rewards-list {
             list-style: none;
@@ -287,7 +318,12 @@
                     </div>
                     <div class="member-card-body">
                         <h2 id="card-name" class="member-card-name">-</h2>
-                    </div>
+                        
+                        <div id="top-member-badge" class="top-member-badge">
+                            <span class="material-symbols-outlined">workspace_premium</span>
+                            <span id="top-member-badge-text"></span>
+                        </div>
+                        </div>
                     <div class="member-card-footer">
                         <div class="member-card-stat">
                             <span class="material-symbols-outlined">monetization_on</span>
@@ -314,8 +350,10 @@
 </div>
 
 <script type="module">
+    // ========= MODIFIKASI IMPORT DIMULAI DI SINI =========
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // ========= MODIFIKASI IMPORT BERAKHIR DI SINI =========
 
     // Konfigurasi Firebase Anda
     const firebaseConfig = {
@@ -330,6 +368,12 @@
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
     let allPointRewards = [];
+    
+    // ========= MODIFIKASI VARIABEL GLOBAL DIMULAI DI SINI =========
+    let topMemberRewardName = null;
+    let top5MemberIds = [];
+    // ========= MODIFIKASI VARIABEL GLOBAL BERAKHIR DI SINI =========
+
 
     const lookupView = document.getElementById('lookup-view');
     const cardView = document.getElementById('card-view');
@@ -356,13 +400,6 @@
         lookupStatus.className = '';
         lookupStatus.classList.add(isError ? 'error' : 'success', 'visible');
     };
-
-    /*
-      Fungsi formatPhoneNumber tidak diperlukan lagi untuk pencarian,
-      jadi saya HAPUS untuk menghindari kebingungan.
-    
-      const formatPhoneNumber = (phoneNumber) => { ... };
-    */
 
     const calculateMembershipDuration = (joinDate) => {
         if (!joinDate) return "-";
@@ -405,6 +442,31 @@
             rewardsList.innerHTML = '<li>Gagal memuat reward.</li>';
         }
     };
+
+    // ========= FUNGSI BARU UNTUK MEMUAT DATA TOP 5 =========
+    const loadTop5Data = async () => {
+        try {
+            // 1. Ambil nama reward dari settings
+            const settingRef = doc(db, "settings", "topMemberReward");
+            const settingSnap = await getDoc(settingRef);
+            if (settingSnap.exists()) {
+                topMemberRewardName = settingSnap.data().name;
+            }
+
+            // 2. Ambil 5 member dengan poin tertinggi
+            const membersRef = collection(db, "members");
+            const top5Query = query(membersRef, orderBy("poin", "desc"), limit(5));
+            const membersSnap = await getDocs(top5Query);
+            
+            // 3. Simpan ID mereka di variabel global
+            top5MemberIds = membersSnap.docs.map(doc => doc.id);
+
+        } catch (err) {
+            console.error("Gagal memuat data Top 5 Member:", err);
+            // Tidak perlu menampilkan error ke user, biarkan fitur ini gagal secara diam-diam
+        }
+    };
+    // ========= AKHIR FUNGSI BARU =========
     
     const renderRewards = (memberPoin = 0) => {
         if (allPointRewards.length === 0) {
@@ -430,11 +492,14 @@
     // === EVENT LISTENERS ===
 
     document.addEventListener('DOMContentLoaded', () => {
+        // ========= MODIFIKASI: PANGGIL KEDUA FUNGSI SAAT LOAD =========
         loadAllRewards();
+        loadTop5Data();
+        // ========= AKHIR MODIFIKASI =========
     });
 
     lookupForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); // <-- Penting agar halaman tidak refresh
+        e.preventDefault();
         const button = e.target.querySelector('button[type="submit"]');
         showLoading(button, true);
         lookupStatus.classList.remove('visible'); 
@@ -446,29 +511,35 @@
             return;
         }
         
-        // ========================================
-        // INI ADALAH PERBAIKAN UTAMA
-        // ========================================
-        
-        // Dulu (BUGGY):
-        // const formattedHp = formatPhoneNumber(nomorHp); 
-        // const docRef = doc(db, "members", formattedHp);
-
-        // Sekarang (FIXED):
-        // Kita gunakan 'nomorHp' mentah, sama seperti di file admin Anda
         try {
             const docRef = doc(db, "members", nomorHp); 
             const docSnap = await getDoc(docRef);
         
-        // ========================================
-        // AKHIR DARI PERBAIKAN
-        // ========================================
-
             if (docSnap.exists()) {
-                // DATA DITEMUKAN!
                 const data = docSnap.data();
                 const memberPoin = data.poin || 0;
                 
+                // ========= MODIFIKASI LOGIKA TAMPILKAN KARTU DIMULAI DI SINI =========
+                
+                // 1. Ambil ID member (yaitu nomor HP itu sendiri)
+                const currentMemberId = docSnap.id; 
+                
+                // 2. Ambil elemen badge dari HTML
+                const topBadge = document.getElementById('top-member-badge');
+                const topBadgeText = document.getElementById('top-member-badge-text');
+
+                // 3. Cek apakah ID member ada di daftar Top 5
+                if (topMemberRewardName && top5MemberIds.includes(currentMemberId)) {
+                    // JIKA YA: Tampilkan badge
+                    topBadgeText.textContent = topMemberRewardName;
+                    topBadge.classList.add('show');
+                } else {
+                    // JIKA TIDAK: Pastikan badge tersembunyi
+                    topBadge.classList.remove('show');
+                }
+                
+                // ========= MODIFIKASI LOGIKA TAMPILKAN KARTU BERAKHIR DI SINI =========
+
                 cardName.textContent = data.nama;
                 cardPoin.textContent = memberPoin;
                 
@@ -479,14 +550,12 @@
 
                 lookupView.style.display = 'none';
                 
-                // Tampilkan kartu dengan animasi
                 cardView.style.display = 'block';
                 setTimeout(() => {
                     cardView.classList.add('visible');
                 }, 50);
 
             } else {
-                // DATA TIDAK DITEMUKAN
                 showStatus(`Member dengan No. HP ${nomorHp} tidak ditemukan. Pastikan nomor sudah benar.`, true);
             }
 
@@ -499,13 +568,16 @@
     });
 
     backButton.addEventListener('click', () => {
-        // Sembunyikan kartu dengan animasi
         cardView.classList.remove('visible');
         
         setTimeout(() => {
             cardView.style.display = 'none';
             lookupView.style.display = 'block';
             
+            // ========= MODIFIKASI: Sembunyikan badge saat kembali =========
+            document.getElementById('top-member-badge').classList.remove('show');
+            // ========= AKHIR MODIFIKASI =========
+
             lookupForm.reset();
             lookupStatus.classList.remove('visible');
             memberHpInput.focus();
