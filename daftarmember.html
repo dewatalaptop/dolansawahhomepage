@@ -125,7 +125,7 @@
             line-height: 1.6;
         }
 
-        /* [UPDATE] Styling Leaderboard yang Diperbarui */
+        /* Styling Leaderboard */
         .leaderboard-container {
             margin-top: 25px;
             padding: 20px;
@@ -150,11 +150,10 @@
             padding: 0;
             margin: 0;
         }
-        /* Menggunakan Flexbox untuk perataan */
         .leaderboard-item {
             display: flex;
             align-items: center;
-            gap: 12px; /* Jarak antara lingkaran, nama, dan poin */
+            gap: 12px;
             padding: 12px 0;
             border-bottom: 1px solid var(--border-color);
         }
@@ -162,37 +161,33 @@
             border-bottom: none;
             padding-bottom: 0;
         }
-
-        /* [BARU] Styling untuk Peringkat (Lingkaran Angka) */
+        
         .leaderboard-rank {
             width: 32px;
             height: 32px;
-            flex-shrink: 0; /* Mencegah lingkaran menjadi gepeng */
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            background-color: var(--primary-color); /* Default Hijau */
+            background-color: var(--primary-color);
             color: var(--text-light);
             font-weight: 600;
             font-size: 0.95em;
         }
 
-        /* [BARU] Buat Peringkat #1 Spesial (Warna Oranye) */
         .leaderboard-list li:first-child .leaderboard-rank {
             background-color: var(--accent-color);
         }
         
-        /* [BARU] Styling untuk Nama Member */
         .leaderboard-name {
-            flex-grow: 1; /* Ambil sisa ruang di tengah */
+            flex-grow: 1;
             color: var(--text-dark);
             font-weight: 500;
             font-size: 1em;
-            line-height: 1.3; /* Jaga-jaga jika nama panjang & wrap */
+            line-height: 1.3;
         }
 
-        /* Styling Poin (sudah ada, tambahkan flex-shrink) */
         .leaderboard-item .points {
             font-weight: 600;
             color: var(--accent-color);
@@ -201,7 +196,7 @@
             background-color: #fff;
             border-radius: 6px;
             border: 1px solid #ffe58f;
-            flex-shrink: 0; /* Mencegah poin menjadi gepeng */
+            flex-shrink: 0;
         }
         
         .leaderboard-loading, .leaderboard-error {
@@ -502,7 +497,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Fungsi untuk mengambil data top 5 member
+    // [UPDATE] Fungsi untuk mengambil data top 5 member
     const fetchTopMembers = async () => {
         const listElement = document.getElementById('leaderboard-list');
         if (!listElement) return;
@@ -518,27 +513,31 @@
             }
 
             listElement.innerHTML = ''; 
+            
+            // [UPDATE] Membuat counter manual, dimulai dari 1
+            let rankCounter = 1;
 
-            querySnapshot.forEach((doc, index) => {
+            // [UPDATE] Hapus parameter 'index' dari forEach
+            querySnapshot.forEach((doc) => {
                 const member = doc.data();
                 if (!member.nama) return; 
 
                 const li = document.createElement('li');
                 li.className = 'leaderboard-item';
                 
-                // [UPDATE] Tampilkan nama lengkap, tidak disingkat
                 const displayName = member.nama;
-
-                // Memastikan poin adalah angka, jika tidak set ke 0
                 const displayPoin = typeof member.poin === 'number' && !isNaN(member.poin) ? member.poin : 0;
 
-                // [UPDATE] HTML baru untuk item leaderboard
+                // [UPDATE] Gunakan 'rankCounter' sebagai pengganti 'index + 1'
                 li.innerHTML = `
-                    <div class="leaderboard-rank">${index + 1}</div>
+                    <div class="leaderboard-rank">${rankCounter}</div>
                     <strong class="leaderboard-name">${displayName}</strong>
                     <span class="points">${displayPoin} Poin</span>
                 `;
                 listElement.appendChild(li);
+                
+                // [UPDATE] Tambahkan 1 ke counter setiap selesai satu loop
+                rankCounter++;
             });
 
         } catch (error) {
@@ -568,10 +567,8 @@
             updateNavigationButtons();
             
             if (stepIndex === 0) {
-                // Cek apakah konten melebihi tinggi layar
                 const step0ContentHeight = steps[0].scrollHeight;
                 const viewportHeight = window.innerHeight;
-                // Tampilkan jika konten lebih tinggi dari 80% layar
                 if (step0ContentHeight > viewportHeight * 0.8 && window.pageYOffset < 10) { 
                     scrollIndicator.classList.remove('hidden');
                 } else {
@@ -693,22 +690,21 @@
                     showStep(currentStep);
                 }
                 if (currentStep === 0) {
-                    showStep(currentStep); // Panggil ulang showStep untuk mengecek scroll
+                    showStep(currentStep);
                 }
             }
         });
         
-        // Logika untuk scroll indicator
         window.addEventListener('scroll', () => {
             const st = window.pageYOffset || document.documentElement.scrollTop;
             
             if (currentStep === 0) {
-                if (st > lastScrollTop && st > 10) { // Scroll ke bawah
+                if (st > lastScrollTop && st > 10) { 
                     scrollIndicator.classList.add('hidden');
-                } else if (st < lastScrollTop) { // Scroll ke atas
+                } else if (st < lastScrollTop) { 
                     scrollIndicator.classList.remove('hidden');
-                } else if (st === 0) { // Kembali ke paling atas
-                     showStep(currentStep); // Cek ulang apakah perlu ditampilkan
+                } else if (st === 0) { 
+                     showStep(currentStep);
                 }
             } else {
                  scrollIndicator.classList.add('hidden');
