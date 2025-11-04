@@ -190,13 +190,12 @@
 </div>
 
 <script type="module">
-    // Impor Firebase
+    // Impor Firebase (Tidak Berubah)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    // Impor baru untuk Authentication (OTP)
     import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // Konfigurasi Firebase Anda
+    // Konfigurasi Firebase (Tidak Berubah)
     const firebaseConfig = {
         apiKey: "AIzaSyAEzWDI9ZWlc7NnUTDBbx7wednnUVeS9Ao",
         authDomain: "member-hp-dolansawah.firebaseapp.com",
@@ -206,21 +205,21 @@
         appId: "1:277683917105:web:d496ee4547f339e2fee010"
     };
     
-    // Inisialisasi
+    // Inisialisasi (Tidak Berubah)
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
-    const auth = getAuth(app); // BARU: Inisialisasi Auth
+    const auth = getAuth(app);
 
-    // Variabel Global
+    // Variabel Global (Tidak Berubah)
     let allPointRewards = [];
     let topMemberRewardName = null;
     let top5MemberIds = [];
-    let confirmationResult = null; // BARU: Untuk menyimpan hasil konfirmasi OTP
-    let verifiedPhoneNumber = null; // BARU: Untuk menyimpan nomor HP yang akan dicek
+    let confirmationResult = null;
+    let verifiedPhoneNumber = null;
 
-    // Elemen DOM
+    // Elemen DOM (Tidak Berubah)
     const lookupView = document.getElementById('lookup-view');
-    const otpView = document.getElementById('otp-view'); // BARU
+    const otpView = document.getElementById('otp-view');
     const cardView = document.getElementById('card-view');
 
     const lookupForm = document.getElementById('member-lookup-form');
@@ -228,29 +227,27 @@
     const lookupStatus = document.getElementById('lookup-status');
     const backButton = document.getElementById('back-to-lookup');
     
-    const otpForm = document.getElementById('otp-form'); // BARU
-    const otpCodeInput = document.getElementById('otp-code'); // BARU
-    const otpPhoneDisplay = document.getElementById('otp-phone-display'); // BARU
-    const backButtonOtp = document.getElementById('back-to-lookup-otp'); // BARU
+    const otpForm = document.getElementById('otp-form');
+    const otpCodeInput = document.getElementById('otp-code');
+    const otpPhoneDisplay = document.getElementById('otp-phone-display');
+    const backButtonOtp = document.getElementById('back-to-lookup-otp');
 
     const cardName = document.getElementById('card-name');
     const cardPoin = document.getElementById('card-poin');
     const cardDuration = document.getElementById('card-duration');
     const rewardsList = document.getElementById('member-rewards-list');
 
-    // === HELPER FUNCTIONS (Lama dan Baru) ===
-
+    // === HELPER FUNCTIONS (Tidak Berubah) ===
+    // (showLoading, showStatus, calculateMembershipDuration, loadAllRewards, loadTop5Data, renderRewards, formatPhoneNumberE164)
     const showLoading = (button, isLoading) => {
         if (!button) return;
         button.disabled = isLoading;
         button.classList.toggle('loading', isLoading);
     };
-
     const showStatus = (message, isError = false, targetElement = lookupStatus) => {
         targetElement.textContent = message;
         targetElement.className = '';
         targetElement.classList.add(isError ? 'error' : 'success', 'visible');
-        
         if (targetElement.id !== 'lookup-status') {
              const mainStatus = document.getElementById('lookup-status');
              mainStatus.textContent = message;
@@ -258,8 +255,6 @@
              mainStatus.classList.add(isError ? 'error' : 'success', 'visible');
         }
     };
-
-    // Helper dari kode asli Anda
     const calculateMembershipDuration = (joinDate) => {
         if (!joinDate) return "-";
         const now = new Date();
@@ -285,8 +280,6 @@
         if (parts.length === 0) return "Baru terdaftar"; 
         return parts.join(', ');
     };
-
-    // Helper dari kode asli Anda
     const loadAllRewards = async () => {
         try {
             const snapshot = await getDocs(collection(db, "rewards"));
@@ -297,8 +290,6 @@
             rewardsList.innerHTML = '<li>Gagal memuat reward.</li>';
         }
     };
-
-    // Helper dari kode asli Anda
     const loadTop5Data = async () => {
         try {
             const settingRef = doc(db, "settings", "topMemberReward");
@@ -314,8 +305,6 @@
             console.error("Gagal memuat data Top 5 Member:", err);
         }
     };
-    
-    // Helper dari kode asli Anda
     const renderRewards = (memberPoin = 0) => {
         if (allPointRewards.length === 0) {
             rewardsList.innerHTML = '<li>Belum ada reward yang tersedia.</li>';
@@ -335,8 +324,6 @@
             `;
         }).join('');
     };
-
-    // Helper BARU untuk format nomor HP
     const formatPhoneNumberE164 = (phoneNumber) => {
         let digits = (phoneNumber || '').replace(/\D/g, '');
         if (digits.startsWith('08')) {
@@ -351,8 +338,10 @@
         if (digits.startsWith('+62')) {
             return digits;
         }
-        return `+${digits}`; // Fallback
+        return `+${digits}`;
     };
+    // === AKHIR HELPER FUNCTIONS ===
+
 
     // === EVENT LISTENERS ===
 
@@ -361,33 +350,24 @@
         loadAllRewards();
         loadTop5Data();
 
-        // Setup RECAPTCHA VERIFIER (BARU)
-        try {
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response) => {
-                    // (tidak perlu diisi untuk 'invisible')
-                },
-                'expired-callback': () => {
-                    showStatus("Verifikasi reCAPTCHA kadaluarsa. Muat ulang halaman.", true);
-                }
-            });
-            window.recaptchaVerifier.render().catch(err => {
-                 console.error("recaptcha render error", err);
-                 showStatus("Gagal memuat reCAPTCHA. Pastikan domain Anda sudah di-whitelist di Firebase.", true);
-            });
-        } catch (e) {
-            console.error("Gagal inisialisasi reCAPTCHA:", e);
-            showStatus("Gagal memuat verifikasi. Cek koneksi & domain.", true);
-        }
+        // =============================================
+        //     MODIFIKASI: Pembuatan reCAPTCHA
+        //     Dihapus dari sini
+        // =============================================
     });
 
-    // MODIFIKASI: Form Lookup (Sekarang mengirim OTP)
+    // =============================================
+    // MODIFIKASI: Form Lookup (Sekarang MEMBUAT reCAPTCHA)
+    // =============================================
     lookupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button[type="submit"]');
         showLoading(button, true);
         lookupStatus.classList.remove('visible'); 
+        
+        // KOSONGKAN CONTAINER RECAPTCHA LAMA (PENTING)
+        // Ini memastikan kita tidak menumpuk verifier
+        document.getElementById('recaptcha-container').innerHTML = '';
 
         const nomorHp = memberHpInput.value.trim();
         if (!nomorHp) {
@@ -400,8 +380,26 @@
         verifiedPhoneNumber = nomorHp; // Simpan nomor ASLI untuk lookup database nanti
 
         try {
-            // Kirim SMS OTP
-            confirmationResult = await signInWithPhoneNumber(auth, formattedPhoneNumber, window.recaptchaVerifier);
+            // ======================================================
+            //    PINDAHKAN PEMBUATAN VERIFIER KE SINI (MODIFIKASI)
+            // ======================================================
+            // Buat instance verifier BARU setiap kali tombol diklik
+            const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response) => {
+                    // (Otomatis submit, tidak perlu diisi)
+                },
+                'expired-callback': () => {
+                    showStatus("Verifikasi reCAPTCHA kadaluarsa. Coba lagi.", true);
+                }
+            });
+
+            // Render verifier baru ini dan tunggu sampai siap
+            await appVerifier.render();
+            // ======================================================
+
+            // Kirim SMS OTP menggunakan appVerifier LOKAL yang baru
+            confirmationResult = await signInWithPhoneNumber(auth, formattedPhoneNumber, appVerifier);
             
             // SMS berhasil terkirim
             otpPhoneDisplay.textContent = formattedPhoneNumber;
@@ -410,32 +408,22 @@
             otpCodeInput.focus();
 
         } catch (err) {
-            // ======================================================
-            //          MODIFIKASI KODE DEBUGGING DIMULAI
-            // ======================================================
+            // (Kode debugging error masih sama)
             console.error("DEBUG: Terjadi Error Saat Mengirim SMS:", err);
-
-            // Buat pesan error yang jauh lebih detail untuk debugging
-            // Ini akan menampilkan kode error mentah dari Firebase
             let debugMessage = `Gagal! Error: ${err.message} (Code: ${err.code || 'N/A'})`;
-            
-            // Tampilkan pesan debug ini langsung ke pengguna
             showStatus(debugMessage, true);
             
-            // ======================================================
-            //           MODIFIKASI KODE DEBUGGING SELESAI
-            // ======================================================
         } finally {
             showLoading(button, false);
         }
     });
 
-    // LISTENER BARU: Form OTP (Tidak ada perubahan)
+    // LISTENER Form OTP (Tidak Berubah)
     otpForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button[type="submit"]');
         showLoading(button, true);
-        lookupStatus.classList.remove('visible'); // Hapus status lama jika ada
+        lookupStatus.classList.remove('visible'); 
 
         const otpCode = otpCodeInput.value.trim();
         if (!otpCode || otpCode.length !== 6) {
@@ -453,10 +441,8 @@
         try {
             // Verifikasi kode OTP
             await confirmationResult.confirm(otpCode);
-
-            // === KODE BERHASIL DIKONFIRMASI ===
-            // Sekarang kita lakukan lookup ke Firestore
             
+            // === KODE BERHASIL DIKONFIRMASI ===
             const docRef = doc(db, "members", verifiedPhoneNumber); 
             const docSnap = await getDoc(docRef);
         
@@ -464,7 +450,7 @@
                 const data = docSnap.data();
                 const memberPoin = data.poin || 0;
                 
-                // Logika Top 5 Member (tetap sama)
+                // Logika Top 5 Member
                 const currentMemberId = docSnap.id; 
                 const topBadge = document.getElementById('top-member-badge');
                 const topBadgeText = document.getElementById('top-member-badge-text');
@@ -511,9 +497,7 @@
         }
     });
 
-    // MODIFIKASI: Tombol Kembali (Tidak ada perubahan)
-    
-    // Tombol kembali dari Card View (kembali ke paling awal)
+    // Tombol kembali dari Card View (Tidak Berubah)
     backButton.addEventListener('click', () => {
         cardView.classList.remove('visible');
         setTimeout(() => {
@@ -528,7 +512,9 @@
         }, 400); 
     });
 
-    // Tombol kembali dari OTP View (kembali ke lookup)
+    // =============================================
+    // MODIFIKASI: Tombol kembali dari OTP View
+    // =============================================
     backButtonOtp.addEventListener('click', () => {
         otpView.style.display = 'none';
         lookupView.style.display = 'block';
@@ -536,8 +522,10 @@
         otpForm.reset();
         lookupStatus.classList.remove('visible');
         memberHpInput.focus();
-        // Reset reCAPTCHA jika ada
-        window.recaptchaVerifier.render().catch(err => console.error(err));
+        
+        // =============================================
+        // HAPUS BARIS .render() DARI SINI
+        // =============================================
     });
 
 </script>
