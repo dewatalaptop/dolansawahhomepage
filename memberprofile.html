@@ -251,9 +251,7 @@
         targetElement.className = '';
         targetElement.classList.add(isError ? 'error' : 'success', 'visible');
         
-        // Atur ulang target ke lookupStatus jika itu adalah elemen status untuk OTP
         if (targetElement.id !== 'lookup-status') {
-             // Ini untuk memastikan pesan error OTP juga muncul di lookupStatus
              const mainStatus = document.getElementById('lookup-status');
              mainStatus.textContent = message;
              mainStatus.className = '';
@@ -412,22 +410,27 @@
             otpCodeInput.focus();
 
         } catch (err) {
-            console.error("Error mengirim SMS:", err);
-            let message = "Gagal mengirim kode verifikasi.";
-            if (err.code === 'auth/invalid-phone-number') {
-                message = "Format nomor HP tidak valid. Gunakan format 08... atau +628...";
-            } else if (err.code === 'auth/too-many-requests') {
-                message = "Terlalu banyak percobaan. Silakan coba lagi nanti.";
-            } else if (err.message.includes('reCAPTCHA')) {
-                message = "Verifikasi reCAPTCHA gagal. Cek domain Anda di Firebase.";
-            }
-            showStatus(message, true);
+            // ======================================================
+            //          MODIFIKASI KODE DEBUGGING DIMULAI
+            // ======================================================
+            console.error("DEBUG: Terjadi Error Saat Mengirim SMS:", err);
+
+            // Buat pesan error yang jauh lebih detail untuk debugging
+            // Ini akan menampilkan kode error mentah dari Firebase
+            let debugMessage = `Gagal! Error: ${err.message} (Code: ${err.code || 'N/A'})`;
+            
+            // Tampilkan pesan debug ini langsung ke pengguna
+            showStatus(debugMessage, true);
+            
+            // ======================================================
+            //           MODIFIKASI KODE DEBUGGING SELESAI
+            // ======================================================
         } finally {
             showLoading(button, false);
         }
     });
 
-    // LISTENER BARU: Form OTP
+    // LISTENER BARU: Form OTP (Tidak ada perubahan)
     otpForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button[type="submit"]');
@@ -508,7 +511,7 @@
         }
     });
 
-    // MODIFIKASI: Tombol Kembali
+    // MODIFIKASI: Tombol Kembali (Tidak ada perubahan)
     
     // Tombol kembali dari Card View (kembali ke paling awal)
     backButton.addEventListener('click', () => {
