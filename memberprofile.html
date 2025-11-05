@@ -210,12 +210,17 @@
     const db  = getFirestore(app);
     const auth = getAuth(app);
 
-    // Variabel Global (Tidak Berubah)
+    // Variabel Global
     let allPointRewards = [];
     let topMemberRewardName = null;
     let top5MemberIds = [];
     let confirmationResult = null;
     let verifiedPhoneNumber = null;
+    
+    // =============================================
+    // MODIFIKASI: Tambahkan variabel global untuk verifier
+    // =============================================
+    let appVerifier = null; 
 
     // Elemen DOM (Tidak Berubah)
     const lookupView = document.getElementById('lookup-view');
@@ -238,7 +243,6 @@
     const rewardsList = document.getElementById('member-rewards-list');
 
     // === HELPER FUNCTIONS (Tidak Berubah) ===
-    // (showLoading, showStatus, calculateMembershipDuration, loadAllRewards, loadTop5Data, renderRewards, formatPhoneNumberE164)
     const showLoading = (button, isLoading) => {
         if (!button) return;
         button.disabled = isLoading;
@@ -349,15 +353,11 @@
         // Muat data awal
         loadAllRewards();
         loadTop5Data();
-
-        // =============================================
-        //     MODIFIKASI: Pembuatan reCAPTCHA
-        //     Dihapus dari sini
-        // =============================================
+        // Pembuatan reCAPTCHA dihapus dari sini
     });
 
     // =============================================
-    // MODIFIKASI: Form Lookup (Sekarang MEMBUAT reCAPTCHA)
+    // MODIFIKASI: Form Lookup dengan CLEANUP
     // =============================================
     lookupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -365,9 +365,17 @@
         showLoading(button, true);
         lookupStatus.classList.remove('visible'); 
         
-        // KOSONGKAN CONTAINER RECAPTCHA LAMA (PENTING)
-        // Ini memastikan kita tidak menumpuk verifier
+        // =============================================
+        //          LOGIKA CLEANUP BARU (PENTING)
+        // =============================================
+        // Jika ada verifier lama, bersihkan (hancurkan)
+        if (appVerifier) {
+            appVerifier.clear(); // <-- Hapus verifier lama dari instance Auth
+            appVerifier = null;
+        }
+        // Kosongkan container HTML-nya untuk widget baru
         document.getElementById('recaptcha-container').innerHTML = '';
+        // =============================================
 
         const nomorHp = memberHpInput.value.trim();
         if (!nomorHp) {
@@ -377,31 +385,32 @@
         }
 
         const formattedPhoneNumber = formatPhoneNumberE164(nomorHp);
-        verifiedPhoneNumber = nomorHp; // Simpan nomor ASLI untuk lookup database nanti
+        verifiedPhoneNumber = nomorHp;
 
         try {
-            // ======================================================
-            //    PINDAHKAN PEMBUATAN VERIFIER KE SINI (MODIFIKASI)
-            // ======================================================
-            // Buat instance verifier BARU setiap kali tombol diklik
-            const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            // Buat instance verifier BARU dan simpan di variabel global
+            appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                 'size': 'invisible',
                 'callback': (response) => {
-                    // (Otomatis submit, tidak perlu diisi)
+                    // (Otomatis submit)
                 },
                 'expired-callback': () => {
+                    // Saat kadaluarsa, bersihkan dirinya sendiri
                     showStatus("Verifikasi reCAPTCHA kadaluarsa. Coba lagi.", true);
+                    if (appVerifier) {
+                        appVerifier.clear();
+                        appVerifier = null;
+                    }
                 }
             });
 
-            // Render verifier baru ini dan tunggu sampai siap
+            // Render verifier baru
             await appVerifier.render();
-            // ======================================================
 
-            // Kirim SMS OTP menggunakan appVerifier LOKAL yang baru
+            // Kirim SMS
             confirmationResult = await signInWithPhoneNumber(auth, formattedPhoneNumber, appVerifier);
             
-            // SMS berhasil terkirim
+            // Lanjut ke halaman OTP
             otpPhoneDisplay.textContent = formattedPhoneNumber;
             lookupView.style.display = 'none';
             otpView.style.display = 'block';
@@ -413,6 +422,13 @@
             let debugMessage = `Gagal! Error: ${err.message} (Code: ${err.code || 'N/A'})`;
             showStatus(debugMessage, true);
             
+            // =============================================
+            // Jika GAGAL, bersihkan juga verifier-nya
+            // =============================================
+            if (appVerifier) {
+                appVerifier.clear();
+                appVerifier = null;
+            }
         } finally {
             showLoading(button, false);
         }
@@ -497,7 +513,11 @@
         }
     });
 
-    // Tombol kembali dari Card View (Tidak Berubah)
+    // =============================================
+    // MODIFIKASI: Tombol Kembali
+    // =============================================
+    
+    // Tombol kembali dari Card View
     backButton.addEventListener('click', () => {
         cardView.classList.remove('visible');
         setTimeout(() => {
@@ -509,12 +529,17 @@
             otpForm.reset();
             lookupStatus.classList.remove('visible');
             memberHpInput.focus();
+            
+            // Bersihkan verifier saat kembali ke awal
+            if (appVerifier) {
+                appVerifier.clear();
+                appVerifier = null;
+            }
+            document.getElementById('recaptcha-container').innerHTML = '';
         }, 400); 
     });
 
-    // =============================================
-    // MODIFIKASI: Tombol kembali dari OTP View
-    // =============================================
+    // Tombol kembali dari OTP View
     backButtonOtp.addEventListener('click', () => {
         otpView.style.display = 'none';
         lookupView.style.display = 'block';
@@ -523,9 +548,12 @@
         lookupStatus.classList.remove('visible');
         memberHpInput.focus();
         
-        // =============================================
-        // HAPUS BARIS .render() DARI SINI
-        // =============================================
+        // Bersihkan verifier saat kembali
+        if (appVerifier) {
+            appVerifier.clear();
+            appVerifier = null;
+        }
+        document.getElementById('recaptcha-container').innerHTML = '';
     });
 
 </script>
