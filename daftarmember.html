@@ -21,7 +21,7 @@
             --border-color: #E0E0E0;
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --font-body: 'Poppins', sans-serif;
-            --success-color: #4CAF50;
+            --success-color: #4CAF50; /* Warna hijau untuk tombol */
             --error-color: #D32F2F;
         }
 
@@ -294,6 +294,26 @@
             border-color: var(--primary-light);
         }
 
+        /* === [PERUBAHAN] === */
+        /* Tombol Cek Profil (Hijau & Goyang) */
+        #check-profile-btn {
+            background-color: var(--success-color);
+            color: var(--text-light);
+            border: 2px solid var(--success-color);
+            /* Animasi goyang untuk menarik atensi */
+            animation: wobble 2.5s ease-in-out infinite;
+            animation-delay: 2s; /* Mulai animasi setelah 2 detik */
+            transform-origin: center;
+        }
+        #check-profile-btn:hover {
+            background-color: #43A047; /* Hijau lebih gelap */
+            border-color: #43A047;
+            color: var(--text-light);
+            /* Hentikan animasi saat di-hover agar mudah diklik */
+            animation-play-state: paused;
+        }
+        /* === [AKHIR PERUBAHAN] === */
+
 
         .spinner {
             width: 20px; height: 20px;
@@ -357,6 +377,20 @@
                 transform: translateY(-5px);
             }
         }
+        
+        /* === [PERUBAHAN] === */
+        /* Keyframes untuk animasi goyang */
+        @keyframes wobble {
+            0% { transform: rotate(0deg) scale(1); }
+            15% { transform: rotate(-5deg) scale(1.02); }
+            30% { transform: rotate(5deg) scale(1.02); }
+            45% { transform: rotate(-3deg) scale(1.01); }
+            60% { transform: rotate(3deg) scale(1.01); }
+            75% { transform: rotate(-2deg) scale(1); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+        /* === [AKHIR PERUBAHAN] === */
+        
     </style>
 </head>
 <body>
@@ -393,8 +427,8 @@
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </button>
                 
-                <a href="https://dewatalaptop.github.io/memberhpds/memberprofile.html" class="btn btn-outline-primary" target="_blank">
-                    <span class="btn-text">Sudah menjadi member? Cek profil Anda</span>
+                <a href="https://dewatalaptop.github.io/memberhpds/memberprofile.html" class="btn btn-outline-primary" id="check-profile-btn" target="_blank">
+                <span class="btn-text">Sudah menjadi member? Cek profil Anda</span>
                     <span class="material-symbols-outlined">account_circle</span>
                 </a>
             </div>
