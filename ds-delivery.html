@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dolan Sawah Delivery</title>
+    
+    <style>
+        /* Reset & Font Dasar */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        /* Utilitas */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: #ffffff;
+            padding: 1.2rem 1rem;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            color: #2c5e2e; /* Warna hijau khas */
+            font-weight: 700;
+        }
+
+        /* --- Ikon Keranjang (Cart) --- */
+        #cart-button {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background-color: #2c5e2e;
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            font-size: 1.5rem;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #d9534f;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            border-radius: 50%;
+            padding: 0.2rem 0.5rem;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* --- Daftar Produk --- */
+        #product-container {
+            padding: 1.5rem 0.5rem;
+        }
+
+        .category-section {
+            margin-bottom: 2rem;
+        }
+
+        .category-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid #2c5e2e;
+            color: #2c5e2e;
+        }
+
+        .product-card {
+            display: flex;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .product-card img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 0.8rem 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-info h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .product-info .description {
+            font-size: 0.85rem;
+            color: #666;
+            flex-grow: 1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-info .price {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #d9534f;
+        }
+
+        .product-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .add-to-cart-btn {
+            background-color: #2c5e2e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .add-to-cart-btn:hover {
+            background-color: #1e421e;
+        }
+
+        /* --- Checkout Modal --- */
+        .modal {
+            display: none; /* Sembunyi by default */
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {transform: translateY(50px); opacity: 0;}
+            to {transform: translateY(0); opacity: 1;}
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.3rem;
+            color: #2c5e2e;
+        }
+
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding-top: 1rem;
+        }
+        
+        #cart-summary-items {
+            max-height: 200px;
+            overflow-y: auto;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 1rem;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .item-name {
+            color: #555;
+        }
+        
+        .item-price {
+            font-weight: 600;
+        }
+        
+        .cost-summary {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cost-summary span {
+            float: right;
+            font-weight: 600;
+        }
+        
+        /* Voucher Section */
+        .voucher-section {
+            margin-top: 1rem;
+            border-top: 1px dashed #ccc;
+            padding-top: 1rem;
+        }
+        
+        .voucher-input-group {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        
+        #voucher-input {
+            flex-grow: 1;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 8px 0 0 8px;
+        }
+        
+        #apply-voucher-btn {
+            padding: 0.6rem 1rem;
+            border: none;
+            background-color: #5bc0de;
+            color: white;
+            cursor: pointer;
+            border-radius: 0 8px 8px 0;
+            font-weight: 600;
+        }
+        
+        #voucher-status {
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        
+        .text-success { color: #2c5e2e; }
+        .text-danger { color: #d9534f; }
+
+        /* Total & Checkout Button */
+        .total-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: right;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        
+        #checkout-wa-btn {
+            background-color: #25D366; /* Warna WhatsApp */
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 1rem;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Dolan Sawah Delivery</h1>
+    </header>
+
+    <main class="container">
+        <div id="product-container">
+            </div>
+    </main>
+
+    <button id="cart-button" aria-label="Lihat Keranjang">
+        🛒
+        <span id="cart-count">0</span>
+    </button>
+
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Detail Pesanan Anda</h2>
+                <span class="close-btn" id="close-modal-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="cart-summary-items">
+                    </div>
+                
+                <div class="cost-summary">
+                    Subtotal <span>Rp <span id="summary-subtotal">0</span></span>
+                </div>
+                <div class="cost-summary">
+                    Biaya Kirim (Dalam Kota) <span>Rp <span id="summary-delivery">14000</span></span>
+                </div>
+                <div class="cost-summary" id="voucher-discount-row" style="display:none;">
+                    Diskon Voucher <span>-Rp <span id="summary-discount">0</span></span>
+                </div>
+                
+                <div class="voucher-section">
+                    <label for="voucher-input">Punya Kode Voucher?</label>
+                    <div class="voucher-input-group">
+                        <input type="text" id="voucher-input" placeholder="Masukkan kode...">
+                        <button id="apply-voucher-btn">Terapkan</button>
+                    </div>
+                    <p id="voucher-status"></p>
+                </div>
+                
+                <div class="total-price">
+                    Total: <span>Rp <span id="summary-total">14000</span></span>
+                </div>
+                
+                <a id="checkout-wa-btn" href="#" target="_blank">
+                    Pesan Sekarang via WhatsApp
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- DATABASE TIRUAN (Ganti ini dengan data dari Firebase) ---
+
+        const mockProducts = [
+            { id: 1, name: "Nasi Pecel Komplit", category: "Makanan Utama", description: "Nasi pecel, tempe, tahu, peyek", price: 20000, img: "https://via.placeholder.com/100x100.png?text=Pecel" },
+            { id: 2, name: "Ayam Bakar Madu", category: "Makanan Utama", description: "Ayam bakar bumbu madu, lalapan, sambal", price: 25000, img: "https://via.placeholder.com/100x100.png?text=Ayam+Bakar" },
+            { id: 3, name: "Gurame Asam Manis", category: "Makanan Utama", description: "Ikan gurame fillet saus asam manis", price: 45000, img: "https://via.placeholder.com/100x100.png?text=Gurame" },
+            { id: 4, name: "Es Teh Manis", category: "Minuman", description: "Teh segar dengan gula asli", price: 5000, img: "https://via.placeholder.com/100x100.png?text=Es+Teh" },
+            { id: 5, name: "Es Jeruk", category: "Minuman", description: "Perasan jeruk segar", price: 8000, img: "https://via.placeholder.com/100x100.png?text=Es+Jeruk" },
+            { id: 6, name: "Tahu Crispy", category: "Camilan", description: "Tahu goreng garing bumbu tabur", price: 12000, img: "https://via.placeholder.com/100x100.png?text=Tahu" },
+            { id: 7, name: "Mendoan", category: "Camilan", description: "Tempe mendoan isi 3", price: 10000, img: "https://via.placeholder.com/100x100.png?text=Mendoan" }
+        ];
+
+        const mockVouchers = [
+            // Ini adalah data yang akan Anda setting di halaman admin
+            { code: "HEMAT10K", minTransaction: 75000, discountValue: 10000, type: "fixed" },
+            { code: "JAJANHEMAT", minTransaction: 150000, discountValue: 25000, type: "fixed" },
+            { code: "FREEDELIVERY", minTransaction: 50000, discountValue: 14000, type: "fixed" } // Ini untuk ongkir
+        ];
+        
+        // Nomor WhatsApp Jeggboy
+        const jeggboyWhatsappNumber = "62816263012"; // Format tanpa +
+        const deliveryFee = 14000;
+
+        // --- Logika Aplikasi ---
+
+        let cart = [];
+        let currentVoucher = null;
+
+        // Fungsi untuk memformat angka ke Rupiah
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID').format(number);
+        }
+
+        // Fungsi untuk merender produk ke halaman
+        function renderProducts() {
+            const container = document.getElementById('product-container');
+            container.innerHTML = '';
+            
+            // 1. Kelompokkan produk berdasarkan kategori
+            const productsByCategory = mockProducts.reduce((acc, product) => {
+                if (!acc[product.category]) {
+                    acc[product.category] = [];
+                }
+                acc[product.category].push(product);
+                return acc;
+            }, {});
+
+            // 2. Render setiap kategori dan produknya
+            for (const category in productsByCategory) {
+                // Buat elemen section untuk kategori
+                let categorySection = document.createElement('section');
+                categorySection.className = 'category-section';
+                
+                // Buat judul kategori
+                let categoryTitle = document.createElement('h2');
+                categoryTitle.className = 'category-title';
+                categoryTitle.textContent = category;
+                categorySection.appendChild(categoryTitle);
+                
+                // Render produk di dalam kategori
+                productsByCategory[category].forEach(product => {
+                    let productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    productCard.innerHTML = `
+                        <img src="${product.img}" alt="${product.name}">
+                        <div class="product-info">
+                            <h3>${product.name}</h3>
+                            <p class="description">${product.description}</p>
+                            <span class="price">Rp ${formatRupiah(product.price)}</span>
+                        </div>
+                        <div class="product-action">
+                            <button class="add-to-cart-btn" data-id="${product.id}">Tambah</button>
+                        </div>
+                    `;
+                    categorySection.appendChild(productCard);
+                });
+                
+                container.appendChild(categorySection);
+            }
+        }
+        
+        // Fungsi untuk menambah item ke keranjang
+        function addToCart(productId) {
+            // Cari produk berdasarkan ID
+            const product = mockProducts.find(p => p.id == productId);
+            
+            // Cek apakah sudah ada di keranjang
+            const existingItem = cart.find(item => item.id == productId);
+            
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            
+            updateCartUI();
+            
+            // Animasi singkat di tombol keranjang
+            const cartButton = document.getElementById('cart-button');
+            cartButton.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                cartButton.style.transform = 'scale(1)';
+            }, 200);
+        }
+        
+        // Fungsi untuk update UI keranjang (badge)
+        function updateCartUI() {
+            const cartCount = document.getElementById('cart-count');
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.style.display = totalItems > 0 ? 'block' : 'none';
+        }
+        
+        // Fungsi untuk membuka modal checkout
+        function openCheckoutModal() {
+            if (cart.length === 0) {
+                alert("Keranjang Anda masih kosong.");
+                return;
+            }
+            
+            const modal = document.getElementById('checkout-modal');
+            const itemsContainer = document.getElementById('cart-summary-items');
+            itemsContainer.innerHTML = '';
+            
+            let subtotal = 0;
+            
+            cart.forEach(item => {
+                itemsContainer.innerHTML += `
+                    <div class="cart-item">
+                        <span class="item-name">${item.quantity}x ${item.name}</span>
+                        <span class="item-price">Rp ${formatRupiah(item.price * item.quantity)}</span>
+                    </div>
+                `;
+                subtotal += item.price * item.quantity;
+            });
+            
+            document.getElementById('summary-subtotal').textContent = formatRupiah(subtotal);
+            updateTotal(); // Hitung total awal
+            
+            modal.style.display = 'block';
+        }
+        
+        // Fungsi untuk menutup modal
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').style.display = 'none';
+        }
+        
+        // Fungsi untuk menerapkan voucher
+        function applyVoucher() {
+            const voucherInput = document.getElementById('voucher-input');
+            const voucherStatus = document.getElementById('voucher-status');
+            const code = voucherInput.value.toUpperCase().trim();
+            
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            const voucher = mockVouchers.find(v => v.code === code);
+            
+            if (!voucher) {
+                voucherStatus.textContent = "Kode voucher tidak ditemukan.";
+                voucherStatus.className = 'text-danger';
+                currentVoucher = null;
+            } else if (subtotal < voucher.minTransaction) {
+                // INI KETENTUAN OTOMATIS YANG ANDA MAKSUD
+                voucherStatus.textContent = `Voucher ini berlaku untuk minimal belanja Rp ${formatRupiah(voucher.minTransaction)}.`;
+                voucherStatus.className = 'text-danger';
+                currentVoucher = null;
+            } else {
+                voucherStatus.textContent = `Voucher "${voucher.code}" berhasil diterapkan! Anda hemat Rp ${formatRupiah(voucher.discountValue)}.`;
+                voucherStatus.className = 'text-success';
+                currentVoucher = voucher;
+            }
+            
+            updateTotal(); // Hitung ulang total setelah voucher
+        }
+        
+        // Fungsi untuk menghitung total
+        function updateTotal() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let discount = 0;
+            
+            if (currentVoucher) {
+                discount = currentVoucher.discountValue;
+                document.getElementById('voucher-discount-row').style.display = 'block';
+                document.getElementById('summary-discount').textContent = formatRupiah(discount);
+            } else {
+                document.getElementById('voucher-discount-row').style.display = 'none';
+            }
+            
+            const total = subtotal + deliveryFee - discount;
+            
+            document.getElementById('summary-total').textContent = formatRupiah(total);
+        }
+        
+        // Fungsi untuk membuat pesan WhatsApp dan checkout
+        function generateWhatsAppLink() {
+            let message = "Halo, saya mau pesan dari *Dolan Sawah Delivery*:\n\n";
+            let subtotal = 0;
+            
+            cart.forEach(item => {
+                message += `${item.quantity}x ${item.name} (Rp ${formatRupiah(item.price * item.quantity)})\n`;
+                subtotal += item.price * item.quantity;
+            });
+            
+            message += "\n--------------------\n";
+            message += `Subtotal: Rp ${formatRupiah(subtotal)}\n`;
+            message += `Biaya Kirim: Rp ${formatRupiah(deliveryFee)}\n`;
+            
+            let discount = 0;
+            if (currentVoucher) {
+                discount = currentVoucher.discountValue;
+                message += `Diskon (${currentVoucher.code}): -Rp ${formatRupiah(discount)}\n`;
+            }
+            
+            const total = subtotal + deliveryFee - discount;
+            message += `\n*Total: Rp ${formatRupiah(total)}*`;
+            
+            message += "\n\nMohon segera diproses. Terima kasih.";
+            
+            // Encode pesan untuk URL
+            const encodedMessage = encodeURIComponent(message);
+            
+            const waLink = `https://wa.me/${jeggboyWhatsappNumber}?text=${encodedMessage}`;
+            
+            // Set link ke tombol
+            document.getElementById('checkout-wa-btn').href = waLink;
+        }
+
+        // --- Event Listeners (Menghubungkan Aksi) ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render produk saat halaman dimuat
+            renderProducts();
+            
+            // Update UI keranjang (siapa tahu ada data tersimpan)
+            updateCartUI();
+
+            // Event listener untuk tombol "Tambah" (menggunakan event delegation)
+            document.getElementById('product-container').addEventListener('click', (e) => {
+                if (e.target.classList.contains('add-to-cart-btn')) {
+                    const id = e.target.getAttribute('data-id');
+                    addToCart(id);
+                }
+            });
+            
+            // Event listener untuk tombol keranjang
+            document.getElementById('cart-button').addEventListener('click', openCheckoutModal);
+            
+            // Event listener untuk tombol tutup modal
+            document.getElementById('close-modal-btn').addEventListener('click', closeCheckoutModal);
+            
+            // Event listener untuk tombol terapkan voucher
+            document.getElementById('apply-voucher-btn').addEventListener('click', applyVoucher);
+            
+            // Event listener untuk tombol Checkout WA (selalu update link sebelum diklik)
+            document.getElementById('checkout-wa-btn').addEventListener('mouseenter', generateWhatsAppLink);
+            document.getElementById('checkout-wa-btn').addEventListener('click', () => {
+                // Reset keranjang setelah checkout (opsional)
+                // cart = [];
+                // currentVoucher = null;
+                // updateCartUI();
+                // closeCheckoutModal();
+            });
+            
+            // Tutup modal jika klik di luar
+            window.addEventListener('click', (e) => {
+                if (e.target == document.getElementById('checkout-modal')) {
+                    closeCheckoutModal();
+                }
+            });
+        });
+
+    </script>
+
+</body>
+</html>
