@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+    <div id="login-container" class="admin-container">
+        <h3>Login Admin</h3>
+        <form id="login-form">
+            <input type="email" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <div id="dashboard-container" class="admin-container" style="display: none;">
+        <h3 id="form-title">Dashboard Pengetahuan Chatbot</h3>
+        <form id="training-form">
+            <input type="hidden" id="doc-id-input">
+            
+            <input type="text" id="topic-input" placeholder="Topik (mis: Promo Spesial)" required>
+            <input type="text" id="keywords-input" placeholder="Kata Kunci (pisahkan koma)" required>
+            
+            <div class="form-row">
+                <input type="number" id="priority-input" placeholder="Prioritas (angka)" value="0">
+                <input type="text" id="context-input" placeholder="Konteks Jawaban (opsional)">
+            </div>
+            
+            <textarea id="answer-textarea" placeholder="Paste jawaban Teks Biasa atau JSON di sini..." required rows="10"></textarea>
+            <small>Teks biasa & format JSON apapun akan dikonversi otomatis ke format standar chatbot.</small>
+            <button type="submit" id="submit-btn">Simpan Aturan</button>
+            <button type="button" id="cancel-edit-btn" style="display: none;">Batal Edit</button>
+        </form>
+        <hr>
+        <h4>Aturan Tersimpan:</h4>
+        <div id="training-data-list"></div>
+        <button type="button" id="logout-btn">Logout</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
