@@ -427,11 +427,9 @@
 
         /* --- MAP SECTION --- */
         #map-container {
-            height: 250px;
+            /* Container Peta Fullscreen (diisi saat mode fullscreen aktif) */
+            height: 100%;
             width: 100%;
-            border-radius: 12px;
-            margin-top: 10px;
-            margin-bottom: 10px;
             z-index: 1;
         }
         
@@ -443,12 +441,30 @@
             border: 1px solid #eee;
             position: relative; 
         }
+
+        /* === PERBAIKAN: CONTAINER PETA NON-FULLSCREEN DAN TOMBOL === */
+        #map-control-area {
+            position: relative; /* Container utama untuk mengatur posisi tombol */
+            width: 100%;
+            height: 250px; /* Tinggi sama dengan peta non-fullscreen */
+            border-radius: var(--radius-md);
+            margin: 10px 0;
+            overflow: hidden; 
+        }
         
-        /* --- STYLING: TOMBOL FULLSCREEN MAP (DI LUAR MODAL-CONTENT) --- */
+        #map-container-non-fullscreen {
+            /* Peta di mode normal */
+            height: 100% !important; 
+            width: 100% !important;
+            border-radius: 12px;
+            margin: 0 !important; 
+            z-index: 1;
+        }
+        
         #fullscreen-toggle-btn {
-            position: absolute; /* Tetap relatif terhadap modal yang fixed */
-            top: 20px; 
-            right: 20px;
+            position: absolute; /* Posisikan absolut di dalam #map-control-area */
+            top: 10px; 
+            right: 10px;
             background: var(--white);
             color: var(--primary-color);
             border: 1px solid #ddd; 
@@ -457,7 +473,7 @@
             font-size: 0.9rem; 
             font-weight: 600;
             cursor: pointer;
-            z-index: 10000; /* Harus di atas modal-content */
+            z-index: 99; /* Di atas peta */
             box-shadow: var(--shadow-sm);
             display: flex; 
             align-items: center;
@@ -478,7 +494,7 @@
             height: 100%;
             z-index: 99999; 
             background-color: var(--white); 
-            display: block !important; /* Modal harus selalu tampil (fixed) */
+            display: block !important; 
             padding: 0;
         }
 
@@ -502,6 +518,7 @@
 
         .modal.fullscreen #fullscreen-toggle-btn {
             /* Tombol Kembali di pojok kanan atas */
+            position: fixed; /* Ubah menjadi fixed agar tidak tergulir */
             z-index: 10000; 
             top: 10px;
             right: 10px;
@@ -769,10 +786,6 @@
     </div>
 
     <div id="checkout-modal" class="modal">
-        <button id="fullscreen-toggle-btn" onclick="window.toggleFullscreenMap()">
-            <i class="fas fa-expand-arrows-alt"></i> 
-            <span id="fullscreen-text">Layar Penuh</span>
-        </button>
         
         <div id="map-container" style="display:none;"></div> 
 
@@ -795,6 +808,7 @@
                 
                 <div class="location-section">
                     <h4 style="margin:0 0 10px 0;"><i class="fas fa-map-marked-alt"></i> Lokasi Pengiriman</h4>
+                    
                     <div id="map-search-container">
                         <input type="text" id="map-search-input" placeholder="Cari Nama Jalan/Kota/Daerah...">
                         <button id="map-search-btn" onclick="geocodeAddress()"><i class="fas fa-search"></i></button>
@@ -807,7 +821,13 @@
                         <span id="error-details">Gagal memuat peta. Silakan periksa kunci API Anda.</span>
                     </div>
                     
-                    <div id="map-container-non-fullscreen" style="height: 250px; width: 100%; border-radius: 12px; margin-top: 10px; margin-bottom: 10px; z-index: 1;"></div>
+                    <div id="map-control-area">
+                         <button id="fullscreen-toggle-btn" onclick="window.toggleFullscreenMap()">
+                            <i class="fas fa-expand-arrows-alt"></i> 
+                            <span id="fullscreen-text">Layar Penuh</span>
+                        </button>
+                        <div id="map-container-non-fullscreen"></div>
+                    </div>
                     
                     <label for="address-detail" class="address-detail-label">Detail Alamat / Patokan (Wajib Diisi)</label>
                     <input type="text" id="address-detail" placeholder="Cth: Rumah Pagar Hitam, No 12, Samping Masjid" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
@@ -1284,13 +1304,26 @@
         const LAST_ADDRESS_KEY = 'lastDeliveryAddress';
 
         // --- FUNGSI SPESIAL MAPS: MEMINDAHKAN PETA KE CONTAINER YANG TEPAT ---
-        // Karena peta harus di render di satu tempat (map-container) tapi terlihat di dua tempat (non-fullscreen/fullscreen)
         window.copyMapToContainer = function(targetId) {
             const targetElement = document.getElementById(targetId);
             const mapElement = document.getElementById('map-container');
-            if (targetElement && mapElement && mapElement.parentNode !== targetElement) {
-                targetElement.appendChild(mapElement);
-                mapElement.style.display = 'block'; // Pastikan container peta terlihat di posisi barunya
+            
+            // Khusus: Jika targetnya adalah map-container-non-fullscreen, 
+            // kita pindahkan ke map-control-area (container induknya)
+            let actualTarget = targetId;
+            if (targetId === 'map-container-non-fullscreen') {
+                 actualTarget = 'map-control-area';
+            }
+            const actualTargetElement = document.getElementById(actualTarget);
+
+            if (actualTargetElement && mapElement && mapElement.parentNode !== actualTargetElement) {
+                actualTargetElement.appendChild(mapElement);
+                mapElement.style.display = 'block'; 
+                
+                // Jika kembali ke normal, pastikan map-container-non-fullscreen terlihat
+                if (targetId === 'map-container-non-fullscreen') {
+                    document.getElementById('map-container-non-fullscreen').appendChild(mapElement);
+                }
             }
         }
 
@@ -1302,9 +1335,8 @@
             document.getElementById('error-details').innerText = "Gagal memuat Google Maps API. Periksa koneksi internet Anda atau pastikan Kunci API sudah benar. Kode: LOAD_FAIL";
             errorDiv.style.display = 'block';
             
-            document.getElementById('map-container-non-fullscreen').style.display = 'none'; 
+            document.getElementById('map-control-area').style.display = 'none'; 
             document.getElementById('map-search-container').style.display = 'none';
-            document.getElementById('fullscreen-toggle-btn').style.display = 'none';
         };
 
         window.gm_authFailure = function() {
@@ -1318,9 +1350,8 @@
             `;
             errorDiv.style.display = 'block';
             
-            document.getElementById('map-container-non-fullscreen').style.display = 'none'; 
+            document.getElementById('map-control-area').style.display = 'none'; 
             document.getElementById('map-search-container').style.display = 'none';
-            document.getElementById('fullscreen-toggle-btn').style.display = 'none';
         };
         
         // --- INICIALISASI MAP ---
@@ -1349,7 +1380,7 @@
             
             geocoder = new google.maps.Geocoder();
             
-            // Inisialisasi Peta di container ID asli: map-container
+            // Inisialisasi Peta di container ID asli: map-container (yang saat ini berada di map-container-non-fullscreen)
             googleMap = new google.maps.Map(document.getElementById('map-container'), {
                 center: defaultLoc,
                 zoom: 15, 
@@ -1419,38 +1450,45 @@
             const isFullscreen = modal.classList.toggle('fullscreen');
             const btn = document.getElementById('fullscreen-toggle-btn');
             
-            // Elemen yang akan disembunyikan/ditampilkan di modal-content
-            const mapContentElements = [
+            // Elemen-elemen yang berada di luar peta (non-fullscreen)
+            const mapControlElements = [
                 document.getElementById('map-search-container'),
                 document.querySelector('.location-helper'),
                 document.querySelector('.address-detail-label'),
                 document.getElementById('address-detail'),
-                document.getElementById('map-container-non-fullscreen') // Sembunyikan container non-fullscreen
             ];
             
+            const nonFullscreenMap = document.getElementById('map-control-area'); // Container peta non-fullscreen
+
             if (isFullscreen) {
-                // Masuk mode fullscreen
+                // MASUK MODE FULLSCREEN
                 btn.innerHTML = '<i class="fas fa-compress-alt"></i> <span id="fullscreen-text">Kembali</span>';
                 btn.style.color = 'var(--danger)'; 
                 
-                // Pindahkan peta ke level root modal untuk mendapatkan 100% viewport
+                // 1. Pindahkan peta ke level root modal (map-container) untuk mengambil 100%
                 window.copyMapToContainer('checkout-modal'); 
                 
-                mapContentElements.forEach(el => el.style.display = 'none');
+                // 2. Sembunyikan container peta non-fullscreen (map-control-area)
+                nonFullscreenMap.style.display = 'none'; 
+                
+                // 3. Sembunyikan elemen-elemen kontrol lain
+                mapControlElements.forEach(el => el.style.display = 'none');
                 
             } else {
-                // Keluar mode fullscreen
+                // KELUAR MODE FULLSCREEN (KEMBALI NORMAL)
                 btn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i> <span id="fullscreen-text">Layar Penuh</span>';
                 btn.style.color = 'var(--primary-color)';
 
-                // Pindahkan peta kembali ke container aslinya (non-fullscreen)
+                // 1. Pindahkan peta kembali ke container aslinya (map-container-non-fullscreen)
+                // Peta akan dipindahkan ke map-control-area, dan akan mengisi map-container-non-fullscreen
                 window.copyMapToContainer('map-container-non-fullscreen');
+
+                // 2. Tampilkan kembali container peta non-fullscreen
+                nonFullscreenMap.style.display = 'block'; 
                 
-                mapContentElements.forEach(el => {
-                    // Tampilkan kembali elemen yang disembunyikan, kecuali map-container-non-fullscreen (yang akan diurus oleh copyMapToContainer)
-                    if (el.id !== 'map-container-non-fullscreen') {
-                        el.style.display = 'block';
-                    }
+                // 3. Tampilkan kembali elemen-elemen kontrol lain
+                mapControlElements.forEach(el => {
+                    el.style.display = 'block';
                 });
             }
             
