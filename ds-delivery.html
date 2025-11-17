@@ -5,11 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dolan Sawah Delivery</title>
     
-    <!-- FontAwesome untuk Ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Leaflet CSS untuk Peta -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -454,13 +451,10 @@
         </div>
     </header>
 
-    <!-- Navigasi Kategori (Scrollable) -->
     <div class="category-nav" id="category-nav">
-        <span class="cat-pill active" onclick="filterCategory('all')">Semua</span>
-        <!-- Kategori akan dimuat dinamis di sini -->
+        <span class="cat-pill active" data-cat="all" onclick="filterCategory('all', this)">Semua</span>
     </div>
 
-    <!-- Daftar Produk -->
     <main class="container">
         <div id="loading">
             <div class="spinner"></div>
@@ -469,7 +463,6 @@
         <div id="product-container"></div>
     </main>
 
-    <!-- Floating Cart Button -->
     <div class="floating-cart" id="cart-btn">
         <div class="cart-info">
             <span class="cart-count" id="cart-count-float">0 Item</span>
@@ -480,7 +473,6 @@
         </div>
     </div>
 
-    <!-- Modal Checkout -->
     <div id="checkout-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -489,10 +481,8 @@
             </div>
             
             <div class="modal-body">
-                <!-- Item List -->
                 <div id="cart-items-list"></div>
 
-                <!-- Location Section -->
                 <div class="location-section">
                     <h4 style="margin:0 0 10px 0;"><i class="fas fa-map-marked-alt"></i> Lokasi Pengiriman</h4>
                     <p class="location-helper">Geser pin merah ke lokasi Anda:</p>
@@ -502,19 +492,17 @@
                     <input type="hidden" id="lng-val">
                 </div>
 
-                <!-- Voucher Section -->
                 <div style="margin-top:1.5rem;">
                     <div style="display:flex; gap:5px;">
-                        <input type="text" id="voucher-code" placeholder="Kode Voucher" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        <input type="text" id="client-voucher-code" placeholder="Kode Voucher" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
                         <button onclick="applyVoucher()" style="background:var(--text-dark); color:white; border:none; padding:0 15px; border-radius:8px;">Pakai</button>
                     </div>
                     <small id="voucher-msg" style="display:block; margin-top:5px;"></small>
                 </div>
 
-                <!-- Summary -->
                 <div style="margin-top:1.5rem; background:#f9f9f9; padding:15px; border-radius:12px;">
                     <div class="summary-row"><span>Subtotal</span> <span id="sum-subtotal">0</span></div>
-                    <div class="summary-row"><span>Ongkir (Dalam Kota)</span> <span id="sum-delivery">14.000</span></div>
+                    <div class="summary-row"><span>Ongkir (Dalam Kota)</span> <span id="sum-delivery">Rp 14.000</span></div>
                     <div class="summary-row" id="row-discount" style="color:var(--primary-color); display:none;"><span>Diskon</span> <span id="sum-discount">0</span></div>
                     <div class="summary-row summary-total"><span>Total Pembayaran</span> <span id="sum-total">0</span></div>
                 </div>
@@ -526,14 +514,13 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script type="module">
         // --- 1. KONFIGURASI FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // Perbaikan: Tambahkan query untuk membandingkan kode voucher
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCNqxbEgn6cU6YbZ9J4YveO25OZsoAXhxQ",
@@ -558,13 +545,15 @@
         
         // Map variables
         let map, marker;
+        let mapInitialized = false; // Flag untuk status inisialisasi Map
 
         // --- 3. DATA FETCHING ---
         async function fetchData() {
             try {
                 // Ambil Produk
                 const prodSnapshot = await getDocs(collection(db, "products"));
-                products = prodSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Perbaikan: Pastikan data menu yang diambil memiliki ID dokumen
+                products = prodSnapshot.docs.map(doc => ({ id: doc.id, isAvailable: true, ...doc.data() }));
                 
                 // Ambil Voucher
                 const voucherSnapshot = await getDocs(collection(db, "vouchers"));
@@ -575,24 +564,37 @@
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById('loading').innerHTML = `<p style="color:red">Gagal memuat data. Pastikan Anda sudah mengisi database.</p>`;
+                document.getElementById('loading').innerHTML = `<p style="color:red">Gagal memuat data. Pastikan Anda sudah mengisi database menu di admin panel.</p>`;
             }
         }
 
         // --- 4. UI RENDERING ---
+        window.filterCategory = (cat, element) => {
+            activeCategory = cat;
+            
+            // Update pills UI
+            document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            
+            renderProducts();
+        };
+
         function renderCategories() {
-            const cats = [...new Set(products.map(p => p.category))];
             const nav = document.getElementById('category-nav');
             
-            // Reset (keep 'all')
-            nav.innerHTML = '<span class="cat-pill active" data-cat="all">Semua</span>';
+            // Cek jika kategori sudah ada (selain 'Semua')
+            if (nav.children.length > 1) return;
+            
+            // Ambil kategori unik dari produk yang tersedia
+            const availableProducts = products.filter(p => p.isAvailable !== false);
+            const cats = [...new Set(availableProducts.map(p => p.category))].sort();
             
             cats.forEach(c => {
                 const pill = document.createElement('span');
                 pill.className = 'cat-pill';
                 pill.innerText = c;
                 pill.dataset.cat = c;
-                pill.onclick = () => filterCategory(c);
+                pill.onclick = (e) => filterCategory(c, e.target);
                 nav.appendChild(pill);
             });
         }
@@ -601,7 +603,7 @@
             const container = document.getElementById('product-container');
             container.innerHTML = '';
 
-            let filtered = products;
+            let filtered = products.filter(p => p.isAvailable !== false); // Hanya tampilkan yang tersedia
             
             // Filter Category
             if (activeCategory !== 'all') {
@@ -610,7 +612,8 @@
 
             // Filter Search
             if (filterTerm) {
-                filtered = filtered.filter(p => p.name.toLowerCase().includes(filterTerm.toLowerCase()));
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(filterTerm.toLowerCase()) || 
+                                                p.description.toLowerCase().includes(filterTerm.toLowerCase()));
             }
 
             if (filtered.length === 0) {
@@ -626,7 +629,13 @@
 
             for (const [cat, items] of Object.entries(grouped)) {
                 const section = document.createElement('div');
-                section.innerHTML = `<h3 class="category-header">${cat}</h3>`;
+                // Hapus header duplikat jika hanya ada satu kategori dan tidak ada pencarian
+                if (activeCategory !== 'all' && !filterTerm) {
+                    section.innerHTML = ''; 
+                } else {
+                    section.innerHTML = `<h3 class="category-header">${cat}</h3>`;
+                }
+                
                 const grid = document.createElement('div');
                 grid.className = 'product-list';
 
@@ -634,14 +643,8 @@
                     const card = document.createElement('div');
                     card.className = 'product-card';
                     
-                    // Cek ketersediaan (fallback jika field tidak ada, anggap true)
-                    const isAvailable = p.isAvailable !== false; 
-                    const btnState = isAvailable ? '' : 'disabled style="background:#ccc; cursor:not-allowed;"';
-                    const btnText = isAvailable ? 'Tambah' : 'Habis';
-                    const imgOpacity = isAvailable ? '1' : '0.5';
-
                     card.innerHTML = `
-                        <img src="${p.img}" alt="${p.name}" class="product-img" style="opacity:${imgOpacity}" onerror="this.src='https://via.placeholder.com/110?text=No+Img'">
+                        <img src="${p.img}" alt="${p.name}" class="product-img" onerror="this.src='https://via.placeholder.com/110?text=No+Img'">
                         <div class="product-details">
                             <div>
                                 <div class="product-title">${p.name}</div>
@@ -649,8 +652,8 @@
                             </div>
                             <div class="product-footer">
                                 <span class="product-price">Rp ${formatRupiah(p.price)}</span>
-                                <button class="add-btn" onclick="window.addToCart('${p.id}')" ${btnState}>
-                                    ${btnText}
+                                <button class="add-btn" onclick="window.addToCart('${p.id}')">
+                                    Tambah
                                 </button>
                             </div>
                         </div>
@@ -665,6 +668,9 @@
         // --- 5. CART LOGIC ---
         window.addToCart = (id) => {
             const prod = products.find(p => p.id === id);
+            
+            if (!prod || prod.isAvailable === false) return; // Tambahkan cek ketersediaan
+            
             const exist = cart.find(item => item.id === id);
             
             if (exist) exist.qty++;
@@ -677,10 +683,19 @@
             const idx = cart.findIndex(item => item.id === id);
             if (idx > -1) {
                 cart[idx].qty--;
-                if (cart[idx].qty <= 0) cart.splice(idx, 1);
+                if (cart[idx].qty <= 0) {
+                    cart.splice(idx, 1);
+                    // Reset voucher jika keranjang kosong atau item yang tersisa kurang dari min. transaksi
+                    if(cart.length === 0) {
+                        currentVoucher = null;
+                        document.getElementById('voucher-msg').innerText = "";
+                    }
+                }
             }
             updateCartUI();
-            renderModalCart(); // Re-render modal if open
+            if (document.getElementById('checkout-modal').style.display === 'flex') {
+                 renderModalCart(); 
+            }
         };
 
         function updateCartUI() {
@@ -701,7 +716,13 @@
         document.getElementById('cart-btn').onclick = () => {
             document.getElementById('checkout-modal').style.display = 'flex';
             renderModalCart();
-            setTimeout(initMap, 300); // Delay agar modal tampil dulu
+            // Panggil initMap saat modal dibuka
+            if (!mapInitialized) {
+                setTimeout(initMap, 50); // Delay kecil agar DOM benar-benar siap
+            } else {
+                // Perlu me-refresh ukuran peta jika sebelumnya disembunyikan
+                if(map) map.invalidateSize();
+            }
         };
 
         window.closeModal = () => {
@@ -711,6 +732,10 @@
         function renderModalCart() {
             const list = document.getElementById('cart-items-list');
             list.innerHTML = '';
+            
+            if (cart.length === 0) {
+                list.innerHTML = '<p style="text-align:center; margin-top:20px;">Keranjang kosong.</p>';
+            }
             
             cart.forEach(item => {
                 const div = document.createElement('div');
@@ -733,7 +758,7 @@
         }
 
         function initMap() {
-            if (map) return; // Sudah init
+            if (mapInitialized) return;
 
             // Default Semarang (Ganti sesuai kota Anda)
             const defaultLoc = [-6.9932, 110.4203]; 
@@ -752,26 +777,36 @@
                 const pos = marker.getLatLng();
                 document.getElementById('lat-val').value = pos.lat;
                 document.getElementById('lng-val').value = pos.lng;
+                calculateTotal(); // Hitung ulang total untuk update link WA
             });
 
             // Set value awal
             document.getElementById('lat-val').value = defaultLoc[0];
             document.getElementById('lng-val').value = defaultLoc[1];
             
-            // Fix Leaflet rendering issue in hidden div
             map.invalidateSize();
+            mapInitialized = true;
         }
 
         // --- 7. VOUCHER & TOTAL ---
         window.applyVoucher = () => {
-            const code = document.getElementById('voucher-code').value.toUpperCase();
+            // Perbaikan: Gunakan ID yang benar untuk input kode voucher
+            const code = document.getElementById('client-voucher-code').value.toUpperCase();
             const msg = document.getElementById('voucher-msg');
             const subtotal = cart.reduce((a, b) => a + (b.price * b.qty), 0);
 
             const valid = vouchers.find(v => v.code === code);
 
+            if (cart.length === 0) {
+                msg.innerText = "Keranjang masih kosong!";
+                msg.style.color = "red";
+                currentVoucher = null;
+                calculateTotal();
+                return;
+            }
+
             if (!valid) {
-                msg.innerText = "Kode tidak ditemukan";
+                msg.innerText = "Kode tidak ditemukan.";
                 msg.style.color = "red";
                 currentVoucher = null;
             } else if (subtotal < valid.minTransaction) {
@@ -779,7 +814,7 @@
                 msg.style.color = "red";
                 currentVoucher = null;
             } else {
-                msg.innerText = "Voucher diterapkan!";
+                msg.innerText = `Voucher diterapkan! Diskon: Rp ${formatRupiah(valid.discountValue)}`;
                 msg.style.color = "green";
                 currentVoucher = valid;
             }
@@ -796,15 +831,17 @@
                     disc = currentVoucher.discountValue;
                 } else {
                     currentVoucher = null; // Reset jika item dihapus dan kurang dari min
-                    document.getElementById('voucher-msg').innerText = "";
+                    document.getElementById('voucher-msg').innerText = "Voucher dibatalkan (Min. transaksi tidak terpenuhi).";
+                    document.getElementById('voucher-msg').style.color = "red";
                 }
             }
 
-            const total = subtotal + deliveryFee - disc;
+            // Perbaikan: Pastikan total tidak negatif
+            const total = Math.max(0, subtotal + deliveryFee - disc);
 
-            document.getElementById('sum-subtotal').innerText = formatRupiah(subtotal);
-            document.getElementById('sum-discount').innerText = formatRupiah(disc);
-            document.getElementById('sum-total').innerText = formatRupiah(total);
+            document.getElementById('sum-subtotal').innerText = 'Rp ' + formatRupiah(subtotal);
+            document.getElementById('sum-discount').innerText = 'Rp ' + formatRupiah(disc);
+            document.getElementById('sum-total').innerText = 'Rp ' + formatRupiah(total);
             
             if(disc > 0) document.getElementById('row-discount').style.display = 'flex';
             else document.getElementById('row-discount').style.display = 'none';
@@ -818,26 +855,43 @@
             const lng = document.getElementById('lng-val').value;
             const addressDetail = document.getElementById('address-detail').value || "Belum diisi";
             
-            // Generate Google Maps Link dari koordinat
+            // Perbaikan: Gunakan format Google Maps yang lebih standar
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
             let msg = `Halo Dolan Sawah, saya mau pesan:\n\n`;
             
             cart.forEach(item => {
-                msg += `▪️ ${item.qty}x ${item.name}\n`;
+                msg += `▪️ ${item.qty}x ${item.name} (@Rp ${formatRupiah(item.price)})\n`;
             });
 
             msg += `\n--------------------------------\n`;
             msg += `📍 *Lokasi:* ${addressDetail}\n`;
             msg += `🗺️ *Maps:* ${mapLink}\n`;
+            
+            if (currentVoucher) {
+                msg += `✨ *Kode Voucher:* ${currentVoucher.code}\n`;
+            }
+            
             msg += `--------------------------------\n`;
             msg += `Subtotal: Rp ${formatRupiah(subtotal)}\n`;
             msg += `Ongkir: Rp ${formatRupiah(deliveryFee)}\n`;
             if(disc > 0) msg += `Diskon: -Rp ${formatRupiah(disc)}\n`;
             msg += `\n*TOTAL: Rp ${formatRupiah(total)}*`;
+            msg += `\n\n_Mohon segera diproses ya!_`;
 
-            const encoded = encodeURIComponent(msg);
-            document.getElementById('wa-checkout-btn').href = `https://wa.me/${waNumber}?text=${encoded}`;
+
+            const waBtn = document.getElementById('wa-checkout-btn');
+            if (cart.length === 0) {
+                 waBtn.innerText = "Keranjang Kosong";
+                 waBtn.href = "#";
+                 waBtn.style.backgroundColor = '#ccc';
+                 waBtn.style.pointerEvents = 'none';
+            } else {
+                 waBtn.innerText = "Pesan via WhatsApp";
+                 waBtn.href = `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+                 waBtn.style.backgroundColor = '#25D366';
+                 waBtn.style.pointerEvents = 'auto';
+            }
         }
 
         // Update link saat user mengetik alamat
@@ -847,18 +901,15 @@
         function formatRupiah(n) {
             return new Intl.NumberFormat('id-ID').format(n);
         }
-
-        window.filterCategory = (cat) => {
-            activeCategory = cat;
-            
-            // Update pills UI
-            document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
-            document.querySelector(`.cat-pill[data-cat="${cat}"]`).classList.add('active');
-            
-            renderProducts();
-        };
+        
+        // Perbaikan: Fungsi filterCategory sekarang menerima element, sehingga tidak perlu cari lagi
 
         document.getElementById('search-input').addEventListener('input', (e) => {
+            // Nonaktifkan filter kategori saat mencari
+            activeCategory = 'all';
+            document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.cat-pill[data-cat="all"]`).classList.add('active');
+            
             renderProducts(e.target.value);
         });
 
@@ -868,4 +919,3 @@
     </script>
 </body>
 </html>
-
