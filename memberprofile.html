@@ -6,7 +6,7 @@
     <title>Kartu Member - Dolan Sawah</title>
     
     <style>
-        /* (Seluruh CSS Anda tetap sama persis, tidak ada perubahan) */
+        /* (CSS Anda yang sudah lengkap) */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0');
 
@@ -47,7 +47,7 @@
         #lookup-status.success {background:#DFF0D8; color:#3C763D; border:1px solid #D6E9C6}
         #lookup-status.error {background:#F2DEDE; color:#A94442; border:1px solid #EBCCD1}
         
-        /* CSS Kartu Member (Tetap Sama) */
+        /* CSS Kartu Member */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes staggerIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes shine { 0% { transform: translateX(-150%) skewX(-25deg); } 100% { transform: translateX(150%) skewX(-25deg); } }
@@ -81,7 +81,7 @@
         .top-member-badge .material-symbols-outlined { font-size: 1.4em; }
         #card-view.visible .top-member-badge.show { display: flex; animation: staggerIn 0.5s 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
         
-        /* CSS Daftar Reward (Tetap Sama) */
+        /* CSS Daftar Reward */
         #member-rewards-list { list-style: none; padding: 0; margin-top: 15px; }
         .reward-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-radius: 12px; margin-bottom: 10px; background: #fdfdfd; border: 1px solid var(--border-color); transition: all 0.3s ease; }
         .reward-item:hover { transform: translateX(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -116,7 +116,7 @@
             </form>
             <div id="lookup-status"></div>
         </section>
-
+        
         <section id="card-view">
             <button id="back-to-lookup" class="btn btn-secondary" style="width:auto; margin-bottom: 20px;">
                 <span class="material-symbols-outlined">arrow_back</span>
@@ -156,7 +156,7 @@
 
             <h3>Reward yang Bisa Ditukar</h3>
             <p style="text-align: center; margin-top: -15px; font-size: 0.9em;">
-                Tukarkan poin Anda di kasir!
+                Poin bisa ditukar di kasir!
             </p>
             <ul id="member-rewards-list">
                 <li>Memuat reward...</li>
@@ -166,7 +166,6 @@
 </div>
 
 <script type="module">
-    // Hapus impor Firebase Auth, hanya sisakan Firestore
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -192,12 +191,10 @@
     // Elemen DOM
     const lookupView = document.getElementById('lookup-view');
     const cardView = document.getElementById('card-view');
-
     const lookupForm = document.getElementById('member-lookup-form');
     const memberHpInput = document.getElementById('member-hp');
     const lookupStatus = document.getElementById('lookup-status');
     const backButton = document.getElementById('back-to-lookup');
-    
     const cardName = document.getElementById('card-name');
     const cardPoin = document.getElementById('card-poin');
     const cardDuration = document.getElementById('card-duration');
@@ -215,28 +212,8 @@
         targetElement.classList.add(isError ? 'error' : 'success', 'visible');
     };
     
-    // --- FUNGSI KRITIS: Format Nomor HP ke E.164 (+628xxxxxxxx) ---
-    const formatPhoneNumberE164 = (phoneNumber) => {
-        let digits = (phoneNumber || '').replace(/\D/g, ''); // Hapus semua non-digit
-        
-        // Cek jika nomor dimulai dengan '08' (contoh: 085707035968)
-        if (digits.startsWith('08')) {
-            return `+62${digits.substring(1)}`; // Ganti '0' pertama dengan '+62'
-        }
-        // Cek jika nomor dimulai dengan '+62' (sudah E.164)
-        if (digits.startsWith('+62')) {
-            return digits;
-        }
-        // Cek jika nomor dimulai dengan '628'
-        if (digits.startsWith('628')) {
-            return `+${digits}`; // Tambahkan '+'
-        }
-        // Jika dimulai dengan '8'
-        if (digits.startsWith('8')) {
-            return `+62${digits}`; 
-        }
-        return `+${digits}`;
-    };
+    // Fungsi ini Dihapus/Disederhanakan karena ID dokumen Anda adalah format '08...'
+    // const formatPhoneNumberE164 = (phoneNumber) => { ... }; 
     
     // Fungsi lainnya (Tetap Sama)
     const calculateMembershipDuration = (joinDate) => {
@@ -308,15 +285,17 @@
             `;
         }).join('');
     };
+    // === AKHIR HELPER FUNCTIONS ===
 
 
     // === EVENT LISTENERS ===
+
     document.addEventListener('DOMContentLoaded', () => {
         loadAllRewards();
         loadTop5Data();
     });
 
-    // --- LOGIKA UTAMA: Pencarian Data Member (Tanpa OTP) ---
+    // --- LOGIKA UTAMA: Pencarian Data Member ---
     lookupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button[type="submit"]');
@@ -330,12 +309,12 @@
             return;
         }
 
-        // Konversi input ke format E.164 yang digunakan sebagai ID dokumen Firestore
-        const formattedPhoneNumber = formatPhoneNumberE164(nomorHp);
+        // --- PERBAIKAN: Langsung gunakan nomor HP inputan sebagai Document ID ---
+        const memberIdToSearch = nomorHp;
         
         try {
-            // Langsung cari dokumen member di Firestore
-            const docRef = doc(db, "members", formattedPhoneNumber); 
+            // ID dokumen di Firestore harus sama persis dengan input user (e.g., 085707035968)
+            const docRef = doc(db, "members", memberIdToSearch); 
             const docSnap = await getDoc(docRef);
         
             if (docSnap.exists()) {
@@ -356,7 +335,8 @@
                 // Isi data kartu
                 cardName.textContent = data.nama;
                 cardPoin.textContent = memberPoin;
-                const joinDate = data.tanggalDaftar?.toDate(); 
+                // Pastikan data tanggalDaftar dikonversi dari Timestamp ke Date jika ada
+                const joinDate = data.tanggalDaftar?.toDate ? data.tanggalDaftar.toDate() : (data.tanggalDaftar ? new Date(data.tanggalDaftar) : null);
                 cardDuration.textContent = `Member Sejak: ${calculateMembershipDuration(joinDate)}`;
                 renderRewards(memberPoin);
 
