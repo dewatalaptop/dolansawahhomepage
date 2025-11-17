@@ -100,7 +100,8 @@
         }
         
         .form-group input,
-        .form-group textarea {
+        .form-group textarea,
+        .form-group select { /* Tambahkan select */
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #ccc;
@@ -123,8 +124,15 @@
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s;
+            opacity: 1;
+            pointer-events: auto;
         }
         
+        .submit-btn.disabled, .submit-btn:disabled {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
         .submit-btn:hover {
             background-color: #1e421e;
         }
@@ -147,6 +155,7 @@
             align-items: center;
             padding: 1rem 0;
             border-bottom: 1px solid #eee;
+            position: relative; /* Untuk tombol Hapus/Status */
         }
         
         .list-item:last-child {
@@ -178,9 +187,10 @@
         .item-price {
             font-size: 1.1rem;
             font-weight: 700;
-            color: #d9534f;
+            color: #2c5e2e;
+            margin-right: 1rem;
         }
-        
+
         .item-code {
             font-family: 'Courier New', Courier, monospace;
             font-weight: 700;
@@ -188,6 +198,49 @@
             padding: 0.2rem 0.5rem;
             border-radius: 4px;
         }
+
+        .item-actions {
+            display: flex;
+            gap: 5px;
+            margin-left: 10px;
+        }
+        
+        .action-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.7rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .action-btn.toggle-status {
+            background: #17a2b8;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+        .status-badge.available { background: #d4edda; color: #155724; }
+        .status-badge.unavailable { background: #f8d7da; color: #721c24; }
+        
+        #admin-status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .status-success { background-color: #d4edda; color: #155724; }
+        .status-error { background-color: #f8d7da; color: #721c24; }
 
     </style>
 </head>
@@ -203,6 +256,8 @@
             <button class="nav-tab active" data-tab="menu">Kelola Menu</button>
             <button class="nav-tab" data-tab="voucher">Kelola Voucher</button>
         </nav>
+        
+        <div id="admin-status" class="status-success">Pesan berhasil ditampilkan di sini</div>
 
         <section id="content-menu" class="content-section active">
             
@@ -229,14 +284,15 @@
                         <label for="menu-img">Link Foto Menu</label>
                         <input type="url" id="menu-img" placeholder="https://... (Paste link gambar di sini)" required>
                     </div>
-                    <button type="submit" class="submit-btn">Simpan Menu</button>
+                    <button type="submit" class="submit-btn" id="btn-add-menu">Simpan Menu</button>
                 </form>
             </div>
             
             <div class="list-container">
                 <h2>Daftar Menu Saat Ini</h2>
                 <div id="menu-list">
-                    </div>
+                    <p style="text-align:center;">Memuat menu...</p>
+                </div>
             </div>
         </section>
 
@@ -247,90 +303,144 @@
                 <form id="form-add-voucher">
                     <div class="form-group">
                         <label for="voucher-code">Kode Voucher</label>
-                        <input type="text" id="voucher-code" placeholder="Contoh: HEMAT10K (huruf besar)" required>
+                        <input type="text" id="voucher-code-input" placeholder="Contoh: HEMAT10K (huruf besar)" required>
                     </div>
                     <div class="form-group">
                         <label for="voucher-min">Minimal Transaksi (Rp)</label>
-                        <input type="number" id="voucher-min" placeholder="Contoh: 75000 (untuk min. belanja 75rb)" required>
+                        <input type="number" id="voucher-min" placeholder="Contoh: 75000" required>
                     </div>
                     <div class="form-group">
                         <label for="voucher-discount">Nilai Diskon (Rp)</label>
-                        <input type="number" id="voucher-discount" placeholder="Contoh: 10000 (untuk diskon 10rb)" required>
+                        <input type="number" id="voucher-discount" placeholder="Contoh: 10000" required>
                     </div>
-                    <button type="submit" class="submit-btn">Simpan Voucher</button>
+                    <button type="submit" class="submit-btn" id="btn-add-voucher">Simpan Voucher</button>
                 </form>
             </div>
 
             <div class="list-container">
                 <h2>Daftar Voucher Saat Ini</h2>
                 <div id="voucher-list">
-                    </div>
+                    <p style="text-align:center;">Memuat voucher...</p>
+                </div>
             </div>
         </section>
 
     </main>
 
-    <script>
-        // --- DATABASE TIRUAN (Ganti ini dengan data dari Firebase) ---
-        // Saya sertakan data awal agar daftar tidak kosong
-        let mockProducts = [
-            { id: 1, name: "Nasi Pecel Komplit", category: "Makanan Utama", description: "Nasi pecel, tempe, tahu, peyek", price: 20000, img: "https://via.placeholder.com/100x100.png?text=Pecel" },
-            { id: 2, name: "Ayam Bakar Madu", category: "Makanan Utama", description: "Ayam bakar bumbu madu, lalapan, sambal", price: 25000, img: "https://via.placeholder.com/100x100.png?text=Ayam+Bakar" },
-            { id: 4, name: "Es Teh Manis", category: "Minuman", description: "Teh segar dengan gula asli", price: 5000, img: "https://via.placeholder.com/100x100.png?text=Es+Teh" }
-        ];
-
-        let mockVouchers = [
-            { id: "v1", code: "HEMAT10K", minTransaction: 75000, discountValue: 10000 },
-            { id: "v2", code: "FREEDELIVERY", minTransaction: 50000, discountValue: 14000 }
-        ];
+    <script type="module">
+        // --- 1. KONFIGURASI FIREBASE ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         
-        // Fungsi untuk memformat angka ke Rupiah
+        // GUNAKAN KONFIGURASI FIREBASE ANDA
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNqxbEgn6cU6YbZ9J4YveO25OZsoAXhxQ",
+            authDomain: "ds-delivery-7ddeb.firebaseapp.com",
+            projectId: "ds-delivery-7ddeb",
+            storageBucket: "ds-delivery-7ddeb.firebasestorage.app",
+            messagingSenderId: "887090941316",
+            appId: "1:887090941316:web:be3a8c83a59dcdb2e261d1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        // --- 2. STATE DAN UTILITAS ---
+        let products = [];
+        let vouchers = [];
+
         function formatRupiah(number) {
             return new Intl.NumberFormat('id-ID').format(number);
         }
+        
+        function showStatus(message, isSuccess = true) {
+            const statusDiv = document.getElementById('admin-status');
+            statusDiv.innerText = message;
+            statusDiv.className = isSuccess ? 'status-success' : 'status-error';
+            statusDiv.style.display = 'block';
+            setTimeout(() => statusDiv.style.display = 'none', 4000);
+        }
+        
+        // --- 3. DATA FETCHING ---
+        async function fetchData() {
+            await fetchProducts();
+            await fetchVouchers();
+        }
 
-        // --- Logika Render Daftar ---
+        async function fetchProducts() {
+             try {
+                const prodSnapshot = await getDocs(collection(db, "products"));
+                // Simpan ID dokumen (doc.id) sebagai properti id
+                products = prodSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderMenuList();
+            } catch (error) {
+                console.error("Error fetching products:", error);
+                document.getElementById('menu-list').innerHTML = '<p style="color:red;">Gagal memuat menu dari Firebase.</p>';
+            }
+        }
+        
+        async function fetchVouchers() {
+             try {
+                const voucherSnapshot = await getDocs(collection(db, "vouchers"));
+                vouchers = voucherSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderVoucherList();
+            } catch (error) {
+                console.error("Error fetching vouchers:", error);
+                document.getElementById('voucher-list').innerHTML = '<p style="color:red;">Gagal memuat voucher dari Firebase.</p>';
+            }
+        }
+
+        // --- 4. UI RENDERING (Perbaikan: Menggunakan data dari Firebase) ---
         
         function renderMenuList() {
             const listContainer = document.getElementById('menu-list');
-            listContainer.innerHTML = ''; // Kosongkan dulu
+            listContainer.innerHTML = ''; 
             
-            // Nantinya, 'mockProducts' ini akan Anda dapatkan dari query ke Firestore
-            // Contoh: const snapshot = await getDocs(collection(db, "products"));
-            
-            if (mockProducts.length === 0) {
-                listContainer.innerHTML = '<p>Belum ada menu.</p>';
+            if (products.length === 0) {
+                listContainer.innerHTML = '<p>Belum ada menu yang terdaftar di Firebase.</p>';
                 return;
             }
             
-            mockProducts.forEach(product => {
+            products.forEach(product => {
+                const isAvailable = product.isAvailable !== false; // Default: true jika tidak ada field
                 const item = document.createElement('div');
                 item.className = 'list-item';
                 item.innerHTML = `
-                    <img src="${product.img}" alt="${product.name}">
+                    <img src="${product.img}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/50?text=No+Img'">
                     <div class="item-info">
-                        <h3>${product.name}</h3>
+                        <h3>${product.name}
+                            <span class="status-badge ${isAvailable ? 'available' : 'unavailable'}">
+                                ${isAvailable ? 'Tersedia' : 'Habis'}
+                            </span>
+                        </h3>
                         <p>${product.description} (${product.category})</p>
                     </div>
                     <div class="item-price">Rp ${formatRupiah(product.price)}</div>
+                    <div class="item-actions">
+                        <button class="action-btn toggle-status" data-id="${product.id}" data-status="${isAvailable}">
+                            ${isAvailable ? 'Set Habis' : 'Set Tersedia'}
+                        </button>
+                        <button class="action-btn delete-item" data-id="${product.id}" data-collection="products">Hapus</button>
+                    </div>
                 `;
                 listContainer.appendChild(item);
             });
+            
+            // Pasang event listener untuk aksi
+            listContainer.querySelectorAll('.delete-item').forEach(btn => btn.onclick = handleDelete);
+            listContainer.querySelectorAll('.toggle-status').forEach(btn => btn.onclick = handleToggleAvailability);
         }
         
         function renderVoucherList() {
             const listContainer = document.getElementById('voucher-list');
-            listContainer.innerHTML = ''; // Kosongkan dulu
+            listContainer.innerHTML = ''; 
             
-            // Nantinya, 'mockVouchers' ini akan Anda dapatkan dari query ke Firestore
-            // Contoh: const snapshot = await getDocs(collection(db, "vouchers"));
-            
-            if (mockVouchers.length === 0) {
-                listContainer.innerHTML = '<p>Belum ada voucher.</p>';
+            if (vouchers.length === 0) {
+                listContainer.innerHTML = '<p>Belum ada voucher yang terdaftar di Firebase.</p>';
                 return;
             }
             
-            mockVouchers.forEach(voucher => {
+            vouchers.forEach(voucher => {
                 const item = document.createElement('div');
                 item.className = 'list-item';
                 item.innerHTML = `
@@ -338,73 +448,108 @@
                         <h3>Kode: <span class="item-code">${voucher.code}</span></h3>
                         <p>Diskon Rp ${formatRupiah(voucher.discountValue)} (Min. belanja Rp ${formatRupiah(voucher.minTransaction)})</p>
                     </div>
+                    <div class="item-actions">
+                        <button class="action-btn delete-item" data-id="${voucher.id}" data-collection="vouchers">Hapus</button>
+                    </div>
                 `;
                 listContainer.appendChild(item);
             });
+            
+            // Pasang event listener untuk aksi
+            listContainer.querySelectorAll('.delete-item').forEach(btn => btn.onclick = handleDelete);
         }
         
-        // --- Logika Form Submit ---
+        // --- 5. CRUD FIREBASE ---
         
-        function handleAddMenu(event) {
-            event.preventDefault(); // Mencegah form reload halaman
-            
-            // 1. Ambil data dari form
+        async function handleAddMenu(event) {
+            event.preventDefault(); 
+            document.getElementById('btn-add-menu').disabled = true;
+
             const newProduct = {
-                id: Date.now(), // ID unik sementara
                 name: document.getElementById('menu-name').value,
                 category: document.getElementById('menu-category').value,
                 description: document.getElementById('menu-description').value,
                 price: parseInt(document.getElementById('menu-price').value),
-                img: document.getElementById('menu-img').value
+                img: document.getElementById('menu-img').value,
+                isAvailable: true // Default menu baru selalu tersedia
             };
             
-            // 2. TODO: Simpan 'newProduct' ini ke Firebase Firestore
-            // try {
-            //    const docRef = await addDoc(collection(db, "products"), newProduct);
-            //    console.log("Menu berhasil disimpan dengan ID: ", docRef.id);
-            // } catch (e) {
-            //    console.error("Error menambahkan menu: ", e);
-            // }
-            console.log("SIMULASI: Menyimpan menu ke Firebase ->", newProduct);
-            
-            // 3. (Simulasi) Tambahkan ke array lokal dan render ulang
-            mockProducts.push(newProduct);
-            renderMenuList();
-            
-            // 4. Kosongkan form
-            event.target.reset();
+            try {
+               await addDoc(collection(db, "products"), newProduct);
+               showStatus("Menu berhasil disimpan ke Firebase!", true);
+               event.target.reset();
+               await fetchProducts(); // Muat ulang data menu
+            } catch (e) {
+               console.error("Error menambahkan menu: ", e);
+               showStatus("Gagal menyimpan menu: " + e.message, false);
+            } finally {
+                document.getElementById('btn-add-menu').disabled = false;
+            }
         }
         
-        function handleAddVoucher(event) {
+        async function handleAddVoucher(event) {
             event.preventDefault();
+            document.getElementById('btn-add-voucher').disabled = true;
             
-            // 1. Ambil data dari form
+            // Perbaikan: ID input voucher code di HTML adalah 'voucher-code-input'
             const newVoucher = {
-                id: `v${Date.now()}`, // ID unik sementara
-                code: document.getElementById('voucher-code').value.toUpperCase(),
+                code: document.getElementById('voucher-code-input').value.toUpperCase(),
                 minTransaction: parseInt(document.getElementById('voucher-min').value),
                 discountValue: parseInt(document.getElementById('voucher-discount').value),
-                type: "fixed" // Anda hardcode "fixed" sesuai tipe diskon
             };
             
-            // 2. TODO: Simpan 'newVoucher' ini ke Firebase Firestore
-            // try {
-            //    const docRef = await addDoc(collection(db, "vouchers"), newVoucher);
-            //    console.log("Voucher berhasil disimpan dengan ID: ", docRef.id);
-            // } catch (e) {
-            //    console.error("Error menambahkan voucher: ", e);
-            // }
-            console.log("SIMULASI: Menyimpan voucher ke Firebase ->", newVoucher);
+            try {
+               await addDoc(collection(db, "vouchers"), newVoucher);
+               showStatus("Voucher berhasil disimpan ke Firebase!", true);
+               event.target.reset();
+               await fetchVouchers(); // Muat ulang data voucher
+            } catch (e) {
+               console.error("Error menambahkan voucher: ", e);
+               showStatus("Gagal menyimpan voucher: " + e.message, false);
+            } finally {
+                document.getElementById('btn-add-voucher').disabled = false;
+            }
+        }
+        
+        async function handleDelete(event) {
+            if (!confirm("Yakin ingin menghapus item ini?")) return;
             
-            // 3. (Simulasi) Tambahkan ke array lokal dan render ulang
-            mockVouchers.push(newVoucher);
-            renderVoucherList();
+            const btn = event.target;
+            const id = btn.dataset.id;
+            const collectionName = btn.dataset.collection;
             
-            // 4. Kosongkan form
-            event.target.reset();
+            try {
+                await deleteDoc(doc(db, collectionName, id));
+                showStatus(`${collectionName === 'products' ? 'Menu' : 'Voucher'} berhasil dihapus.`, true);
+                
+                if (collectionName === 'products') await fetchProducts();
+                else await fetchVouchers();
+                
+            } catch (e) {
+                console.error("Error menghapus item: ", e);
+                showStatus("Gagal menghapus item: " + e.message, false);
+            }
+        }
+        
+        async function handleToggleAvailability(event) {
+            const btn = event.target;
+            const id = btn.dataset.id;
+            const currentStatus = btn.dataset.status === 'true';
+            const newStatus = !currentStatus;
+            
+            try {
+                await updateDoc(doc(db, "products", id), {
+                    isAvailable: newStatus
+                });
+                showStatus(`Status menu diubah menjadi ${newStatus ? 'Tersedia' : 'Habis'}.`, true);
+                await fetchProducts();
+            } catch (e) {
+                console.error("Error mengubah status: ", e);
+                showStatus("Gagal mengubah status: " + e.message, false);
+            }
         }
 
-        // --- Event Listeners (Menghubungkan Aksi) ---
+        // --- 6. EVENT LISTENERS ---
 
         document.addEventListener('DOMContentLoaded', () => {
             const tabs = document.querySelectorAll('.nav-tab');
@@ -413,20 +558,15 @@
             // Logika ganti Tab
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    // Hapus 'active' dari semua tab dan section
                     tabs.forEach(t => t.classList.remove('active'));
                     sections.forEach(s => s.classList.remove('active'));
                     
-                    // Tambahkan 'active' ke tab yang diklik
                     tab.classList.add('active');
-                    // Tampilkan section yang sesuai
                     document.getElementById(`content-${tab.dataset.tab}`).classList.add('active');
                 });
             });
             
-            // Muat data awal (simulasi)
-            renderMenuList();
-            renderVoucherList();
+            fetchData(); // Muat data dari Firebase saat halaman dimuat
             
             // Pasang listener ke form
             document.getElementById('form-add-menu').addEventListener('submit', handleAddMenu);
