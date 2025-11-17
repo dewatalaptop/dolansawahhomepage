@@ -518,6 +518,12 @@
                     </div>
                     
                     <p class="location-helper">Geser pin merah ke lokasi Anda yang sebenarnya:</p>
+                    
+                    <div id="map-error-message" style="color: red; background: #fee2e2; border: 1px solid #fca5a5; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none;">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        <span id="error-details">Gagal memuat peta. Silakan periksa kunci API Anda.</span>
+                    </div>
+                    
                     <div id="map-container"></div>
                     <input type="text" id="address-detail" placeholder="Detail Alamat (Cth: Rumah Pagar Hitam, No 12)" style="width:100%; padding:10px; margin-top:10px; border:1px solid #ddd; border-radius:8px;">
                     <input type="hidden" id="lat-val">
@@ -546,7 +552,7 @@
         </div>
     </div>
 
-    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7AzQ_3rSuuPrX0YJ8PzkitySa5jc1APA&callback=initMap" async></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7AzQ_3rSuuPrX0YJ8PzkitySa5jc1APA&callback=initMap&libraries=places&v=weekly&callback=initMap&loading=async&failure_callback=mapLoadError" ></script>
 
     <script>
         // Google Maps Variables
@@ -555,10 +561,50 @@
         let geocoder;
         let mapInitialized = false;
 
+        // --- FUNGSI LAPORAN ERROR SPESIFIK MAPS ---
+
+        /**
+         * Dipanggil jika skrip Google Maps GAGAL dimuat (kesalahan jaringan atau callback error)
+         */
+        window.mapLoadError = function() {
+            console.error("Google Maps API script failed to load.");
+            const errorDiv = document.getElementById('map-error-message');
+            document.getElementById('error-details').innerText = "Gagal memuat Google Maps API. Periksa koneksi internet Anda atau pastikan Kunci API sudah benar. Kode: LOAD_FAIL";
+            errorDiv.style.display = 'block';
+            
+            document.getElementById('map-container').style.display = 'none'; 
+            document.getElementById('map-search-container').style.display = 'none';
+        };
+
+        /**
+         * Dipanggil secara otomatis oleh Google Maps jika ada masalah otentikasi (Kunci API invalid, Billing non-aktif, atau API service belum diaktifkan)
+         */
+        window.gm_authFailure = function() {
+            console.error("Google Maps Authentication Failure: API Key is invalid or restricted.");
+            const errorDiv = document.getElementById('map-error-message');
+            document.getElementById('error-details').innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i> 
+                *Error API Key:* Kunci API Anda tidak valid atau tidak memiliki izin.
+                Pastikan *Billing*, *Maps JavaScript API*, dan *Geocoding API* sudah aktif di Google Cloud Console.
+                Kode: *AUTH_ERROR*
+            `;
+            errorDiv.style.display = 'block';
+            
+            document.getElementById('map-container').style.display = 'none'; 
+            document.getElementById('map-search-container').style.display = 'none';
+        };
+        
+        // --- INICIALISASI MAP ---
+
         window.initMap = function() {
             if (mapInitialized) return;
 
-            const defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang (Ganti sesuai kota Anda)
+            const errorDiv = document.getElementById('map-error-message');
+            errorDiv.style.display = 'none'; // Sembunyikan error jika init berhasil
+            document.getElementById('map-container').style.display = 'block'; 
+            document.getElementById('map-search-container').style.display = 'block';
+
+            const defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang
             geocoder = new google.maps.Geocoder();
             
             // Inisialisasi Peta
