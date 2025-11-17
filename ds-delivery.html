@@ -23,8 +23,8 @@
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --radius-lg: 16px;
             --radius-md: 12px;
-            /* Tambahkan variabel custom untuk header image */
-            --header-image-aspect: 16/9; /* Rasio standar 16:9, bisa diubah jika perlu */
+            /* Rasio standar 16:9, bisa diubah jika perlu */
+            --header-image-aspect: 16/9; 
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -43,28 +43,33 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            /* Hapus shadow dari header utama agar lebih fokus ke hero image */
             box-shadow: none; 
-            padding: 0 0 1rem 0; /* Ubah padding untuk mengakomodasi hero image */
+            padding: 0 0 1rem 0; 
         }
 
         /* --- Hero Image Styling --- */
         .hero-image-container {
-            /* Pastikan kontainer mengambil lebar penuh dan mengikuti max-width container */
-            max-width: 600px; 
+            /* UKURAN BARU: 50% dari max-width (300px) */
+            width: 50%; /* Mengambil 50% dari lebar parent (yang max 600px) */
+            max-width: 300px; /* Batasan maksimum 300px */
+            
+            /* Posisikan di tengah */
             margin: 0 auto;
-            padding: 0 1rem; /* Padding di kiri-kanan agar ada jarak dari tepi */
-            width: 100%;
-            /* Frame responsif dengan rasio 16:9 */
+            
+            padding: 0; /* Hapus padding agar border-radius langsung mengenai gambar */
+            
+            /* Frame responsif dengan rasio 16:9 - TINGGI OTOMATIS */
             aspect-ratio: var(--header-image-aspect); 
-            overflow: hidden; /* Penting untuk efek border-radius */
-            margin-bottom: 1rem; /* Jarak antara gambar dan search bar */
             
-            /* Sembunyikan overflow dan tambahkan shadow untuk efek 'pop-up' */
+            overflow: hidden; /* PENTING agar border-radius memotong gambar di dalamnya */
+            
+            margin-bottom: 1rem; 
+            
             box-shadow: var(--shadow-md); 
-            border-radius: var(--radius-lg); /* Border radius melengkung */
             
-            /* Pastikan ini ada di atas konten lain */
+            /* PINGGIRAN MELENGKUNG DITERAPKAN DI SINI */
+            border-radius: var(--radius-lg); 
+            
             position: relative; 
             z-index: 1; 
         }
@@ -72,22 +77,22 @@
         .hero-image {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Pastikan gambar mengisi frame tanpa terdistorsi */
+            object-fit: cover; 
             display: block;
             
             /* Animasi GoYaNG Lucu pada sumbu Z */
-            animation: wiggle 4s ease-in-out infinite alternate;
+            animation: wiggle 2s ease-in-out infinite alternate; /* Durasi 2s */
+            
             /* Memberi jarak 3D untuk efek kedalaman */
             transform-origin: 50% 50%;
         }
 
-        /* Keyframes untuk Animasi Bergoyang pada Sumbu Z (Wiggle) */
+        /* KEYFRAMES WIGGLE BARU (LEBIH JELAS) */
         @keyframes wiggle {
-            0% { transform: rotateZ(0deg) scale(1); }
-            25% { transform: rotateZ(0.5deg) scale(1.01); }
-            50% { transform: rotateZ(-0.5deg) scale(1); }
-            75% { transform: rotateZ(0.2deg) scale(1.01); }
-            100% { transform: rotateZ(0deg) scale(1); }
+            0% { transform: rotateZ(0deg) scale(1.0); }
+            33% { transform: rotateZ(3deg) scale(1.05); } 
+            66% { transform: rotateZ(-3deg) scale(1.05); } 
+            100% { transform: rotateZ(0deg) scale(1.0); }
         }
 
         .header-content {
@@ -96,7 +101,7 @@
             align-items: center;
             max-width: 600px;
             margin: 0 auto;
-            padding: 1rem; /* Tambahkan padding ke konten atas */
+            padding: 1rem; 
         }
 
         .brand {
@@ -117,9 +122,9 @@
         }
 
         .search-bar {
-            margin-top: 0; /* Ubah ini agar sesuai setelah gambar header */
+            margin-top: 0; 
             position: relative;
-            padding: 0 1rem; /* Tambahkan padding ke search bar */
+            padding: 0 1rem; 
         }
 
         .search-bar input {
@@ -142,7 +147,7 @@
 
         .search-icon {
             position: absolute;
-            left: 25px; /* Sesuaikan posisi icon karena ada padding */
+            left: 25px; 
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-grey);
@@ -155,7 +160,7 @@
             overflow-x: auto;
             white-space: nowrap;
             -webkit-overflow-scrolling: touch;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none; 
         }
         
         .category-nav::-webkit-scrollbar { display: none; }
@@ -303,7 +308,7 @@
             z-index: 900;
             cursor: pointer;
             animation: slideUp 0.3s ease-out;
-            display: none; /* Hidden if empty */
+            display: none; 
         }
 
         .cart-info {
@@ -341,7 +346,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
-            align-items: flex-end; /* Bottom sheet style */
+            align-items: flex-end; 
         }
 
         .modal-content {
@@ -419,11 +424,11 @@
 
         /* --- PERUBAHAN TAMPILAN KETERANGAN PETA --- */
         .location-helper {
-            font-size: 0.9rem; /* Ukuran sedikit lebih besar */
-            color: var(--danger); /* Warna merah untuk perhatian */
-            font-weight: 700; /* Tebal */
+            font-size: 0.9rem; 
+            color: var(--danger); 
+            font-weight: 700; 
             margin-top: 5px;
-            margin-bottom: 10px; /* Jarak bawah */
+            margin-bottom: 10px; 
             display: block;
             text-align: center;
             /* Animasi Berkedip */
@@ -504,7 +509,7 @@
             border: 1px solid #eee;
             border-radius: 12px;
             padding: 15px;
-            max-height: 250px; /* Batasi tinggi daftar voucher */
+            max-height: 250px; 
             overflow-y: auto;
             background: var(--white);
         }
@@ -586,7 +591,7 @@
         }
 
         .checkout-btn {
-            background: #25D366; /* WhatsApp Color */
+            background: #25D366; 
             color: white;
             width: 100%;
             padding: 15px;
@@ -733,169 +738,6 @@
 
     <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7AzQ_3rSuuPrX0YJ8PzkitySa5jc1APA&callback=initMap&libraries=places&v=weekly&v=beta&loading=async&failure_callback=mapLoadError" ></script>
 
-    <script>
-        // Google Maps Variables
-        let googleMap;
-        let googleMarker;
-        let geocoder;
-        let mapInitialized = false;
-        
-        // Konstanta untuk Local Storage
-        const LAST_ADDRESS_KEY = 'lastDeliveryAddress';
-
-        // --- FUNGSI LAPORAN ERROR SPESIFIK MAPS ---
-
-        /**
-         * Dipanggil jika skrip Google Maps GAGAL dimuat (kesalahan jaringan atau callback error)
-         */
-        window.mapLoadError = function() {
-            console.error("Google Maps API script failed to load.");
-            const errorDiv = document.getElementById('map-error-message');
-            document.getElementById('error-details').innerText = "Gagal memuat Google Maps API. Periksa koneksi internet Anda atau pastikan Kunci API sudah benar. Kode: LOAD_FAIL";
-            errorDiv.style.display = 'block';
-            
-            document.getElementById('map-container').style.display = 'none'; 
-            document.getElementById('map-search-container').style.display = 'none';
-        };
-
-        /**
-         * Dipanggil secara otomatis oleh Google Maps jika ada masalah otentikasi (Kunci API invalid, Billing non-aktif, atau API service belum diaktifkan)
-         */
-        window.gm_authFailure = function() {
-            console.error("Google Maps Authentication Failure: API Key is invalid or restricted.");
-            const errorDiv = document.getElementById('map-error-message');
-            document.getElementById('error-details').innerHTML = `
-                <i class="fas fa-exclamation-triangle"></i> 
-                *Error API Key:* Kunci API Anda tidak valid atau tidak memiliki izin.
-                Pastikan *Billing*, *Maps JavaScript API*, dan *Geocoding API* sudah aktif di Google Cloud Console.
-                Kode: *AUTH_ERROR*
-            `;
-            errorDiv.style.display = 'block';
-            
-            document.getElementById('map-container').style.display = 'none'; 
-            document.getElementById('map-search-container').style.display = 'none';
-        };
-        
-        // --- INICIALISASI MAP ---
-
-        window.initMap = function() {
-            if (mapInitialized) return;
-
-            const errorDiv = document.getElementById('map-error-message');
-            errorDiv.style.display = 'none'; // Sembunyikan error jika init berhasil
-            document.getElementById('map-container').style.display = 'block'; 
-            document.getElementById('map-search-container').style.display = 'block';
-
-            let defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang
-            
-            // --- FUNGSI CACHE: MUAT ALAMAT TERAKHIR ---
-            const lastAddress = localStorage.getItem(LAST_ADDRESS_KEY);
-            if (lastAddress) {
-                try {
-                    const saved = JSON.parse(lastAddress);
-                    defaultLoc = { lat: parseFloat(saved.lat), lng: parseFloat(saved.lng) };
-                    document.getElementById('address-detail').value = saved.detail;
-                    console.log("Memuat alamat terakhir dari cache.");
-                } catch (e) {
-                    console.error("Gagal memuat/parse alamat terakhir dari cache", e);
-                }
-            }
-            
-            geocoder = new google.maps.Geocoder();
-            
-            // Inisialisasi Peta
-            googleMap = new google.maps.Map(document.getElementById('map-container'), {
-                center: defaultLoc,
-                zoom: 15, // Zoom lebih dekat jika ada cache
-                mapTypeControl: false,
-                streetViewControl: false
-            });
-
-            // Marker yang bisa digeser
-            googleMarker = new google.maps.Marker({
-                position: defaultLoc,
-                map: googleMap,
-                draggable: true,
-                title: "Lokasi Kirim Anda"
-            });
-
-            // Event listener saat marker digeser
-            googleMarker.addListener('dragend', function() {
-                const pos = googleMarker.getPosition();
-                document.getElementById('lat-val').value = pos.lat();
-                document.getElementById('lng-val').value = pos.lng();
-                
-                // --- FUNGSI CACHE: SIMPAN KOORDINAT BARU ---
-                saveAddressToCache();
-                
-                if (window.calculateTotal) window.calculateTotal(); // Panggil fungsi di modul utama
-            });
-
-            // Set value awal
-            document.getElementById('lat-val').value = defaultLoc.lat;
-            document.getElementById('lng-val').value = defaultLoc.lng;
-            
-            mapInitialized = true;
-            
-            // Tambahkan event listener untuk tombol enter di search box
-            document.getElementById('map-search-input').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    window.geocodeAddress();
-                }
-            });
-        };
-        
-        window.geocodeAddress = function() {
-            const address = document.getElementById('map-search-input').value;
-            if (!address || !geocoder) return;
-
-            geocoder.geocode({ 'address': address }, function(results, status) {
-                if (status === 'OK' && results[0]) {
-                    const location = results[0].geometry.location;
-                    
-                    // Pindahkan peta dan marker
-                    googleMap.setCenter(location);
-                    googleMap.setZoom(15);
-                    googleMarker.setPosition(location);
-
-                    // Update koordinat
-                    document.getElementById('lat-val').value = location.lat();
-                    document.getElementById('lng-val').value = location.lng();
-                    
-                    // --- FUNGSI CACHE: SIMPAN KOORDINAT BARU ---
-                    saveAddressToCache();
-                    
-                    if (window.calculateTotal) window.calculateTotal();
-                } else {
-                    alert('Lokasi tidak ditemukan: ' + status);
-                }
-            });
-        };
-        
-        // --- FUNGSI CACHE: SIMPAN ALAMAT KE LOCAL STORAGE ---
-        function saveAddressToCache() {
-            const lat = document.getElementById('lat-val').value;
-            const lng = document.getElementById('lng-val').value;
-            const detail = document.getElementById('address-detail').value;
-            
-            if (lat && lng) {
-                const addressData = {
-                    lat: lat,
-                    lng: lng,
-                    detail: detail
-                };
-                localStorage.setItem(LAST_ADDRESS_KEY, JSON.stringify(addressData));
-            }
-        }
-        
-        // --- Update link saat user mengetik alamat, dan simpan cache ---
-        document.getElementById('address-detail').addEventListener('input', () => {
-            saveAddressToCache(); // Simpan detail alamat
-            window.calculateTotal();
-        });
-    </script>
-    
     <script type="module">
         // --- 1. KONFIGURASI FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -945,7 +787,7 @@
             }
         }
 
-        // --- 4. UI RENDERING PRODUK & KATEGORI (Tidak ada perubahan di sini) ---
+        // --- 4. UI RENDERING PRODUK & KATEGORI ---
         window.filterCategory = (cat, element) => {
             activeCategory = cat;
             
@@ -979,7 +821,7 @@
 
             let filtered = products.filter(p => p.isAvailable !== false); 
             
-            // Filter Category & Search... (Logika sama seperti sebelumnya)
+            // Filter Category & Search... 
 
             if (activeCategory !== 'all') {
                 filtered = filtered.filter(p => p.category === activeCategory);
@@ -1303,6 +1145,169 @@
         // Start App
         fetchData();
 
+    </script>
+    
+    <script>
+        // Google Maps Variables
+        let googleMap;
+        let googleMarker;
+        let geocoder;
+        let mapInitialized = false;
+        
+        // Konstanta untuk Local Storage
+        const LAST_ADDRESS_KEY = 'lastDeliveryAddress';
+
+        // --- FUNGSI LAPORAN ERROR SPESIFIK MAPS ---
+
+        /**
+         * Dipanggil jika skrip Google Maps GAGAL dimuat (kesalahan jaringan atau callback error)
+         */
+        window.mapLoadError = function() {
+            console.error("Google Maps API script failed to load.");
+            const errorDiv = document.getElementById('map-error-message');
+            document.getElementById('error-details').innerText = "Gagal memuat Google Maps API. Periksa koneksi internet Anda atau pastikan Kunci API sudah benar. Kode: LOAD_FAIL";
+            errorDiv.style.display = 'block';
+            
+            document.getElementById('map-container').style.display = 'none'; 
+            document.getElementById('map-search-container').style.display = 'none';
+        };
+
+        /**
+         * Dipanggil secara otomatis oleh Google Maps jika ada masalah otentikasi (Kunci API invalid, Billing non-aktif, atau API service belum diaktifkan)
+         */
+        window.gm_authFailure = function() {
+            console.error("Google Maps Authentication Failure: API Key is invalid or restricted.");
+            const errorDiv = document.getElementById('map-error-message');
+            document.getElementById('error-details').innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i> 
+                *Error API Key:* Kunci API Anda tidak valid atau tidak memiliki izin.
+                Pastikan *Billing*, *Maps JavaScript API*, dan *Geocoding API* sudah aktif di Google Cloud Console.
+                Kode: *AUTH_ERROR*
+            `;
+            errorDiv.style.display = 'block';
+            
+            document.getElementById('map-container').style.display = 'none'; 
+            document.getElementById('map-search-container').style.display = 'none';
+        };
+        
+        // --- INICIALISASI MAP ---
+
+        window.initMap = function() {
+            if (mapInitialized) return;
+
+            const errorDiv = document.getElementById('map-error-message');
+            errorDiv.style.display = 'none'; // Sembunyikan error jika init berhasil
+            document.getElementById('map-container').style.display = 'block'; 
+            document.getElementById('map-search-container').style.display = 'block';
+
+            let defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang
+            
+            // --- FUNGSI CACHE: MUAT ALAMAT TERAKHIR ---
+            const lastAddress = localStorage.getItem(LAST_ADDRESS_KEY);
+            if (lastAddress) {
+                try {
+                    const saved = JSON.parse(lastAddress);
+                    defaultLoc = { lat: parseFloat(saved.lat), lng: parseFloat(saved.lng) };
+                    document.getElementById('address-detail').value = saved.detail;
+                    console.log("Memuat alamat terakhir dari cache.");
+                } catch (e) {
+                    console.error("Gagal memuat/parse alamat terakhir dari cache", e);
+                }
+            }
+            
+            geocoder = new google.maps.Geocoder();
+            
+            // Inisialisasi Peta
+            googleMap = new google.maps.Map(document.getElementById('map-container'), {
+                center: defaultLoc,
+                zoom: 15, // Zoom lebih dekat jika ada cache
+                mapTypeControl: false,
+                streetViewControl: false
+            });
+
+            // Marker yang bisa digeser
+            googleMarker = new google.maps.Marker({
+                position: defaultLoc,
+                map: googleMap,
+                draggable: true,
+                title: "Lokasi Kirim Anda"
+            });
+
+            // Event listener saat marker digeser
+            googleMarker.addListener('dragend', function() {
+                const pos = googleMarker.getPosition();
+                document.getElementById('lat-val').value = pos.lat();
+                document.getElementById('lng-val').value = pos.lng();
+                
+                // --- FUNGSI CACHE: SIMPAN KOORDINAT BARU ---
+                saveAddressToCache();
+                
+                if (window.calculateTotal) window.calculateTotal(); // Panggil fungsi di modul utama
+            });
+
+            // Set value awal
+            document.getElementById('lat-val').value = defaultLoc.lat;
+            document.getElementById('lng-val').value = defaultLoc.lng;
+            
+            mapInitialized = true;
+            
+            // Tambahkan event listener untuk tombol enter di search box
+            document.getElementById('map-search-input').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    window.geocodeAddress();
+                }
+            });
+        };
+        
+        window.geocodeAddress = function() {
+            const address = document.getElementById('map-search-input').value;
+            if (!address || !geocoder) return;
+
+            geocoder.geocode({ 'address': address }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                    const location = results[0].geometry.location;
+                    
+                    // Pindahkan peta dan marker
+                    googleMap.setCenter(location);
+                    googleMap.setZoom(15);
+                    googleMarker.setPosition(location);
+
+                    // Update koordinat
+                    document.getElementById('lat-val').value = location.lat();
+                    document.getElementById('lng-val').value = location.lng();
+                    
+                    // --- FUNGSI CACHE: SIMPAN KOORDINAT BARU ---
+                    saveAddressToCache();
+                    
+                    if (window.calculateTotal) window.calculateTotal();
+                } else {
+                    alert('Lokasi tidak ditemukan: ' + status);
+                }
+            });
+        };
+        
+        // --- FUNGSI CACHE: SIMPAN ALAMAT KE LOCAL STORAGE ---
+        function saveAddressToCache() {
+            const lat = document.getElementById('lat-val').value;
+            const lng = document.getElementById('lng-val').value;
+            const detail = document.getElementById('address-detail').value;
+            
+            if (lat && lng) {
+                const addressData = {
+                    lat: lat,
+                    lng: lng,
+                    detail: detail
+                };
+                localStorage.setItem(LAST_ADDRESS_KEY, JSON.stringify(addressData));
+            }
+        }
+        
+        // --- Update link saat user mengetik alamat, dan simpan cache ---
+        document.getElementById('address-detail').addEventListener('input', () => {
+            saveAddressToCache(); // Simpan detail alamat
+            window.calculateTotal();
+        });
     </script>
 </body>
 </html>
