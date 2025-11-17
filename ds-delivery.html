@@ -49,27 +49,15 @@
 
         /* --- Hero Image Styling --- */
         .hero-image-container {
-            /* UKURAN BARU: 50% dari max-width (300px) */
-            width: 50%; /* Mengambil 50% dari lebar parent (yang max 600px) */
-            max-width: 300px; /* Batasan maksimum 300px */
-            
-            /* Posisikan di tengah */
+            width: 50%; 
+            max-width: 300px; 
             margin: 0 auto;
-            
-            padding: 0; /* Hapus padding agar border-radius langsung mengenai gambar */
-            
-            /* Frame responsif dengan rasio 16:9 - TINGGI OTOMATIS */
+            padding: 0; 
             aspect-ratio: var(--header-image-aspect); 
-            
-            overflow: hidden; /* PENTING agar border-radius memotong gambar di dalamnya */
-            
+            overflow: hidden; 
             margin-bottom: 1rem; 
-            
             box-shadow: var(--shadow-md); 
-            
-            /* PINGGIRAN MELENGKUNG DITERAPKAN DI SINI */
             border-radius: var(--radius-lg); 
-            
             position: relative; 
             z-index: 1; 
         }
@@ -79,15 +67,10 @@
             height: 100%;
             object-fit: cover; 
             display: block;
-            
-            /* Animasi GoYaNG Lucu pada sumbu Z */
-            animation: wiggle 2s ease-in-out infinite alternate; /* Durasi 2s */
-            
-            /* Memberi jarak 3D untuk efek kedalaman */
+            animation: wiggle 2s ease-in-out infinite alternate; 
             transform-origin: 50% 50%;
         }
 
-        /* KEYFRAMES WIGGLE BARU (LEBIH JELAS) */
         @keyframes wiggle {
             0% { transform: rotateZ(0deg) scale(1.0); }
             33% { transform: rotateZ(3deg) scale(1.05); } 
@@ -398,7 +381,6 @@
             overflow-y: auto;
             position: relative;
             animation: slideUpModal 0.3s ease-out;
-            /* Perubahan: Atur background di sini */
             background-color: var(--white); 
         }
 
@@ -467,50 +449,72 @@
         /* --- STYLING BARU: TOMBOL FULLSCREEN MAP --- */
         #fullscreen-toggle-btn {
             position: absolute;
-            top: 25px; /* Sesuaikan posisi agar berada di kanan atas area peta */
+            top: 25px; 
             right: 25px;
             background: var(--white);
             color: var(--primary-color);
-            border: 1px solid #eee;
-            padding: 8px 10px;
+            border: 1px solid #ddd; 
+            padding: 8px 12px; 
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.9rem; 
+            font-weight: 600;
             cursor: pointer;
-            z-index: 2; /* Di atas peta */
+            z-index: 2; 
             box-shadow: var(--shadow-sm);
+            display: flex; 
+            align-items: center;
+            gap: 5px; 
+            transition: background 0.2s;
         }
 
-        /* --- STYLING BARU: FULLSCREEN MODE AKTIF --- */
-        .modal.fullscreen #map-container {
+        #fullscreen-toggle-btn:hover {
+            background: var(--primary-light);
+        }
+
+        /* --- PERBAIKAN: FULLSCREEN MODE AKTIF --- */
+        .modal.fullscreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 9999; 
-            margin: 0;
-            border-radius: 0;
+            z-index: 99999; 
+            background-color: var(--white); 
+            align-items: center; 
+            justify-content: center;
+            display: flex !important; 
+            flex-direction: column;
         }
-        
+
         .modal.fullscreen .modal-content {
-            /* Sembunyikan content di luar peta saat fullscreen */
+            /* Sembunyikan content modal lama */
             display: none; 
             max-height: initial;
             overflow-y: hidden;
             border-radius: 0;
         }
-        
+
+        .modal.fullscreen #map-container {
+            /* Peta mengambil alih layar penuh */
+            position: absolute; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            border-radius: 0;
+            z-index: 9999; 
+            display: block !important;
+        }
+
         .modal.fullscreen #fullscreen-toggle-btn {
+            /* Tombol Kembali di pojok kanan atas */
             z-index: 10000; 
             top: 10px;
             right: 10px;
-            /* Tampilkan saat fullscreen */
-            display: block !important; 
-        }
-
-        /* --- Perubahan: Sembunyikan semua elemen selain peta saat fullscreen, KECUALI tombol toggle --- */
-        .modal.fullscreen .location-section > *:not(#map-container):not(#fullscreen-toggle-btn):not(#map-error-message) {
-            display: none; 
+            background: rgba(255, 255, 255, 0.9); 
+            border-color: #ccc;
+            color: var(--danger); 
         }
         
         /* --- PERUBAHAN TAMPILAN KETERANGAN PETA --- */
@@ -792,8 +796,9 @@
                     </div>
                 <div class="location-section">
                     <h4 style="margin:0 0 10px 0;"><i class="fas fa-map-marked-alt"></i> Lokasi Pengiriman</h4>
-                    <button id="fullscreen-toggle-btn" onclick="window.toggleFullscreenMap()" style="display:block;">
-                        <i class="fas fa-expand"></i>
+                    <button id="fullscreen-toggle-btn" onclick="window.toggleFullscreenMap()">
+                        <i class="fas fa-expand-arrows-alt"></i> 
+                        <span id="fullscreen-text">Layar Penuh</span>
                     </button>
                     
                     <div id="map-search-container">
@@ -1118,7 +1123,7 @@
             calculateTotal();
         }
 
-        // --- 7. VOUCHER SELECTION LOGIC BARU (TIDAK BERUBAH) ---
+        // --- 7. VOUCHER SELECTION LOGIC BARU ---
         
         function renderVoucherSelection() {
             const container = document.getElementById('voucher-selection-area');
@@ -1358,7 +1363,7 @@
             errorDiv.style.display = 'none'; // Sembunyikan error jika init berhasil
             document.getElementById('map-container').style.display = 'block'; 
             document.getElementById('map-search-container').style.display = 'block';
-            document.getElementById('fullscreen-toggle-btn').style.display = 'block';
+            document.getElementById('fullscreen-toggle-btn').style.display = 'flex'; // Pastikan tombol tampil
 
 
             let defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang
@@ -1449,28 +1454,37 @@
         };
         
         /**
-         * FUNGSI BARU: Mengubah tampilan peta menjadi layar penuh (fullscreen)
+         * FUNGSI PERBAIKAN: Mengubah tampilan peta menjadi layar penuh (fullscreen)
          */
         window.toggleFullscreenMap = function() {
             const modal = document.getElementById('checkout-modal');
-            const mapContainer = document.getElementById('map-container');
             const isFullscreen = modal.classList.toggle('fullscreen');
             const btn = document.getElementById('fullscreen-toggle-btn');
+            const searchContainer = document.getElementById('map-search-container');
+            const helperText = document.querySelector('.location-helper');
+            const addressDetailLabel = document.querySelector('.address-detail-label');
+            const addressDetailInput = document.getElementById('address-detail');
             
+            // Toggle ikon dan teks tombol
             if (isFullscreen) {
-                // Mode Fullscreen: Ubah ikon tombol
-                btn.innerHTML = '<i class="fas fa-compress"></i> Kembali'; 
+                btn.innerHTML = '<i class="fas fa-compress-alt"></i> <span id="fullscreen-text">Kembali</span>'; // Ikon compress
+                btn.style.color = 'var(--danger)'; 
+                searchContainer.style.display = 'none';
+                helperText.style.display = 'none';
+                addressDetailLabel.style.display = 'none';
+                addressDetailInput.style.display = 'none';
             } else {
-                // Mode Normal: Ubah ikon tombol
-                btn.innerHTML = '<i class="fas fa-expand"></i>';
-                // Paksa modal kembali ke bawah jika sudah di mode normal
-                modal.style.alignItems = 'flex-end';
+                btn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i> <span id="fullscreen-text">Layar Penuh</span>'; // Ikon expand
+                btn.style.color = 'var(--primary-color)';
+                searchContainer.style.display = 'block';
+                helperText.style.display = 'block';
+                addressDetailLabel.style.display = 'block';
+                addressDetailInput.style.display = 'block';
             }
             
             // PENTING: Paksa peta untuk merender ulang setelah perubahan ukuran
             if (window.googleMap) {
                 google.maps.event.trigger(window.googleMap, 'resize');
-                // Pusatkan peta ke marker saat ini
                 window.googleMap.setCenter(window.googleMarker.getPosition());
             }
         }
