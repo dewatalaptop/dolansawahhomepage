@@ -271,6 +271,7 @@
             font-size: 0.95rem;
         }
 
+        /* --- STYLING BARU: TOMBOL KUANTITAS MENU (PRODUCT CARD) --- */
         .add-btn {
             background: var(--primary-light);
             color: var(--primary-color);
@@ -281,6 +282,8 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: 0.2s;
+            width: 100px; /* Lebar tetap agar transisi lebih mulus */
+            text-align: center;
         }
         
         .add-btn:active {
@@ -289,6 +292,42 @@
             color: var(--white);
         }
 
+        .qty-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100px; /* Sama dengan lebar add-btn */
+            border: 1px solid var(--primary-light);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .qty-control button {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            border: none;
+            padding: 6px 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+        
+        .qty-control button:active {
+             background: var(--primary-color);
+             color: var(--white);
+             transform: scale(0.95);
+        }
+        
+        .qty-control .qty-display {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            padding: 0 5px;
+            width: 30px; 
+            text-align: center;
+        }
+        
         /* --- FLOATING CART --- */
         .floating-cart {
             position: fixed;
@@ -359,12 +398,14 @@
             overflow-y: auto;
             position: relative;
             animation: slideUpModal 0.3s ease-out;
+            /* Perubahan: Atur background di sini */
+            background-color: var(--white); 
         }
 
         .modal-header {
             position: sticky;
             top: 0;
-            background: white;
+            background: var(--white);
             padding: 1.5rem;
             border-bottom: 1px solid #eee;
             display: flex;
@@ -420,8 +461,58 @@
             border-radius: 12px;
             margin-top: 1.5rem;
             border: 1px solid #eee;
+            position: relative; /* Untuk posisi tombol fullscreen */
+        }
+        
+        /* --- STYLING BARU: TOMBOL FULLSCREEN MAP --- */
+        #fullscreen-toggle-btn {
+            position: absolute;
+            top: 25px; /* Sesuaikan posisi agar berada di kanan atas area peta */
+            right: 25px;
+            background: var(--white);
+            color: var(--primary-color);
+            border: 1px solid #eee;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            z-index: 2; /* Di atas peta */
+            box-shadow: var(--shadow-sm);
         }
 
+        /* --- STYLING BARU: FULLSCREEN MODE AKTIF --- */
+        .modal.fullscreen #map-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999; 
+            margin: 0;
+            border-radius: 0;
+        }
+        
+        .modal.fullscreen .modal-content {
+            /* Sembunyikan content di luar peta saat fullscreen */
+            display: none; 
+            max-height: initial;
+            overflow-y: hidden;
+            border-radius: 0;
+        }
+        
+        .modal.fullscreen #fullscreen-toggle-btn {
+            z-index: 10000; 
+            top: 10px;
+            right: 10px;
+            /* Tampilkan saat fullscreen */
+            display: block !important; 
+        }
+
+        /* --- Perubahan: Sembunyikan semua elemen selain peta saat fullscreen, KECUALI tombol toggle --- */
+        .modal.fullscreen .location-section > *:not(#map-container):not(#fullscreen-toggle-btn):not(#map-error-message) {
+            display: none; 
+        }
+        
         /* --- PERUBAHAN TAMPILAN KETERANGAN PETA --- */
         .location-helper {
             font-size: 0.9rem; 
@@ -701,6 +792,10 @@
                     </div>
                 <div class="location-section">
                     <h4 style="margin:0 0 10px 0;"><i class="fas fa-map-marked-alt"></i> Lokasi Pengiriman</h4>
+                    <button id="fullscreen-toggle-btn" onclick="window.toggleFullscreenMap()" style="display:block;">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    
                     <div id="map-search-container">
                         <input type="text" id="map-search-input" placeholder="Cari Nama Jalan/Kota/Daerah...">
                         <button id="map-search-btn" onclick="geocodeAddress()"><i class="fas fa-search"></i></button>
@@ -815,14 +910,15 @@
             });
         }
 
+        /**
+         * Fungsi yang diperbarui: kini menampilkan tombol +/-, atau tombol "Tambah"
+         */
         function renderProducts(filterTerm = '') {
             const container = document.getElementById('product-container');
             container.innerHTML = '';
 
             let filtered = products.filter(p => p.isAvailable !== false); 
             
-            // Filter Category & Search... 
-
             if (activeCategory !== 'all') {
                 filtered = filtered.filter(p => p.category === activeCategory);
             }
@@ -852,6 +948,24 @@
                     const card = document.createElement('div');
                     card.className = 'product-card';
                     
+                    // Cek kuantitas item di keranjang
+                    const itemInCart = cart.find(item => item.id === p.id);
+                    const qty = itemInCart ? itemInCart.qty : 0;
+                    
+                    const controls = qty > 0 
+                        ? `
+                            <div class="qty-control" id="qty-control-${p.id}">
+                                <button onclick="window.updateQuantity('${p.id}', -1)"><i class="fas fa-minus"></i></button>
+                                <span class="qty-display">${qty}</span>
+                                <button onclick="window.updateQuantity('${p.id}', 1)"><i class="fas fa-plus"></i></button>
+                            </div>
+                        `
+                        : `
+                            <button class="add-btn" id="add-btn-${p.id}" onclick="window.updateQuantity('${p.id}', 1)">
+                                Tambah
+                            </button>
+                        `;
+
                     card.innerHTML = `
                         <img src="${p.img}" alt="${p.name}" class="product-img" onerror="this.src='https://via.placeholder.com/110?text=No+Img'">
                         <div class="product-details">
@@ -861,9 +975,9 @@
                             </div>
                             <div class="product-footer">
                                 <span class="product-price">Rp ${formatRupiah(p.price)}</span>
-                                <button class="add-btn" onclick="window.addToCart('${p.id}')">
-                                    Tambah
-                                </button>
+                                <div id="product-control-${p.id}">
+                                    ${controls}
+                                </div>
                             </div>
                         </div>
                     `;
@@ -873,40 +987,75 @@
                 container.appendChild(section);
             }
         }
-
-        // --- 5. CART LOGIC ---
-        window.addToCart = (id) => {
+        
+        /**
+         * Fungsi BARU: Menggantikan addToCart dan removeFromCart. 
+         * Mengelola perubahan kuantitas dan memperbarui UI tombol/kontrol.
+         */
+        window.updateQuantity = (id, change) => {
             const prod = products.find(p => p.id === id);
-            
             if (!prod || prod.isAvailable === false) return;
-            
-            const exist = cart.find(item => item.id === id);
-            
-            if (exist) exist.qty++;
-            else cart.push({ ...prod, qty: 1 });
 
-            updateCartUI();
-        };
+            let exist = cart.find(item => item.id === id);
 
-        window.removeFromCart = (id) => {
-            const idx = cart.findIndex(item => item.id === id);
-            if (idx > -1) {
-                cart[idx].qty--;
-                if (cart[idx].qty <= 0) {
-                    cart.splice(idx, 1);
-                    if(cart.length === 0) {
-                        // Jika keranjang kosong, hapus voucher aktif
-                        activeVoucherId = null; 
+            if (!exist && change > 0) {
+                // Tambah item baru
+                cart.push({ ...prod, qty: change });
+                exist = cart.find(item => item.id === id); // Ambil objek yang baru
+            } else if (exist) {
+                exist.qty += change;
+                if (exist.qty <= 0) {
+                    // Hapus item jika kuantitas <= 0
+                    const idx = cart.findIndex(item => item.id === id);
+                    if (idx > -1) {
+                        cart.splice(idx, 1);
                     }
                 }
             }
+            
+            // Perbarui UI pada Product Card
+            updateProductCardControl(id);
+            
+            // Perbarui UI Keranjang Mengambang
             updateCartUI();
+            
+            // Perbarui UI Modal Checkout jika terbuka
             if (document.getElementById('checkout-modal').style.display === 'flex') {
                  renderModalCart();
-                 renderVoucherSelection(); // Perbarui tampilan voucher
+                 renderVoucherSelection(); 
             }
         };
+        
+        /**
+         * Fungsi BARU: Mengubah tampilan tombol Tambah menjadi kontrol kuantitas (+/-) atau sebaliknya.
+         */
+        function updateProductCardControl(id) {
+            const controlContainer = document.getElementById(`product-control-${id}`);
+            if (!controlContainer) return;
 
+            const itemInCart = cart.find(item => item.id === id);
+            const qty = itemInCart ? itemInCart.qty : 0;
+            
+            if (qty > 0) {
+                // Tampilkan kontrol kuantitas
+                controlContainer.innerHTML = `
+                    <div class="qty-control" id="qty-control-${id}">
+                        <button onclick="window.updateQuantity('${id}', -1)"><i class="fas fa-minus"></i></button>
+                        <span class="qty-display">${qty}</span>
+                        <button onclick="window.updateQuantity('${id}', 1)"><i class="fas fa-plus"></i></button>
+                    </div>
+                `;
+            } else {
+                // Tampilkan tombol "Tambah"
+                controlContainer.innerHTML = `
+                    <button class="add-btn" id="add-btn-${id}" onclick="window.updateQuantity('${id}', 1)">
+                        Tambah
+                    </button>
+                `;
+            }
+        }
+        
+        // --- FUNGSI ASLI: updateCartUI diubah agar memanggil updateProductCardControl ---
         function updateCartUI() {
             const btn = document.getElementById('cart-btn');
             const count = cart.reduce((a, b) => a + b.qty, 0);
@@ -919,18 +1068,19 @@
             } else {
                 btn.style.display = 'none';
             }
+            
+            // Perbarui tampilan kontrol di semua kartu produk
+            products.forEach(p => updateProductCardControl(p.id));
         }
 
         // --- 6. MODAL & MAP LOGIC ---
         document.getElementById('cart-btn').onclick = () => {
             document.getElementById('checkout-modal').style.display = 'flex';
             renderModalCart();
-            renderVoucherSelection(); // Panggil fungsi render voucher saat modal dibuka
+            renderVoucherSelection(); 
             
-            // Jika peta sudah di-init (Google Maps), paksa resize agar tampil benar di modal
             if (window.mapInitialized && window.googleMap) {
                 google.maps.event.trigger(window.googleMap, 'resize');
-                // Posisikan peta ke marker
                 window.googleMap.setCenter(window.googleMarker.getPosition());
             }
         };
@@ -957,9 +1107,9 @@
                         <div style="font-size:0.85rem; color:#666">Rp ${formatRupiah(item.price)}</div>
                     </div>
                     <div class="item-controls">
-                        <div class="qty-btn" onclick="window.removeFromCart('${item.id}')">-</div>
+                        <div class="qty-btn" onclick="window.updateQuantity('${item.id}', -1)">-</div>
                         <span style="font-size:0.9rem; font-weight:600; width:20px; text-align:center">${item.qty}</span>
-                        <div class="qty-btn" onclick="window.addToCart('${item.id}')">+</div>
+                        <div class="qty-btn" onclick="window.updateQuantity('${item.id}', 1)">+</div>
                     </div>
                 `;
                 list.appendChild(div);
@@ -968,7 +1118,7 @@
             calculateTotal();
         }
 
-        // --- 7. VOUCHER SELECTION LOGIC BARU ---
+        // --- 7. VOUCHER SELECTION LOGIC BARU (TIDAK BERUBAH) ---
         
         function renderVoucherSelection() {
             const container = document.getElementById('voucher-selection-area');
@@ -1038,7 +1188,6 @@
             }
 
             activeVoucherId = voucherId;
-            // Perbarui tampilan kartu yang aktif
             document.querySelectorAll('.voucher-card').forEach(card => card.classList.remove('active'));
             document.querySelector(`.voucher-card[data-voucher-id="${voucherId}"]`).classList.add('active');
             document.querySelector(`.voucher-card[data-voucher-id="${voucherId}"] .voucher-radio`).checked = true;
@@ -1063,9 +1212,7 @@
                     disc = selectedVoucher.discountValue;
                     currentVoucher = selectedVoucher;
                 } else {
-                    // Voucher tidak lagi valid (misalnya, user mengurangi item)
                     activeVoucherId = null;
-                    // Perbarui tampilan voucher jika modal terbuka
                     if (document.getElementById('checkout-modal').style.display === 'flex') {
                         renderVoucherSelection();
                     }
@@ -1180,6 +1327,7 @@
             
             document.getElementById('map-container').style.display = 'none'; 
             document.getElementById('map-search-container').style.display = 'none';
+            document.getElementById('fullscreen-toggle-btn').style.display = 'none';
         };
 
         /**
@@ -1198,6 +1346,7 @@
             
             document.getElementById('map-container').style.display = 'none'; 
             document.getElementById('map-search-container').style.display = 'none';
+            document.getElementById('fullscreen-toggle-btn').style.display = 'none';
         };
         
         // --- INICIALISASI MAP ---
@@ -1209,6 +1358,8 @@
             errorDiv.style.display = 'none'; // Sembunyikan error jika init berhasil
             document.getElementById('map-container').style.display = 'block'; 
             document.getElementById('map-search-container').style.display = 'block';
+            document.getElementById('fullscreen-toggle-btn').style.display = 'block';
+
 
             let defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang
             
@@ -1296,6 +1447,33 @@
                 }
             });
         };
+        
+        /**
+         * FUNGSI BARU: Mengubah tampilan peta menjadi layar penuh (fullscreen)
+         */
+        window.toggleFullscreenMap = function() {
+            const modal = document.getElementById('checkout-modal');
+            const mapContainer = document.getElementById('map-container');
+            const isFullscreen = modal.classList.toggle('fullscreen');
+            const btn = document.getElementById('fullscreen-toggle-btn');
+            
+            if (isFullscreen) {
+                // Mode Fullscreen: Ubah ikon tombol
+                btn.innerHTML = '<i class="fas fa-compress"></i> Kembali'; 
+            } else {
+                // Mode Normal: Ubah ikon tombol
+                btn.innerHTML = '<i class="fas fa-expand"></i>';
+                // Paksa modal kembali ke bawah jika sudah di mode normal
+                modal.style.alignItems = 'flex-end';
+            }
+            
+            // PENTING: Paksa peta untuk merender ulang setelah perubahan ukuran
+            if (window.googleMap) {
+                google.maps.event.trigger(window.googleMap, 'resize');
+                // Pusatkan peta ke marker saat ini
+                window.googleMap.setCenter(window.googleMarker.getPosition());
+            }
+        }
         
         // --- FUNGSI CACHE: SIMPAN ALAMAT KE LOCAL STORAGE ---
         function saveAddressToCache() {
