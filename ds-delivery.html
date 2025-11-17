@@ -23,6 +23,8 @@
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --radius-lg: 16px;
             --radius-md: 12px;
+            /* Tambahkan variabel custom untuk header image */
+            --header-image-aspect: 16/9; /* Rasio standar 16:9, bisa diubah jika perlu */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,8 +43,51 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: var(--shadow-sm);
-            padding: 1rem;
+            /* Hapus shadow dari header utama agar lebih fokus ke hero image */
+            box-shadow: none; 
+            padding: 0 0 1rem 0; /* Ubah padding untuk mengakomodasi hero image */
+        }
+
+        /* --- Hero Image Styling --- */
+        .hero-image-container {
+            /* Pastikan kontainer mengambil lebar penuh dan mengikuti max-width container */
+            max-width: 600px; 
+            margin: 0 auto;
+            padding: 0 1rem; /* Padding di kiri-kanan agar ada jarak dari tepi */
+            width: 100%;
+            /* Frame responsif dengan rasio 16:9 */
+            aspect-ratio: var(--header-image-aspect); 
+            overflow: hidden; /* Penting untuk efek border-radius */
+            margin-bottom: 1rem; /* Jarak antara gambar dan search bar */
+            
+            /* Sembunyikan overflow dan tambahkan shadow untuk efek 'pop-up' */
+            box-shadow: var(--shadow-md); 
+            border-radius: var(--radius-lg); /* Border radius melengkung */
+            
+            /* Pastikan ini ada di atas konten lain */
+            position: relative; 
+            z-index: 1; 
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Pastikan gambar mengisi frame tanpa terdistorsi */
+            display: block;
+            
+            /* Animasi GoYaNG Lucu pada sumbu Z */
+            animation: wiggle 4s ease-in-out infinite alternate;
+            /* Memberi jarak 3D untuk efek kedalaman */
+            transform-origin: 50% 50%;
+        }
+
+        /* Keyframes untuk Animasi Bergoyang pada Sumbu Z (Wiggle) */
+        @keyframes wiggle {
+            0% { transform: rotateZ(0deg) scale(1); }
+            25% { transform: rotateZ(0.5deg) scale(1.01); }
+            50% { transform: rotateZ(-0.5deg) scale(1); }
+            75% { transform: rotateZ(0.2deg) scale(1.01); }
+            100% { transform: rotateZ(0deg) scale(1); }
         }
 
         .header-content {
@@ -51,6 +96,7 @@
             align-items: center;
             max-width: 600px;
             margin: 0 auto;
+            padding: 1rem; /* Tambahkan padding ke konten atas */
         }
 
         .brand {
@@ -71,8 +117,9 @@
         }
 
         .search-bar {
-            margin-top: 1rem;
+            margin-top: 0; /* Ubah ini agar sesuai setelah gambar header */
             position: relative;
+            padding: 0 1rem; /* Tambahkan padding ke search bar */
         }
 
         .search-bar input {
@@ -95,7 +142,7 @@
 
         .search-icon {
             position: absolute;
-            left: 15px;
+            left: 25px; /* Sesuaikan posisi icon karena ada padding */
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-grey);
@@ -587,6 +634,14 @@
 <body>
 
     <header>
+        <div class="hero-image-container">
+            <img 
+                src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1763358405/IMG_7210_goshio.jpg" 
+                alt="Header Dolan Sawah Delivery" 
+                class="hero-image"
+            >
+        </div>
+        
         <div class="header-content">
             <div class="brand">
                 <h1>Dolan Sawah Delivery</h1>
@@ -594,7 +649,7 @@
             </div>
         </div>
         
-        <div class="container search-bar">
+        <div class="search-bar">
             <i class="fas fa-search search-icon"></i>
             <input type="text" id="search-input" placeholder="Mau makan apa hari ini?">
         </div>
