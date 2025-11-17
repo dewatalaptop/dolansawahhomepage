@@ -108,39 +108,15 @@
                     <input type="tel" id="member-hp" placeholder="Contoh: 081234567890" required autofocus>
                 </div>
                 
-                <div id="recaptcha-container" style="display: flex; justify-content: center; margin-bottom: 15px;"></div>
-                
                 <button type="submit" class="btn btn-primary">
-                    <span class="btn-text">Kirim Kode Verifikasi</span>
-                    <span class="material-symbols-outlined">sms</span>
+                    <span class="btn-text">Cek Kartu Member</span>
+                    <span class="material-symbols-outlined">search</span>
                     <span class="spinner"></span>
                 </button>
             </form>
             <div id="lookup-status"></div>
         </section>
 
-        <section id="otp-view" style="display: none;">
-            <h2>Verifikasi Nomor Anda</h2>
-            <p style="text-align: center; margin-top: -15px; font-size: 0.9em;">
-                Kami telah mengirimkan 6 digit kode ke <strong id="otp-phone-display"></strong>
-            </p>
-            <form id="otp-form" autocomplete="off">
-                <div class="form-group">
-                    <label for="otp-code">Masukkan 6 Digit Kode</label>
-                    <input type="number" id="otp-code" placeholder="123456" required>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <span class="btn-text">Verifikasi & Tampilkan Kartu</span>
-                    <span class="material-symbols-outlined">check_circle</span>
-                    <span class="spinner"></span>
-                </button>
-            </form>
-            <button id="back-to-lookup-otp" class="btn btn-secondary" style="margin-top: 10px;">
-                <span class="material-symbols-outlined">arrow_back</span>
-                <span class="btn-text">Salah Nomor? Kembali</span>
-            </button>
-        </section>
-        
         <section id="card-view">
             <button id="back-to-lookup" class="btn btn-secondary" style="width:auto; margin-bottom: 20px;">
                 <span class="material-symbols-outlined">arrow_back</span>
@@ -190,10 +166,10 @@
 </div>
 
 <script type="module">
-    // Impor Firebase (Tidak Berubah)
+    // Hapus impor Firebase Auth
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    // import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"; // Dihapus
 
     // Konfigurasi Firebase (Tidak Berubah)
     const firebaseConfig = {
@@ -205,26 +181,22 @@
         appId: "1:277683917105:web:d496ee4547f339e2fee010"
     };
     
-    // Inisialisasi (Tidak Berubah)
+    // Inisialisasi
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
-    const auth = getAuth(app);
+    // const auth = getAuth(app); // Dihapus
 
     // Variabel Global
     let allPointRewards = [];
     let topMemberRewardName = null;
     let top5MemberIds = [];
-    let confirmationResult = null;
-    let verifiedPhoneNumber = null;
-    
-    // =============================================
-    // MODIFIKASI: Tambahkan variabel global untuk verifier
-    // =============================================
-    let appVerifier = null; 
+    // let confirmationResult = null; // Dihapus
+    // let verifiedPhoneNumber = null; // Dihapus
+    // let appVerifier = null; // Dihapus
 
-    // Elemen DOM (Tidak Berubah)
+    // Elemen DOM
     const lookupView = document.getElementById('lookup-view');
-    const otpView = document.getElementById('otp-view');
+    // const otpView = document.getElementById('otp-view'); // Dihapus
     const cardView = document.getElementById('card-view');
 
     const lookupForm = document.getElementById('member-lookup-form');
@@ -232,17 +204,17 @@
     const lookupStatus = document.getElementById('lookup-status');
     const backButton = document.getElementById('back-to-lookup');
     
-    const otpForm = document.getElementById('otp-form');
-    const otpCodeInput = document.getElementById('otp-code');
-    const otpPhoneDisplay = document.getElementById('otp-phone-display');
-    const backButtonOtp = document.getElementById('back-to-lookup-otp');
+    // const otpForm = document.getElementById('otp-form'); // Dihapus
+    // const otpCodeInput = document.getElementById('otp-code'); // Dihapus
+    // const otpPhoneDisplay = document.getElementById('otp-phone-display'); // Dihapus
+    // const backButtonOtp = document.getElementById('back-to-lookup-otp'); // Dihapus
 
     const cardName = document.getElementById('card-name');
     const cardPoin = document.getElementById('card-poin');
     const cardDuration = document.getElementById('card-duration');
     const rewardsList = document.getElementById('member-rewards-list');
 
-    // === HELPER FUNCTIONS (Tidak Berubah) ===
+    // === HELPER FUNCTIONS (Dipertahankan) ===
     const showLoading = (button, isLoading) => {
         if (!button) return;
         button.disabled = isLoading;
@@ -328,6 +300,7 @@
             `;
         }).join('');
     };
+    // Format ke E.164 tetap penting karena ID dokumen Firestore biasanya menggunakan format E.164 (+628xxxx)
     const formatPhoneNumberE164 = (phoneNumber) => {
         let digits = (phoneNumber || '').replace(/\D/g, '');
         if (digits.startsWith('08')) {
@@ -350,14 +323,12 @@
     // === EVENT LISTENERS ===
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Muat data awal
         loadAllRewards();
         loadTop5Data();
-        // Pembuatan reCAPTCHA dihapus dari sini
     });
 
     // =============================================
-    // MODIFIKASI: Form Lookup dengan CLEANUP
+    // MODIFIKASI: Logika Form Lookup BARU (Tanpa OTP)
     // =============================================
     lookupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -365,18 +336,6 @@
         showLoading(button, true);
         lookupStatus.classList.remove('visible'); 
         
-        // =============================================
-        //          LOGIKA CLEANUP BARU (PENTING)
-        // =============================================
-        // Jika ada verifier lama, bersihkan (hancurkan)
-        if (appVerifier) {
-            appVerifier.clear(); // <-- Hapus verifier lama dari instance Auth
-            appVerifier = null;
-        }
-        // Kosongkan container HTML-nya untuk widget baru
-        document.getElementById('recaptcha-container').innerHTML = '';
-        // =============================================
-
         const nomorHp = memberHpInput.value.trim();
         if (!nomorHp) {
             showStatus("Nomor HP tidak boleh kosong.", true);
@@ -385,81 +344,11 @@
         }
 
         const formattedPhoneNumber = formatPhoneNumberE164(nomorHp);
-        verifiedPhoneNumber = nomorHp;
-
+        
         try {
-            // Buat instance verifier BARU dan simpan di variabel global
-            appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response) => {
-                    // (Otomatis submit)
-                },
-                'expired-callback': () => {
-                    // Saat kadaluarsa, bersihkan dirinya sendiri
-                    showStatus("Verifikasi reCAPTCHA kadaluarsa. Coba lagi.", true);
-                    if (appVerifier) {
-                        appVerifier.clear();
-                        appVerifier = null;
-                    }
-                }
-            });
-
-            // Render verifier baru
-            await appVerifier.render();
-
-            // Kirim SMS
-            confirmationResult = await signInWithPhoneNumber(auth, formattedPhoneNumber, appVerifier);
-            
-            // Lanjut ke halaman OTP
-            otpPhoneDisplay.textContent = formattedPhoneNumber;
-            lookupView.style.display = 'none';
-            otpView.style.display = 'block';
-            otpCodeInput.focus();
-
-        } catch (err) {
-            // (Kode debugging error masih sama)
-            console.error("DEBUG: Terjadi Error Saat Mengirim SMS:", err);
-            let debugMessage = `Gagal! Error: ${err.message} (Code: ${err.code || 'N/A'})`;
-            showStatus(debugMessage, true);
-            
-            // =============================================
-            // Jika GAGAL, bersihkan juga verifier-nya
-            // =============================================
-            if (appVerifier) {
-                appVerifier.clear();
-                appVerifier = null;
-            }
-        } finally {
-            showLoading(button, false);
-        }
-    });
-
-    // LISTENER Form OTP (Tidak Berubah)
-    otpForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const button = e.target.querySelector('button[type="submit"]');
-        showLoading(button, true);
-        lookupStatus.classList.remove('visible'); 
-
-        const otpCode = otpCodeInput.value.trim();
-        if (!otpCode || otpCode.length !== 6) {
-            showStatus("Kode OTP harus 6 digit.", true);
-            showLoading(button, false);
-            return;
-        }
-
-        if (!confirmationResult || !verifiedPhoneNumber) {
-            showStatus("Sesi tidak valid. Silakan kembali dan ulangi.", true);
-            showLoading(button, false);
-            return;
-        }
-
-        try {
-            // Verifikasi kode OTP
-            await confirmationResult.confirm(otpCode);
-            
-            // === KODE BERHASIL DIKONFIRMASI ===
-            const docRef = doc(db, "members", verifiedPhoneNumber); 
+            // Langsung cari dokumen member di Firestore
+            // Nomor HP (dalam format E.164) dijadikan ID Dokumen
+            const docRef = doc(db, "members", formattedPhoneNumber); 
             const docSnap = await getDoc(docRef);
         
             if (docSnap.exists()) {
@@ -485,39 +374,33 @@
                 renderRewards(memberPoin);
 
                 // Tampilkan kartu member
-                otpView.style.display = 'none';
+                lookupView.style.display = 'none';
                 cardView.style.display = 'block';
+                showStatus(`Member ditemukan: ${data.nama}`, false);
                 setTimeout(() => {
                     cardView.classList.add('visible');
                 }, 50);
 
             } else {
-                // Member sudah verifikasi OTP, tapi nomornya tidak ada di database
-                otpView.style.display = 'none';
-                lookupView.style.display = 'block';
-                showStatus(`Nomor ${verifiedPhoneNumber} berhasil diverifikasi, namun tidak terdaftar sebagai member.`, true);
+                // Member tidak ditemukan
+                showStatus(`Nomor ${nomorHp} tidak terdaftar sebagai member.`, true);
             }
 
         } catch (err) {
-            console.error("Error verifikasi OTP atau lookup:", err);
-            let message = "Gagal memverifikasi. Silakan coba lagi.";
-            if (err.code === 'auth/invalid-verification-code' || err.code === 'auth/credential-already-in-use') {
-                message = "Kode OTP yang Anda masukkan salah.";
-            } else if (err.code === 'auth/code-expired') {
-                message = "Kode OTP sudah kadaluarsa. Silakan kirim ulang.";
-            }
-            showStatus(message, true);
+            console.error("Error lookup member:", err);
+            showStatus(`Terjadi kesalahan saat mencari data. Coba lagi. Error: ${err.message}`, true);
             
         } finally {
             showLoading(button, false);
         }
     });
 
-    // =============================================
-    // MODIFIKASI: Tombol Kembali
-    // =============================================
+    // LISTENER Form OTP (Dihapus)
+    // Tombol kembali dari OTP View (Dihapus)
     
-    // Tombol kembali dari Card View
+    // =============================================
+    // MODIFIKASI: Tombol Kembali dari Card View
+    // =============================================
     backButton.addEventListener('click', () => {
         cardView.classList.remove('visible');
         setTimeout(() => {
@@ -526,34 +409,9 @@
             
             document.getElementById('top-member-badge').classList.remove('show');
             lookupForm.reset();
-            otpForm.reset();
             lookupStatus.classList.remove('visible');
             memberHpInput.focus();
-            
-            // Bersihkan verifier saat kembali ke awal
-            if (appVerifier) {
-                appVerifier.clear();
-                appVerifier = null;
-            }
-            document.getElementById('recaptcha-container').innerHTML = '';
         }, 400); 
-    });
-
-    // Tombol kembali dari OTP View
-    backButtonOtp.addEventListener('click', () => {
-        otpView.style.display = 'none';
-        lookupView.style.display = 'block';
-        lookupForm.reset();
-        otpForm.reset();
-        lookupStatus.classList.remove('visible');
-        memberHpInput.focus();
-        
-        // Bersihkan verifier saat kembali
-        if (appVerifier) {
-            appVerifier.clear();
-            appVerifier = null;
-        }
-        document.getElementById('recaptcha-container').innerHTML = '';
     });
 
 </script>
