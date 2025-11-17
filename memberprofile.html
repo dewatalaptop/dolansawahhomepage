@@ -166,10 +166,9 @@
 </div>
 
 <script type="module">
-    // Hapus impor Firebase Auth
+    // Hapus impor Firebase Auth, hanya sisakan Firestore
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    // import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"; // Dihapus
 
     // Konfigurasi Firebase (Tidak Berubah)
     const firebaseConfig = {
@@ -184,19 +183,14 @@
     // Inisialisasi
     const app = initializeApp(firebaseConfig);
     const db  = getFirestore(app);
-    // const auth = getAuth(app); // Dihapus
 
     // Variabel Global
     let allPointRewards = [];
     let topMemberRewardName = null;
     let top5MemberIds = [];
-    // let confirmationResult = null; // Dihapus
-    // let verifiedPhoneNumber = null; // Dihapus
-    // let appVerifier = null; // Dihapus
 
     // Elemen DOM
     const lookupView = document.getElementById('lookup-view');
-    // const otpView = document.getElementById('otp-view'); // Dihapus
     const cardView = document.getElementById('card-view');
 
     const lookupForm = document.getElementById('member-lookup-form');
@@ -204,17 +198,12 @@
     const lookupStatus = document.getElementById('lookup-status');
     const backButton = document.getElementById('back-to-lookup');
     
-    // const otpForm = document.getElementById('otp-form'); // Dihapus
-    // const otpCodeInput = document.getElementById('otp-code'); // Dihapus
-    // const otpPhoneDisplay = document.getElementById('otp-phone-display'); // Dihapus
-    // const backButtonOtp = document.getElementById('back-to-lookup-otp'); // Dihapus
-
     const cardName = document.getElementById('card-name');
     const cardPoin = document.getElementById('card-poin');
     const cardDuration = document.getElementById('card-duration');
     const rewardsList = document.getElementById('member-rewards-list');
 
-    // === HELPER FUNCTIONS (Dipertahankan) ===
+    // === HELPER FUNCTIONS ===
     const showLoading = (button, isLoading) => {
         if (!button) return;
         button.disabled = isLoading;
@@ -224,13 +213,32 @@
         targetElement.textContent = message;
         targetElement.className = '';
         targetElement.classList.add(isError ? 'error' : 'success', 'visible');
-        if (targetElement.id !== 'lookup-status') {
-             const mainStatus = document.getElementById('lookup-status');
-             mainStatus.textContent = message;
-             mainStatus.className = '';
-             mainStatus.classList.add(isError ? 'error' : 'success', 'visible');
-        }
     };
+    
+    // --- FUNGSI KRITIS: Format Nomor HP ke E.164 (+628xxxxxxxx) ---
+    const formatPhoneNumberE164 = (phoneNumber) => {
+        let digits = (phoneNumber || '').replace(/\D/g, ''); // Hapus semua non-digit
+        
+        // Cek jika nomor dimulai dengan '08' (contoh: 085707035968)
+        if (digits.startsWith('08')) {
+            return `+62${digits.substring(1)}`; // Ganti '0' pertama dengan '+62'
+        }
+        // Cek jika nomor dimulai dengan '+62' (sudah E.164)
+        if (digits.startsWith('+62')) {
+            return digits;
+        }
+        // Cek jika nomor dimulai dengan '628'
+        if (digits.startsWith('628')) {
+            return `+${digits}`; // Tambahkan '+'
+        }
+        // Jika dimulai dengan '8'
+        if (digits.startsWith('8')) {
+            return `+62${digits}`; 
+        }
+        return `+${digits}`;
+    };
+    
+    // Fungsi lainnya (Tetap Sama)
     const calculateMembershipDuration = (joinDate) => {
         if (!joinDate) return "-";
         const now = new Date();
@@ -300,36 +308,15 @@
             `;
         }).join('');
     };
-    // Format ke E.164 tetap penting karena ID dokumen Firestore biasanya menggunakan format E.164 (+628xxxx)
-    const formatPhoneNumberE164 = (phoneNumber) => {
-        let digits = (phoneNumber || '').replace(/\D/g, '');
-        if (digits.startsWith('08')) {
-            return `+62${digits.substring(1)}`;
-        }
-        if (digits.startsWith('628')) {
-            return `+${digits}`;
-        }
-        if (digits.startsWith('8')) {
-            return `+62${digits}`;
-        }
-        if (digits.startsWith('+62')) {
-            return digits;
-        }
-        return `+${digits}`;
-    };
-    // === AKHIR HELPER FUNCTIONS ===
 
 
     // === EVENT LISTENERS ===
-
     document.addEventListener('DOMContentLoaded', () => {
         loadAllRewards();
         loadTop5Data();
     });
 
-    // =============================================
-    // MODIFIKASI: Logika Form Lookup BARU (Tanpa OTP)
-    // =============================================
+    // --- LOGIKA UTAMA: Pencarian Data Member (Tanpa OTP) ---
     lookupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const button = e.target.querySelector('button[type="submit"]');
@@ -343,11 +330,11 @@
             return;
         }
 
+        // Konversi input ke format E.164 yang digunakan sebagai ID dokumen Firestore
         const formattedPhoneNumber = formatPhoneNumberE164(nomorHp);
         
         try {
             // Langsung cari dokumen member di Firestore
-            // Nomor HP (dalam format E.164) dijadikan ID Dokumen
             const docRef = doc(db, "members", formattedPhoneNumber); 
             const docSnap = await getDoc(docRef);
         
@@ -394,13 +381,8 @@
             showLoading(button, false);
         }
     });
-
-    // LISTENER Form OTP (Dihapus)
-    // Tombol kembali dari OTP View (Dihapus)
     
-    // =============================================
-    // MODIFIKASI: Tombol Kembali dari Card View
-    // =============================================
+    // --- Tombol Kembali dari Card View ---
     backButton.addEventListener('click', () => {
         cardView.classList.remove('visible');
         setTimeout(() => {
