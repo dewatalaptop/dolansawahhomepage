@@ -23,7 +23,6 @@
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --radius-lg: 16px;
             --radius-md: 12px;
-            /* Rasio standar 16:9, bisa diubah jika perlu */
             --header-image-aspect: 16/9; 
         }
 
@@ -34,7 +33,7 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             margin: 0;
-            padding-bottom: 80px; /* Ruang untuk floating cart */
+            padding-bottom: 80px; 
         }
 
         /* --- HEADER & HERO --- */
@@ -47,7 +46,6 @@
             padding: 0 0 1rem 0; 
         }
 
-        /* --- Hero Image Styling --- */
         .hero-image-container {
             width: 50%; 
             max-width: 300px; 
@@ -254,7 +252,7 @@
             font-size: 0.95rem;
         }
 
-        /* --- STYLING BARU: TOMBOL KUANTITAS MENU (PRODUCT CARD) --- */
+        /* --- STYLING: TOMBOL KUANTITAS MENU (PRODUCT CARD) --- */
         .add-btn {
             background: var(--primary-light);
             color: var(--primary-color);
@@ -265,7 +263,7 @@
             font-size: 0.8rem;
             cursor: pointer;
             transition: 0.2s;
-            width: 100px; /* Lebar tetap agar transisi lebih mulus */
+            width: 100px; 
             text-align: center;
         }
         
@@ -279,7 +277,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            width: 100px; /* Sama dengan lebar add-btn */
+            width: 100px; 
             border: 1px solid var(--primary-light);
             border-radius: 8px;
             overflow: hidden;
@@ -443,14 +441,14 @@
             border-radius: 12px;
             margin-top: 1.5rem;
             border: 1px solid #eee;
-            position: relative; /* Untuk posisi tombol fullscreen */
+            position: relative; 
         }
         
-        /* --- STYLING BARU: TOMBOL FULLSCREEN MAP --- */
+        /* --- STYLING: TOMBOL FULLSCREEN MAP (DI LUAR MODAL-CONTENT) --- */
         #fullscreen-toggle-btn {
-            position: absolute;
-            top: 25px; 
-            right: 25px;
+            position: absolute; /* Tetap relatif terhadap modal yang fixed */
+            top: 20px; 
+            right: 20px;
             background: var(--white);
             color: var(--primary-color);
             border: 1px solid #ddd; 
@@ -459,7 +457,7 @@
             font-size: 0.9rem; 
             font-weight: 600;
             cursor: pointer;
-            z-index: 2; 
+            z-index: 10000; /* Harus di atas modal-content */
             box-shadow: var(--shadow-sm);
             display: flex; 
             align-items: center;
@@ -470,7 +468,7 @@
         #fullscreen-toggle-btn:hover {
             background: var(--primary-light);
         }
-
+        
         /* --- PERBAIKAN: FULLSCREEN MODE AKTIF --- */
         .modal.fullscreen {
             position: fixed;
@@ -480,23 +478,18 @@
             height: 100%;
             z-index: 99999; 
             background-color: var(--white); 
-            align-items: center; 
-            justify-content: center;
-            display: flex !important; 
-            flex-direction: column;
+            display: block !important; /* Modal harus selalu tampil (fixed) */
+            padding: 0;
         }
 
         .modal.fullscreen .modal-content {
             /* Sembunyikan content modal lama */
             display: none; 
-            max-height: initial;
-            overflow-y: hidden;
-            border-radius: 0;
         }
-
+        
+        /* Peta utama di HTML: di modal fullscreen dia akan mengambil alih layar */
         .modal.fullscreen #map-container {
-            /* Peta mengambil alih layar penuh */
-            position: absolute; 
+            position: fixed; 
             top: 0;
             left: 0;
             width: 100%;
@@ -526,11 +519,9 @@
             margin-bottom: 10px; 
             display: block;
             text-align: center;
-            /* Animasi Berkedip */
             animation: pulse-attention 1.5s infinite alternate;
         }
         
-        /* --- Nama Kotak Detail Alamat --- */
         .address-detail-label {
             display: block;
             margin-top: 15px;
@@ -778,6 +769,13 @@
     </div>
 
     <div id="checkout-modal" class="modal">
+        <button id="fullscreen-toggle-btn" onclick="window.toggleFullscreenMap()">
+            <i class="fas fa-expand-arrows-alt"></i> 
+            <span id="fullscreen-text">Layar Penuh</span>
+        </button>
+        
+        <div id="map-container" style="display:none;"></div> 
+
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Keranjang Saya</h3>
@@ -793,14 +791,10 @@
                 </div>
                 <div id="voucher-selection-area" class="voucher-list-container">
                     <p style="text-align:center; color: var(--text-grey);">Memuat voucher...</p>
-                    </div>
+                </div>
+                
                 <div class="location-section">
                     <h4 style="margin:0 0 10px 0;"><i class="fas fa-map-marked-alt"></i> Lokasi Pengiriman</h4>
-                    <button id="fullscreen-toggle-btn" onclick="window.toggleFullscreenMap()">
-                        <i class="fas fa-expand-arrows-alt"></i> 
-                        <span id="fullscreen-text">Layar Penuh</span>
-                    </button>
-                    
                     <div id="map-search-container">
                         <input type="text" id="map-search-input" placeholder="Cari Nama Jalan/Kota/Daerah...">
                         <button id="map-search-btn" onclick="geocodeAddress()"><i class="fas fa-search"></i></button>
@@ -813,7 +807,7 @@
                         <span id="error-details">Gagal memuat peta. Silakan periksa kunci API Anda.</span>
                     </div>
                     
-                    <div id="map-container"></div>
+                    <div id="map-container-non-fullscreen" style="height: 250px; width: 100%; border-radius: 12px; margin-top: 10px; margin-bottom: 10px; z-index: 1;"></div>
                     
                     <label for="address-detail" class="address-detail-label">Detail Alamat / Patokan (Wajib Diisi)</label>
                     <input type="text" id="address-detail" placeholder="Cth: Rumah Pagar Hitam, No 12, Samping Masjid" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
@@ -860,7 +854,6 @@
         let vouchers = [];
         let cart = [];
         let activeCategory = 'all';
-        // Menyimpan ID voucher yang aktif
         let activeVoucherId = null; 
         const deliveryFee = 14000;
         const waNumber = "62816263012";
@@ -868,14 +861,10 @@
         // --- 3. DATA FETCHING ---
         async function fetchData() {
             try {
-                // Ambil Produk
                 const prodSnapshot = await getDocs(collection(db, "products"));
-                // Gunakan id dokumen sebagai id produk
                 products = prodSnapshot.docs.map(doc => ({ id: doc.id, isAvailable: true, ...doc.data() }));
                 
-                // Ambil Voucher
                 const voucherSnapshot = await getDocs(collection(db, "vouchers"));
-                // Simpan ID dokumen voucher
                 vouchers = voucherSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
                 renderCategories();
@@ -891,7 +880,6 @@
         window.filterCategory = (cat, element) => {
             activeCategory = cat;
             
-            // Update pills UI
             document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
             
@@ -915,9 +903,6 @@
             });
         }
 
-        /**
-         * Fungsi yang diperbarui: kini menampilkan tombol +/-, atau tombol "Tambah"
-         */
         function renderProducts(filterTerm = '') {
             const container = document.getElementById('product-container');
             container.innerHTML = '';
@@ -953,7 +938,6 @@
                     const card = document.createElement('div');
                     card.className = 'product-card';
                     
-                    // Cek kuantitas item di keranjang
                     const itemInCart = cart.find(item => item.id === p.id);
                     const qty = itemInCart ? itemInCart.qty : 0;
                     
@@ -993,10 +977,6 @@
             }
         }
         
-        /**
-         * Fungsi BARU: Menggantikan addToCart dan removeFromCart. 
-         * Mengelola perubahan kuantitas dan memperbarui UI tombol/kontrol.
-         */
         window.updateQuantity = (id, change) => {
             const prod = products.find(p => p.id === id);
             if (!prod || prod.isAvailable === false) return;
@@ -1004,13 +984,11 @@
             let exist = cart.find(item => item.id === id);
 
             if (!exist && change > 0) {
-                // Tambah item baru
                 cart.push({ ...prod, qty: change });
-                exist = cart.find(item => item.id === id); // Ambil objek yang baru
+                exist = cart.find(item => item.id === id); 
             } else if (exist) {
                 exist.qty += change;
                 if (exist.qty <= 0) {
-                    // Hapus item jika kuantitas <= 0
                     const idx = cart.findIndex(item => item.id === id);
                     if (idx > -1) {
                         cart.splice(idx, 1);
@@ -1018,22 +996,15 @@
                 }
             }
             
-            // Perbarui UI pada Product Card
             updateProductCardControl(id);
-            
-            // Perbarui UI Keranjang Mengambang
             updateCartUI();
             
-            // Perbarui UI Modal Checkout jika terbuka
             if (document.getElementById('checkout-modal').style.display === 'flex') {
                  renderModalCart();
                  renderVoucherSelection(); 
             }
         };
         
-        /**
-         * Fungsi BARU: Mengubah tampilan tombol Tambah menjadi kontrol kuantitas (+/-) atau sebaliknya.
-         */
         function updateProductCardControl(id) {
             const controlContainer = document.getElementById(`product-control-${id}`);
             if (!controlContainer) return;
@@ -1042,7 +1013,6 @@
             const qty = itemInCart ? itemInCart.qty : 0;
             
             if (qty > 0) {
-                // Tampilkan kontrol kuantitas
                 controlContainer.innerHTML = `
                     <div class="qty-control" id="qty-control-${id}">
                         <button onclick="window.updateQuantity('${id}', -1)"><i class="fas fa-minus"></i></button>
@@ -1051,7 +1021,6 @@
                     </div>
                 `;
             } else {
-                // Tampilkan tombol "Tambah"
                 controlContainer.innerHTML = `
                     <button class="add-btn" id="add-btn-${id}" onclick="window.updateQuantity('${id}', 1)">
                         Tambah
@@ -1060,7 +1029,6 @@
             }
         }
         
-        // --- FUNGSI ASLI: updateCartUI diubah agar memanggil updateProductCardControl ---
         function updateCartUI() {
             const btn = document.getElementById('cart-btn');
             const count = cart.reduce((a, b) => a + b.qty, 0);
@@ -1074,7 +1042,6 @@
                 btn.style.display = 'none';
             }
             
-            // Perbarui tampilan kontrol di semua kartu produk
             products.forEach(p => updateProductCardControl(p.id));
         }
 
@@ -1085,6 +1052,10 @@
             renderVoucherSelection(); 
             
             if (window.mapInitialized && window.googleMap) {
+                // Perbaiki posisi peta di container non-fullscreen
+                if (window.copyMapToContainer) {
+                    window.copyMapToContainer('map-container-non-fullscreen');
+                }
                 google.maps.event.trigger(window.googleMap, 'resize');
                 window.googleMap.setCenter(window.googleMarker.getPosition());
             }
@@ -1100,7 +1071,7 @@
             
             if (cart.length === 0) {
                 list.innerHTML = '<p style="text-align:center; margin-top:20px;">Keranjang kosong.</p>';
-                activeVoucherId = null; // Pastikan voucher dinonaktifkan
+                activeVoucherId = null; 
             }
             
             cart.forEach(item => {
@@ -1123,7 +1094,7 @@
             calculateTotal();
         }
 
-        // --- 7. VOUCHER SELECTION LOGIC BARU ---
+        // --- 7. VOUCHER SELECTION LOGIC ---
         
         function renderVoucherSelection() {
             const container = document.getElementById('voucher-selection-area');
@@ -1132,7 +1103,7 @@
             
             if (cart.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color: var(--text-grey);">Keranjang masih kosong, tidak ada voucher yang bisa digunakan.</p>';
-                activeVoucherId = null;
+                activeVoucherId = null; 
                 calculateTotal();
                 return;
             }
@@ -1169,7 +1140,6 @@
                     }
                 `;
                 
-                // Tambahkan event listener untuk mengaktifkan radio button saat kartu diklik
                 if (isApplicable) {
                     card.onclick = () => window.selectVoucher(v.id);
                 }
@@ -1188,7 +1158,7 @@
             
             if (!voucher || subtotal < voucher.minTransaction) {
                  alert("Minimal transaksi belum terpenuhi untuk voucher ini.");
-                 window.removeVoucher(); // Hapus voucher jika tidak valid
+                 window.removeVoucher(); 
                  return;
             }
 
@@ -1236,14 +1206,13 @@
             updateWhatsAppLink(subtotal, disc, total, currentVoucher);
         }
 
-        // --- 8. WHATSAPP LINK GENERATOR (MODIFIKASI) ---
+        // --- 8. WHATSAPP LINK GENERATOR ---
         function updateWhatsAppLink(subtotal, disc, total, currentVoucher) {
             const lat = document.getElementById('lat-val').value;
             const lng = document.getElementById('lng-val').value;
             const addressDetail = document.getElementById('address-detail').value || "*Detail Alamat Belum Diisi*";
             
-            // Format URL Google Maps standar
-            const mapLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+            const mapLink = (lat && lng) ? `http://maps.google.com/?q=${lat},${lng}` : "Lokasi belum ditentukan/diseret";
 
             let msg = `Halo Jeggboy, saya mau pesan makanan dari Resto Dolan Sawah Pulutan Salatiga:\n\n`;
             
@@ -1253,10 +1222,8 @@
 
             msg += `\n--------------------------------\n`;
             
-            // Tambahkan header tebal dan dekoratif
             msg += `*🚚 Kirim ke lokasi berikut:*\n`;
             
-            // Tampilkan Detail Lokasi dan Pin Maps
             msg += `📍 *Lokasi Patokan:* ${addressDetail}\n`;
             msg += `🗺️ *Pin Maps:* ${mapLink}\n`;
             
@@ -1266,14 +1233,12 @@
             
             msg += `--------------------------------\n`;
             msg += `Subtotal: Rp ${formatRupiah(subtotal)}\n`;
-            // Baris Ongkir dihilangkan dari pesan WhatsApp
+
             if(disc > 0) msg += `Diskon: -Rp ${formatRupiah(disc)}\n`;
             
-            // Total sekarang dihitung dari Subtotal - Diskon
             const totalWithoutDelivery = Math.max(0, subtotal - disc);
             msg += `\n*TOTAL (Makanan & Diskon): Rp ${formatRupiah(totalWithoutDelivery)}*`;
             
-            // Tambahkan teks untuk menanyakan ongkir
             msg += `\n\n_Mohon segera diproses dan cek ongkir ke lokasi saya ya!_`;
 
 
@@ -1316,28 +1281,32 @@
         let geocoder;
         let mapInitialized = false;
         
-        // Konstanta untuk Local Storage
         const LAST_ADDRESS_KEY = 'lastDeliveryAddress';
 
-        // --- FUNGSI LAPORAN ERROR SPESIFIK MAPS ---
+        // --- FUNGSI SPESIAL MAPS: MEMINDAHKAN PETA KE CONTAINER YANG TEPAT ---
+        // Karena peta harus di render di satu tempat (map-container) tapi terlihat di dua tempat (non-fullscreen/fullscreen)
+        window.copyMapToContainer = function(targetId) {
+            const targetElement = document.getElementById(targetId);
+            const mapElement = document.getElementById('map-container');
+            if (targetElement && mapElement && mapElement.parentNode !== targetElement) {
+                targetElement.appendChild(mapElement);
+                mapElement.style.display = 'block'; // Pastikan container peta terlihat di posisi barunya
+            }
+        }
 
-        /**
-         * Dipanggil jika skrip Google Maps GAGAL dimuat (kesalahan jaringan atau callback error)
-         */
+        // --- LAPORAN ERROR SPESIFIK MAPS ---
+
         window.mapLoadError = function() {
             console.error("Google Maps API script failed to load.");
             const errorDiv = document.getElementById('map-error-message');
             document.getElementById('error-details').innerText = "Gagal memuat Google Maps API. Periksa koneksi internet Anda atau pastikan Kunci API sudah benar. Kode: LOAD_FAIL";
             errorDiv.style.display = 'block';
             
-            document.getElementById('map-container').style.display = 'none'; 
+            document.getElementById('map-container-non-fullscreen').style.display = 'none'; 
             document.getElementById('map-search-container').style.display = 'none';
             document.getElementById('fullscreen-toggle-btn').style.display = 'none';
         };
 
-        /**
-         * Dipanggil secara otomatis oleh Google Maps jika ada masalah otentikasi (Kunci API invalid, Billing non-aktif, atau API service belum diaktifkan)
-         */
         window.gm_authFailure = function() {
             console.error("Google Maps Authentication Failure: API Key is invalid or restricted.");
             const errorDiv = document.getElementById('map-error-message');
@@ -1349,7 +1318,7 @@
             `;
             errorDiv.style.display = 'block';
             
-            document.getElementById('map-container').style.display = 'none'; 
+            document.getElementById('map-container-non-fullscreen').style.display = 'none'; 
             document.getElementById('map-search-container').style.display = 'none';
             document.getElementById('fullscreen-toggle-btn').style.display = 'none';
         };
@@ -1360,22 +1329,19 @@
             if (mapInitialized) return;
 
             const errorDiv = document.getElementById('map-error-message');
-            errorDiv.style.display = 'none'; // Sembunyikan error jika init berhasil
-            document.getElementById('map-container').style.display = 'block'; 
-            document.getElementById('map-search-container').style.display = 'block';
-            document.getElementById('fullscreen-toggle-btn').style.display = 'flex'; // Pastikan tombol tampil
-
-
-            let defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang
+            errorDiv.style.display = 'none'; 
             
-            // --- FUNGSI CACHE: MUAT ALAMAT TERAKHIR ---
+            // Atur peta agar awalnya dirender di container non-fullscreen
+            window.copyMapToContainer('map-container-non-fullscreen');
+            
+            let defaultLoc = { lat: -6.9932, lng: 110.4203 }; 
+            
             const lastAddress = localStorage.getItem(LAST_ADDRESS_KEY);
             if (lastAddress) {
                 try {
                     const saved = JSON.parse(lastAddress);
                     defaultLoc = { lat: parseFloat(saved.lat), lng: parseFloat(saved.lng) };
                     document.getElementById('address-detail').value = saved.detail;
-                    console.log("Memuat alamat terakhir dari cache.");
                 } catch (e) {
                     console.error("Gagal memuat/parse alamat terakhir dari cache", e);
                 }
@@ -1383,15 +1349,14 @@
             
             geocoder = new google.maps.Geocoder();
             
-            // Inisialisasi Peta
+            // Inisialisasi Peta di container ID asli: map-container
             googleMap = new google.maps.Map(document.getElementById('map-container'), {
                 center: defaultLoc,
-                zoom: 15, // Zoom lebih dekat jika ada cache
+                zoom: 15, 
                 mapTypeControl: false,
                 streetViewControl: false
             });
 
-            // Marker yang bisa digeser
             googleMarker = new google.maps.Marker({
                 position: defaultLoc,
                 map: googleMap,
@@ -1399,25 +1364,21 @@
                 title: "Lokasi Kirim Anda"
             });
 
-            // Event listener saat marker digeser
             googleMarker.addListener('dragend', function() {
                 const pos = googleMarker.getPosition();
                 document.getElementById('lat-val').value = pos.lat();
                 document.getElementById('lng-val').value = pos.lng();
                 
-                // --- FUNGSI CACHE: SIMPAN KOORDINAT BARU ---
                 saveAddressToCache();
                 
-                if (window.calculateTotal) window.calculateTotal(); // Panggil fungsi di modul utama
+                if (window.calculateTotal) window.calculateTotal();
             });
 
-            // Set value awal
             document.getElementById('lat-val').value = defaultLoc.lat;
             document.getElementById('lng-val').value = defaultLoc.lng;
             
             mapInitialized = true;
             
-            // Tambahkan event listener untuk tombol enter di search box
             document.getElementById('map-search-input').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -1434,16 +1395,13 @@
                 if (status === 'OK' && results[0]) {
                     const location = results[0].geometry.location;
                     
-                    // Pindahkan peta dan marker
                     googleMap.setCenter(location);
                     googleMap.setZoom(15);
                     googleMarker.setPosition(location);
 
-                    // Update koordinat
                     document.getElementById('lat-val').value = location.lat();
                     document.getElementById('lng-val').value = location.lng();
                     
-                    // --- FUNGSI CACHE: SIMPAN KOORDINAT BARU ---
                     saveAddressToCache();
                     
                     if (window.calculateTotal) window.calculateTotal();
@@ -1454,32 +1412,46 @@
         };
         
         /**
-         * FUNGSI PERBAIKAN: Mengubah tampilan peta menjadi layar penuh (fullscreen)
+         * FUNGSI KRITIS: Mengubah tampilan peta menjadi layar penuh (fullscreen)
          */
         window.toggleFullscreenMap = function() {
             const modal = document.getElementById('checkout-modal');
             const isFullscreen = modal.classList.toggle('fullscreen');
             const btn = document.getElementById('fullscreen-toggle-btn');
-            const searchContainer = document.getElementById('map-search-container');
-            const helperText = document.querySelector('.location-helper');
-            const addressDetailLabel = document.querySelector('.address-detail-label');
-            const addressDetailInput = document.getElementById('address-detail');
             
-            // Toggle ikon dan teks tombol
+            // Elemen yang akan disembunyikan/ditampilkan di modal-content
+            const mapContentElements = [
+                document.getElementById('map-search-container'),
+                document.querySelector('.location-helper'),
+                document.querySelector('.address-detail-label'),
+                document.getElementById('address-detail'),
+                document.getElementById('map-container-non-fullscreen') // Sembunyikan container non-fullscreen
+            ];
+            
             if (isFullscreen) {
-                btn.innerHTML = '<i class="fas fa-compress-alt"></i> <span id="fullscreen-text">Kembali</span>'; // Ikon compress
+                // Masuk mode fullscreen
+                btn.innerHTML = '<i class="fas fa-compress-alt"></i> <span id="fullscreen-text">Kembali</span>';
                 btn.style.color = 'var(--danger)'; 
-                searchContainer.style.display = 'none';
-                helperText.style.display = 'none';
-                addressDetailLabel.style.display = 'none';
-                addressDetailInput.style.display = 'none';
+                
+                // Pindahkan peta ke level root modal untuk mendapatkan 100% viewport
+                window.copyMapToContainer('checkout-modal'); 
+                
+                mapContentElements.forEach(el => el.style.display = 'none');
+                
             } else {
-                btn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i> <span id="fullscreen-text">Layar Penuh</span>'; // Ikon expand
+                // Keluar mode fullscreen
+                btn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i> <span id="fullscreen-text">Layar Penuh</span>';
                 btn.style.color = 'var(--primary-color)';
-                searchContainer.style.display = 'block';
-                helperText.style.display = 'block';
-                addressDetailLabel.style.display = 'block';
-                addressDetailInput.style.display = 'block';
+
+                // Pindahkan peta kembali ke container aslinya (non-fullscreen)
+                window.copyMapToContainer('map-container-non-fullscreen');
+                
+                mapContentElements.forEach(el => {
+                    // Tampilkan kembali elemen yang disembunyikan, kecuali map-container-non-fullscreen (yang akan diurus oleh copyMapToContainer)
+                    if (el.id !== 'map-container-non-fullscreen') {
+                        el.style.display = 'block';
+                    }
+                });
             }
             
             // PENTING: Paksa peta untuk merender ulang setelah perubahan ukuran
@@ -1507,7 +1479,7 @@
         
         // --- Update link saat user mengetik alamat, dan simpan cache ---
         document.getElementById('address-detail').addEventListener('input', () => {
-            saveAddressToCache(); // Simpan detail alamat
+            saveAddressToCache(); 
             window.calculateTotal();
         });
     </script>
