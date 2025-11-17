@@ -439,21 +439,20 @@
             border-radius: 12px;
             margin-top: 1.5rem;
             border: 1px solid #eee;
-            position: relative; 
+            position: relative; /* Penting agar tombol absolute bisa bekerja */
         }
 
         /* === PERBAIKAN: CONTAINER PETA NON-FULLSCREEN DAN TOMBOL === */
         #map-control-area {
-            position: relative; /* Container utama untuk mengatur posisi tombol */
+            position: relative; 
             width: 100%;
-            height: 250px; /* Tinggi sama dengan peta non-fullscreen */
+            height: 250px; 
             border-radius: var(--radius-md);
             margin: 10px 0;
             overflow: hidden; 
         }
         
         #map-container-non-fullscreen {
-            /* Peta di mode normal */
             height: 100% !important; 
             width: 100% !important;
             border-radius: 12px;
@@ -461,10 +460,11 @@
             z-index: 1;
         }
         
+        /* Tombol di mode normal: Posisikan di atas peta kecil */
         #fullscreen-toggle-btn {
-            position: absolute; /* Posisikan absolut di dalam #map-control-area */
-            top: 10px; 
-            right: 10px;
+            position: absolute; 
+            top: 230px; /* Diatur agar berada di atas sudut peta non-fullscreen */
+            right: 25px;
             background: var(--white);
             color: var(--primary-color);
             border: 1px solid #ddd; 
@@ -473,7 +473,7 @@
             font-size: 0.9rem; 
             font-weight: 600;
             cursor: pointer;
-            z-index: 99; /* Di atas peta */
+            z-index: 1010; 
             box-shadow: var(--shadow-sm);
             display: flex; 
             align-items: center;
@@ -526,7 +526,7 @@
             background: rgba(255, 255, 255, 0.9); 
             border-color: #ccc;
             color: var(--danger); 
-            display: block !important; /* <--- Wajib Ditambahkan */
+            display: flex !important; /* Wajib, dan lebih baik dari 'block' */
         }
         
         /* --- PERUBAHAN TAMPILAN KETERANGAN PETA --- */
@@ -823,11 +823,12 @@
                         <span id="error-details">Gagal memuat peta. Silakan periksa kunci API Anda.</span>
                     </div>
                     
+                    <button id="fullscreen-toggle-btn" onclick="window.toggleFullscreenMap()">
+                        <i class="fas fa-expand-arrows-alt"></i> 
+                        <span id="fullscreen-text">Layar Penuh</span>
+                    </button>
+                    
                     <div id="map-control-area">
-                         <button id="fullscreen-toggle-btn" onclick="window.toggleFullscreenMap()">
-                            <i class="fas fa-expand-arrows-alt"></i> 
-                            <span id="fullscreen-text">Layar Penuh</span>
-                        </button>
                         <div id="map-container-non-fullscreen"></div>
                     </div>
                     
