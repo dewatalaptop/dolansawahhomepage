@@ -370,11 +370,27 @@
             border: 1px solid #eee;
         }
 
+        /* --- PERUBAHAN TAMPILAN KETERANGAN PETA --- */
         .location-helper {
-            font-size: 0.8rem;
-            color: var(--text-grey);
+            font-size: 0.9rem; /* Ukuran sedikit lebih besar */
+            color: var(--danger); /* Warna merah untuk perhatian */
+            font-weight: 700; /* Tebal */
             margin-top: 5px;
+            margin-bottom: 10px; /* Jarak bawah */
             display: block;
+            text-align: center;
+            /* Animasi Berkedip */
+            animation: pulse-attention 1.5s infinite alternate;
+        }
+        
+        /* --- Nama Kotak Detail Alamat --- */
+        .address-detail-label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
         }
 
         /* Search input for map */
@@ -459,6 +475,12 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes slideUp { from { transform: translate(-50%, 100%); } to { transform: translate(-50%, 0); } }
         @keyframes slideUpModal { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        /* Animasi untuk Keterangan Peta */
+        @keyframes pulse-attention {
+            0% { color: var(--danger); transform: scale(1.0); }
+            100% { color: #cc0000; transform: scale(1.03); }
+        }
 
     </style>
 </head>
@@ -517,7 +539,7 @@
                         <button id="map-search-btn" onclick="geocodeAddress()"><i class="fas fa-search"></i></button>
                     </div>
                     
-                    <p class="location-helper">Geser pin merah ke lokasi Anda yang sebenarnya:</p>
+                    <p class="location-helper">📍 **GESER PIN MERAH KE LOKASI ANDA SEBENARNYA**</p>
                     
                     <div id="map-error-message" style="color: red; background: #fee2e2; border: 1px solid #fca5a5; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none;">
                         <i class="fas fa-exclamation-triangle"></i> 
@@ -525,7 +547,10 @@
                     </div>
                     
                     <div id="map-container"></div>
-                    <input type="text" id="address-detail" placeholder="Detail Alamat (Cth: Rumah Pagar Hitam, No 12)" style="width:100%; padding:10px; margin-top:10px; border:1px solid #ddd; border-radius:8px;">
+                    
+                    <label for="address-detail" class="address-detail-label">Detail Alamat / Patokan (Wajib Diisi)</label>
+                    <input type="text" id="address-detail" placeholder="Cth: Rumah Pagar Hitam, No 12, Samping Masjid" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                    
                     <input type="hidden" id="lat-val">
                     <input type="hidden" id="lng-val">
                 </div>
@@ -552,7 +577,7 @@
         </div>
     </div>
 
-    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7AzQ_3rSuuPrX0YJ8PzkitySa5jc1APA&callback=initMap&libraries=places&v=weekly&callback=initMap&loading=async&failure_callback=mapLoadError" ></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7AzQ_3rSuuPrX0YJ8PzkitySa5jc1APA&callback=initMap&libraries=places&v=weekly&loading=async&failure_callback=mapLoadError" ></script>
 
     <script>
         // Google Maps Variables
@@ -560,6 +585,9 @@
         let googleMarker;
         let geocoder;
         let mapInitialized = false;
+        
+        // Konstanta untuk Local Storage
+        const LAST_ADDRESS_KEY = 'lastDeliveryAddress';
 
         // --- FUNGSI LAPORAN ERROR SPESIFIK MAPS ---
 
@@ -604,13 +632,27 @@
             document.getElementById('map-container').style.display = 'block'; 
             document.getElementById('map-search-container').style.display = 'block';
 
-            const defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang
+            let defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang
+            
+            // --- FUNGSI CACHE: MUAT ALAMAT TERAKHIR ---
+            const lastAddress = localStorage.getItem(LAST_ADDRESS_KEY);
+            if (lastAddress) {
+                try {
+                    const saved = JSON.parse(lastAddress);
+                    defaultLoc = { lat: parseFloat(saved.lat), lng: parseFloat(saved.lng) };
+                    document.getElementById('address-detail').value = saved.detail;
+                    console.log("Memuat alamat terakhir dari cache.");
+                } catch (e) {
+                    console.error("Gagal memuat/parse alamat terakhir dari cache", e);
+                }
+            }
+            
             geocoder = new google.maps.Geocoder();
             
             // Inisialisasi Peta
             googleMap = new google.maps.Map(document.getElementById('map-container'), {
                 center: defaultLoc,
-                zoom: 13,
+                zoom: 15, // Zoom lebih dekat jika ada cache
                 mapTypeControl: false,
                 streetViewControl: false
             });
@@ -628,6 +670,10 @@
                 const pos = googleMarker.getPosition();
                 document.getElementById('lat-val').value = pos.lat();
                 document.getElementById('lng-val').value = pos.lng();
+                
+                // --- FUNGSI CACHE: SIMPAN KOORDINAT BARU ---
+                saveAddressToCache();
+                
                 if (window.calculateTotal) window.calculateTotal(); // Panggil fungsi di modul utama
             });
 
@@ -663,12 +709,37 @@
                     document.getElementById('lat-val').value = location.lat();
                     document.getElementById('lng-val').value = location.lng();
                     
+                    // --- FUNGSI CACHE: SIMPAN KOORDINAT BARU ---
+                    saveAddressToCache();
+                    
                     if (window.calculateTotal) window.calculateTotal();
                 } else {
                     alert('Lokasi tidak ditemukan: ' + status);
                 }
             });
         };
+        
+        // --- FUNGSI CACHE: SIMPAN ALAMAT KE LOCAL STORAGE ---
+        function saveAddressToCache() {
+            const lat = document.getElementById('lat-val').value;
+            const lng = document.getElementById('lng-val').value;
+            const detail = document.getElementById('address-detail').value;
+            
+            if (lat && lng) {
+                const addressData = {
+                    lat: lat,
+                    lng: lng,
+                    detail: detail
+                };
+                localStorage.setItem(LAST_ADDRESS_KEY, JSON.stringify(addressData));
+            }
+        }
+        
+        // --- Update link saat user mengetik alamat, dan simpan cache ---
+        document.getElementById('address-detail').addEventListener('input', () => {
+            saveAddressToCache(); // Simpan detail alamat
+            window.calculateTotal();
+        });
     </script>
     
     <script type="module">
@@ -958,7 +1029,7 @@
         function updateWhatsAppLink(subtotal, disc, total) {
             const lat = document.getElementById('lat-val').value;
             const lng = document.getElementById('lng-val').value;
-            const addressDetail = document.getElementById('address-detail').value || "Belum diisi";
+            const addressDetail = document.getElementById('address-detail').value || "*Detail Alamat Belum Diisi*";
             
             // Format URL Google Maps standar
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
@@ -970,8 +1041,8 @@
             });
 
             msg += `\n--------------------------------\n`;
-            msg += `📍 *Lokasi:* ${addressDetail}\n`;
-            msg += `🗺️ *Maps:* ${mapLink}\n`;
+            msg += `📍 *Lokasi Patokan:* ${addressDetail}\n`;
+            msg += `🗺️ *Pin Maps:* ${mapLink}\n`;
             
             if (currentVoucher) {
                 msg += `✨ *Kode Voucher:* ${currentVoucher.code}\n`;
@@ -998,9 +1069,6 @@
                  waBtn.style.pointerEvents = 'auto';
             }
         }
-
-        // Update link saat user mengetik alamat
-        document.getElementById('address-detail').addEventListener('input', () => calculateTotal());
 
         // --- UTIL & INIT ---
         function formatRupiah(n) {
