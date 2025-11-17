@@ -420,7 +420,107 @@
             padding: 0 10px;
             cursor: pointer;
         }
+        
+        /* === MODIFIKASI VOUCHER STYLING === */
+        
+        .voucher-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .voucher-section-header h4 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+        
+        .voucher-section-header button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 5px 10px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        
+        .voucher-section-header button:hover {
+            background: var(--primary-light);
+        }
+        
+        .voucher-list-container {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 250px; /* Batasi tinggi daftar voucher */
+            overflow-y: auto;
+            background: var(--white);
+        }
+        
+        .voucher-card {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: #f9f9f9;
+        }
+        
+        .voucher-card:last-child {
+            margin-bottom: 0;
+        }
 
+        .voucher-card.unavailable {
+             opacity: 0.6;
+             cursor: not-allowed;
+             background: #fefefe;
+        }
+
+        .voucher-icon {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-right: 15px;
+        }
+        
+        .voucher-details {
+            flex-grow: 1;
+        }
+        
+        .voucher-details h5 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .voucher-details p {
+            margin: 0;
+            font-size: 0.75rem;
+            color: var(--text-grey);
+        }
+        
+        .voucher-radio {
+            width: 18px;
+            height: 18px;
+            margin-left: 10px;
+            accent-color: var(--primary-color);
+        }
+
+        .voucher-card.active {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            background: var(--primary-light);
+        }
+        
         /* --- VOUCHER & SUMMARY --- */
         .summary-row {
             display: flex;
@@ -531,7 +631,14 @@
             
             <div class="modal-body">
                 <div id="cart-items-list"></div>
-
+                
+                <div class="voucher-section-header">
+                    <h4><i class="fas fa-tags"></i> Pilih Voucher Diskon</h4>
+                    <button onclick="window.removeVoucher()">Hapus Voucher</button>
+                </div>
+                <div id="voucher-selection-area" class="voucher-list-container">
+                    <p style="text-align:center; color: var(--text-grey);">Memuat voucher...</p>
+                    </div>
                 <div class="location-section">
                     <h4 style="margin:0 0 10px 0;"><i class="fas fa-map-marked-alt"></i> Lokasi Pengiriman</h4>
                     <div id="map-search-container">
@@ -555,14 +662,6 @@
                     <input type="hidden" id="lng-val">
                 </div>
 
-                <div style="margin-top:1.5rem;">
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="client-voucher-code" placeholder="Kode Voucher" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
-                        <button onclick="applyVoucher()" style="background:var(--text-dark); color:white; border:none; padding:0 15px; border-radius:8px;">Pakai</button>
-                    </div>
-                    <small id="voucher-msg" style="display:block; margin-top:5px;"></small>
-                </div>
-
                 <div style="margin-top:1.5rem; background:#f9f9f9; padding:15px; border-radius:12px;">
                     <div class="summary-row"><span>Subtotal</span> <span id="sum-subtotal">0</span></div>
                     <div class="summary-row"><span>Ongkir (Dalam Kota)</span> <span id="sum-delivery">Rp 14.000</span></div>
@@ -577,7 +676,7 @@
         </div>
     </div>
 
-    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7AzQ_3rSuuPrX0YJ8PzkitySa5jc1APA&callback=initMap&libraries=places&v=weekly&loading=async&failure_callback=mapLoadError" ></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7AzQ_3rSuuPrX0YJ8PzkitySa5jc1APA&callback=initMap&libraries=places&v=weekly&v=beta&loading=async&failure_callback=mapLoadError" ></script>
 
     <script>
         // Google Maps Variables
@@ -764,7 +863,8 @@
         let vouchers = [];
         let cart = [];
         let activeCategory = 'all';
-        let currentVoucher = null;
+        // Menyimpan ID voucher yang aktif
+        let activeVoucherId = null; 
         const deliveryFee = 14000;
         const waNumber = "62816263012";
         
@@ -778,6 +878,7 @@
                 
                 // Ambil Voucher
                 const voucherSnapshot = await getDocs(collection(db, "vouchers"));
+                // Simpan ID dokumen voucher
                 vouchers = voucherSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
                 renderCategories();
@@ -789,7 +890,7 @@
             }
         }
 
-        // --- 4. UI RENDERING ---
+        // --- 4. UI RENDERING PRODUK & KATEGORI (Tidak ada perubahan di sini) ---
         window.filterCategory = (cat, element) => {
             activeCategory = cat;
             
@@ -897,14 +998,15 @@
                 if (cart[idx].qty <= 0) {
                     cart.splice(idx, 1);
                     if(cart.length === 0) {
-                        currentVoucher = null;
-                        document.getElementById('voucher-msg').innerText = "";
+                        // Jika keranjang kosong, hapus voucher aktif
+                        activeVoucherId = null; 
                     }
                 }
             }
             updateCartUI();
             if (document.getElementById('checkout-modal').style.display === 'flex') {
-                 renderModalCart(); 
+                 renderModalCart();
+                 renderVoucherSelection(); // Perbarui tampilan voucher
             }
         };
 
@@ -926,6 +1028,7 @@
         document.getElementById('cart-btn').onclick = () => {
             document.getElementById('checkout-modal').style.display = 'flex';
             renderModalCart();
+            renderVoucherSelection(); // Panggil fungsi render voucher saat modal dibuka
             
             // Jika peta sudah di-init (Google Maps), paksa resize agar tampil benar di modal
             if (window.mapInitialized && window.googleMap) {
@@ -945,6 +1048,7 @@
             
             if (cart.length === 0) {
                 list.innerHTML = '<p style="text-align:center; margin-top:20px;">Keranjang kosong.</p>';
+                activeVoucherId = null; // Pastikan voucher dinonaktifkan
             }
             
             cart.forEach(item => {
@@ -967,49 +1071,107 @@
             calculateTotal();
         }
 
-        // --- 7. VOUCHER & TOTAL ---
-        window.applyVoucher = () => {
-            const code = document.getElementById('client-voucher-code').value.toUpperCase();
-            const msg = document.getElementById('voucher-msg');
+        // --- 7. VOUCHER SELECTION LOGIC BARU ---
+        
+        function renderVoucherSelection() {
+            const container = document.getElementById('voucher-selection-area');
             const subtotal = cart.reduce((a, b) => a + (b.price * b.qty), 0);
-
-            const valid = vouchers.find(v => v.code === code);
-
+            container.innerHTML = '';
+            
             if (cart.length === 0) {
-                msg.innerText = "Keranjang masih kosong!";
-                msg.style.color = "red";
-                currentVoucher = null;
+                container.innerHTML = '<p style="text-align:center; color: var(--text-grey);">Keranjang masih kosong, tidak ada voucher yang bisa digunakan.</p>';
+                activeVoucherId = null;
                 calculateTotal();
                 return;
             }
-
-            if (!valid) {
-                msg.innerText = "Kode tidak ditemukan.";
-                msg.style.color = "red";
-                currentVoucher = null;
-            } else if (subtotal < valid.minTransaction) {
-                msg.innerText = `Min. belanja Rp ${formatRupiah(valid.minTransaction)}`;
-                msg.style.color = "red";
-                currentVoucher = null;
-            } else {
-                msg.innerText = `Voucher diterapkan! Diskon: Rp ${formatRupiah(valid.discountValue)}`;
-                msg.style.color = "green";
-                currentVoucher = valid;
+            
+            if (vouchers.length === 0) {
+                 container.innerHTML = '<p style="text-align:center; color: var(--text-grey);">Tidak ada voucher yang tersedia saat ini.</p>';
+                 activeVoucherId = null;
+                 calculateTotal();
+                 return;
             }
+            
+            let foundValidVoucher = false;
+
+            vouchers.forEach(v => {
+                const isApplicable = subtotal >= v.minTransaction;
+                const isActive = activeVoucherId === v.id;
+                
+                if (isApplicable) foundValidVoucher = true;
+
+                const card = document.createElement('div');
+                card.className = `voucher-card ${isActive ? 'active' : ''} ${!isApplicable ? 'unavailable' : ''}`;
+                card.dataset.voucherId = v.id;
+                
+                card.innerHTML = `
+                    <i class="fas fa-ticket-simple voucher-icon"></i>
+                    <div class="voucher-details">
+                        <h5>Diskon Rp ${formatRupiah(v.discountValue)}</h5>
+                        <p>Min. belanja Rp ${formatRupiah(v.minTransaction)}</p>
+                        <p style="font-weight:600; color:#555;">Kode: ${v.code}</p>
+                    </div>
+                    ${isApplicable ? 
+                        `<input type="radio" name="voucher" class="voucher-radio" value="${v.id}" ${isActive ? 'checked' : ''} onclick="window.selectVoucher('${v.id}')">` :
+                        `<p style="font-size:0.7rem; color: var(--danger); font-weight: 600;">Min. blj. blm tercapai</p>`
+                    }
+                `;
+                
+                // Tambahkan event listener untuk mengaktifkan radio button saat kartu diklik
+                if (isApplicable) {
+                    card.onclick = () => window.selectVoucher(v.id);
+                }
+                
+                container.appendChild(card);
+            });
+            
+            if (!foundValidVoucher && vouchers.length > 0) {
+                 container.innerHTML += '<p style="text-align:center; color: var(--text-grey); margin-top: 10px; border-top: 1px dashed #eee; padding-top: 10px;">Belum ada voucher yang bisa digunakan (Min. transaksi belum tercapai).</p>';
+            }
+        }
+        
+        window.selectVoucher = (voucherId) => {
+            const subtotal = cart.reduce((a, b) => a + (b.price * b.qty), 0);
+            const voucher = vouchers.find(v => v.id === voucherId);
+            
+            if (!voucher || subtotal < voucher.minTransaction) {
+                 alert("Minimal transaksi belum terpenuhi untuk voucher ini.");
+                 window.removeVoucher(); // Hapus voucher jika tidak valid
+                 return;
+            }
+
+            activeVoucherId = voucherId;
+            // Perbarui tampilan kartu yang aktif
+            document.querySelectorAll('.voucher-card').forEach(card => card.classList.remove('active'));
+            document.querySelector(`.voucher-card[data-voucher-id="${voucherId}"]`).classList.add('active');
+            document.querySelector(`.voucher-card[data-voucher-id="${voucherId}"] .voucher-radio`).checked = true;
+            
             calculateTotal();
-        };
+        }
+        
+        window.removeVoucher = () => {
+            activeVoucherId = null;
+            renderVoucherSelection();
+            calculateTotal();
+        }
 
         window.calculateTotal = function() {
             const subtotal = cart.reduce((a, b) => a + (b.price * b.qty), 0);
             let disc = 0;
+            let currentVoucher = null;
 
-            if (currentVoucher) {
-                if (subtotal >= currentVoucher.minTransaction) {
-                    disc = currentVoucher.discountValue;
+            if (activeVoucherId) {
+                const selectedVoucher = vouchers.find(v => v.id === activeVoucherId);
+                if (selectedVoucher && subtotal >= selectedVoucher.minTransaction) {
+                    disc = selectedVoucher.discountValue;
+                    currentVoucher = selectedVoucher;
                 } else {
-                    currentVoucher = null; 
-                    document.getElementById('voucher-msg').innerText = "Voucher dibatalkan (Min. transaksi tidak terpenuhi).";
-                    document.getElementById('voucher-msg').style.color = "red";
+                    // Voucher tidak lagi valid (misalnya, user mengurangi item)
+                    activeVoucherId = null;
+                    // Perbarui tampilan voucher jika modal terbuka
+                    if (document.getElementById('checkout-modal').style.display === 'flex') {
+                        renderVoucherSelection();
+                    }
                 }
             }
 
@@ -1022,11 +1184,11 @@
             if(disc > 0) document.getElementById('row-discount').style.display = 'flex';
             else document.getElementById('row-discount').style.display = 'none';
 
-            updateWhatsAppLink(subtotal, disc, total);
+            updateWhatsAppLink(subtotal, disc, total, currentVoucher);
         }
 
         // --- 8. WHATSAPP LINK GENERATOR ---
-        function updateWhatsAppLink(subtotal, disc, total) {
+        function updateWhatsAppLink(subtotal, disc, total, currentVoucher) {
             const lat = document.getElementById('lat-val').value;
             const lng = document.getElementById('lng-val').value;
             const addressDetail = document.getElementById('address-detail').value || "*Detail Alamat Belum Diisi*";
@@ -1045,7 +1207,7 @@
             msg += `🗺️ *Pin Maps:* ${mapLink}\n`;
             
             if (currentVoucher) {
-                msg += `✨ *Kode Voucher:* ${currentVoucher.code}\n`;
+                msg += `✨ *Voucher Terpilih:* ${currentVoucher.code} (Diskon Rp ${formatRupiah(disc)})\n`;
             }
             
             msg += `--------------------------------\n`;
