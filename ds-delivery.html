@@ -1084,7 +1084,7 @@
             updateWhatsAppLink(subtotal, disc, total, currentVoucher);
         }
 
-        // --- 8. WHATSAPP LINK GENERATOR ---
+        // --- 8. WHATSAPP LINK GENERATOR (MODIFIKASI) ---
         function updateWhatsAppLink(subtotal, disc, total, currentVoucher) {
             const lat = document.getElementById('lat-val').value;
             const lng = document.getElementById('lng-val').value;
@@ -1100,6 +1100,11 @@
             });
 
             msg += `\n--------------------------------\n`;
+            
+            // Tambahkan header tebal dan dekoratif
+            msg += `*🚚 Kirim ke lokasi berikut:*\n`;
+            
+            // Tampilkan Detail Lokasi dan Pin Maps
             msg += `📍 *Lokasi Patokan:* ${addressDetail}\n`;
             msg += `🗺️ *Pin Maps:* ${mapLink}\n`;
             
@@ -1109,10 +1114,15 @@
             
             msg += `--------------------------------\n`;
             msg += `Subtotal: Rp ${formatRupiah(subtotal)}\n`;
-            msg += `Ongkir: Rp ${formatRupiah(deliveryFee)}\n`;
+            // Baris Ongkir dihilangkan dari pesan WhatsApp
             if(disc > 0) msg += `Diskon: -Rp ${formatRupiah(disc)}\n`;
-            msg += `\n*TOTAL: Rp ${formatRupiah(total)}*`;
-            msg += `\n\n_Mohon segera diproses ya!_`;
+            
+            // Total sekarang dihitung dari Subtotal - Diskon
+            const totalWithoutDelivery = Math.max(0, subtotal - disc);
+            msg += `\n*TOTAL (Makanan & Diskon): Rp ${formatRupiah(totalWithoutDelivery)}*`;
+            
+            // Tambahkan teks untuk menanyakan ongkir
+            msg += `\n\n_Mohon segera diproses dan cek ongkir ke lokasi saya ya!_`;
 
 
             const waBtn = document.getElementById('wa-checkout-btn');
