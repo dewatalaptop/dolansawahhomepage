@@ -516,15 +516,17 @@
             display: block !important;
         }
 
+        /* === PERBAIKAN UTAMA TOMBOL: Memastikan tombol terlihat di mode fullscreen === */
         .modal.fullscreen #fullscreen-toggle-btn {
             /* Tombol Kembali di pojok kanan atas */
-            position: fixed; /* Ubah menjadi fixed agar tidak tergulir */
+            position: fixed; 
             z-index: 10000; 
             top: 10px;
             right: 10px;
             background: rgba(255, 255, 255, 0.9); 
             border-color: #ccc;
             color: var(--danger); 
+            display: block !important; /* <--- Wajib Ditambahkan */
         }
         
         /* --- PERUBAHAN TAMPILAN KETERANGAN PETA --- */
@@ -1320,7 +1322,7 @@
                 actualTargetElement.appendChild(mapElement);
                 mapElement.style.display = 'block'; 
                 
-                // Jika kembali ke normal, pastikan map-container-non-fullscreen terlihat
+                // Jika kembali ke normal, pindahkan peta ke container kecil
                 if (targetId === 'map-container-non-fullscreen') {
                     document.getElementById('map-container-non-fullscreen').appendChild(mapElement);
                 }
@@ -1480,7 +1482,6 @@
                 btn.style.color = 'var(--primary-color)';
 
                 // 1. Pindahkan peta kembali ke container aslinya (map-container-non-fullscreen)
-                // Peta akan dipindahkan ke map-control-area, dan akan mengisi map-container-non-fullscreen
                 window.copyMapToContainer('map-container-non-fullscreen');
 
                 // 2. Tampilkan kembali container peta non-fullscreen
@@ -1488,7 +1489,7 @@
                 
                 // 3. Tampilkan kembali elemen-elemen kontrol lain
                 mapControlElements.forEach(el => {
-                    el.style.display = 'block';
+                    el.style.display = 'block'; 
                 });
             }
             
