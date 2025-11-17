@@ -6,7 +6,6 @@
     <title>Dolan Sawah Delivery</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -378,6 +377,34 @@
             display: block;
         }
 
+        /* Search input for map */
+        #map-search-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        #map-search-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            padding-right: 40px;
+        }
+        
+        #map-search-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1rem;
+            padding: 0 10px;
+            cursor: pointer;
+        }
+
         /* --- VOUCHER & SUMMARY --- */
         .summary-row {
             display: flex;
@@ -485,7 +512,12 @@
 
                 <div class="location-section">
                     <h4 style="margin:0 0 10px 0;"><i class="fas fa-map-marked-alt"></i> Lokasi Pengiriman</h4>
-                    <p class="location-helper">Geser pin merah ke lokasi Anda:</p>
+                    <div id="map-search-container">
+                        <input type="text" id="map-search-input" placeholder="Cari Nama Jalan/Kota/Daerah...">
+                        <button id="map-search-btn" onclick="geocodeAddress()"><i class="fas fa-search"></i></button>
+                    </div>
+                    
+                    <p class="location-helper">Geser pin merah ke lokasi Anda yang sebenarnya:</p>
                     <div id="map-container"></div>
                     <input type="text" id="address-detail" placeholder="Detail Alamat (Cth: Rumah Pagar Hitam, No 12)" style="width:100%; padding:10px; margin-top:10px; border:1px solid #ddd; border-radius:8px;">
                     <input type="hidden" id="lat-val">
@@ -514,13 +546,89 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7AzQ_3rSuuPrX0YJ8PzkitySa5jc1APA&callback=initMap" async></script>
 
+    <script>
+        // Google Maps Variables
+        let googleMap;
+        let googleMarker;
+        let geocoder;
+        let mapInitialized = false;
+
+        window.initMap = function() {
+            if (mapInitialized) return;
+
+            const defaultLoc = { lat: -6.9932, lng: 110.4203 }; // Default Semarang (Ganti sesuai kota Anda)
+            geocoder = new google.maps.Geocoder();
+            
+            // Inisialisasi Peta
+            googleMap = new google.maps.Map(document.getElementById('map-container'), {
+                center: defaultLoc,
+                zoom: 13,
+                mapTypeControl: false,
+                streetViewControl: false
+            });
+
+            // Marker yang bisa digeser
+            googleMarker = new google.maps.Marker({
+                position: defaultLoc,
+                map: googleMap,
+                draggable: true,
+                title: "Lokasi Kirim Anda"
+            });
+
+            // Event listener saat marker digeser
+            googleMarker.addListener('dragend', function() {
+                const pos = googleMarker.getPosition();
+                document.getElementById('lat-val').value = pos.lat();
+                document.getElementById('lng-val').value = pos.lng();
+                if (window.calculateTotal) window.calculateTotal(); // Panggil fungsi di modul utama
+            });
+
+            // Set value awal
+            document.getElementById('lat-val').value = defaultLoc.lat;
+            document.getElementById('lng-val').value = defaultLoc.lng;
+            
+            mapInitialized = true;
+            
+            // Tambahkan event listener untuk tombol enter di search box
+            document.getElementById('map-search-input').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    window.geocodeAddress();
+                }
+            });
+        };
+        
+        window.geocodeAddress = function() {
+            const address = document.getElementById('map-search-input').value;
+            if (!address || !geocoder) return;
+
+            geocoder.geocode({ 'address': address }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                    const location = results[0].geometry.location;
+                    
+                    // Pindahkan peta dan marker
+                    googleMap.setCenter(location);
+                    googleMap.setZoom(15);
+                    googleMarker.setPosition(location);
+
+                    // Update koordinat
+                    document.getElementById('lat-val').value = location.lat();
+                    document.getElementById('lng-val').value = location.lng();
+                    
+                    if (window.calculateTotal) window.calculateTotal();
+                } else {
+                    alert('Lokasi tidak ditemukan: ' + status);
+                }
+            });
+        };
+    </script>
+    
     <script type="module">
         // --- 1. KONFIGURASI FIREBASE ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        // Perbaikan: Tambahkan query untuk membandingkan kode voucher
-        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCNqxbEgn6cU6YbZ9J4YveO25OZsoAXhxQ",
@@ -543,16 +651,12 @@
         const deliveryFee = 14000;
         const waNumber = "62816263012";
         
-        // Map variables
-        let map, marker;
-        let mapInitialized = false; // Flag untuk status inisialisasi Map
-
         // --- 3. DATA FETCHING ---
         async function fetchData() {
             try {
                 // Ambil Produk
                 const prodSnapshot = await getDocs(collection(db, "products"));
-                // Perbaikan: Pastikan data menu yang diambil memiliki ID dokumen
+                // Gunakan id dokumen sebagai id produk
                 products = prodSnapshot.docs.map(doc => ({ id: doc.id, isAvailable: true, ...doc.data() }));
                 
                 // Ambil Voucher
@@ -564,7 +668,7 @@
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
                 console.error("Error fetching data:", error);
-                document.getElementById('loading').innerHTML = `<p style="color:red">Gagal memuat data. Pastikan Anda sudah mengisi database menu di admin panel.</p>`;
+                document.getElementById('loading').innerHTML = `<p style="color:red">Gagal memuat data. Pastikan Anda sudah mengisi database menu di admin panel dan aturan Firebase mengizinkan READ.</p>`;
             }
         }
 
@@ -581,11 +685,8 @@
 
         function renderCategories() {
             const nav = document.getElementById('category-nav');
-            
-            // Cek jika kategori sudah ada (selain 'Semua')
             if (nav.children.length > 1) return;
             
-            // Ambil kategori unik dari produk yang tersedia
             const availableProducts = products.filter(p => p.isAvailable !== false);
             const cats = [...new Set(availableProducts.map(p => p.category))].sort();
             
@@ -603,14 +704,14 @@
             const container = document.getElementById('product-container');
             container.innerHTML = '';
 
-            let filtered = products.filter(p => p.isAvailable !== false); // Hanya tampilkan yang tersedia
+            let filtered = products.filter(p => p.isAvailable !== false); 
             
-            // Filter Category
+            // Filter Category & Search... (Logika sama seperti sebelumnya)
+
             if (activeCategory !== 'all') {
                 filtered = filtered.filter(p => p.category === activeCategory);
             }
 
-            // Filter Search
             if (filterTerm) {
                 filtered = filtered.filter(p => p.name.toLowerCase().includes(filterTerm.toLowerCase()) || 
                                                 p.description.toLowerCase().includes(filterTerm.toLowerCase()));
@@ -621,7 +722,6 @@
                 return;
             }
 
-            // Group by Category for neatness
             const grouped = filtered.reduce((acc, p) => {
                 (acc[p.category] = acc[p.category] || []).push(p);
                 return acc;
@@ -629,13 +729,7 @@
 
             for (const [cat, items] of Object.entries(grouped)) {
                 const section = document.createElement('div');
-                // Hapus header duplikat jika hanya ada satu kategori dan tidak ada pencarian
-                if (activeCategory !== 'all' && !filterTerm) {
-                    section.innerHTML = ''; 
-                } else {
-                    section.innerHTML = `<h3 class="category-header">${cat}</h3>`;
-                }
-                
+                section.innerHTML = `<h3 class="category-header">${cat}</h3>`;
                 const grid = document.createElement('div');
                 grid.className = 'product-list';
 
@@ -669,7 +763,7 @@
         window.addToCart = (id) => {
             const prod = products.find(p => p.id === id);
             
-            if (!prod || prod.isAvailable === false) return; // Tambahkan cek ketersediaan
+            if (!prod || prod.isAvailable === false) return;
             
             const exist = cart.find(item => item.id === id);
             
@@ -685,7 +779,6 @@
                 cart[idx].qty--;
                 if (cart[idx].qty <= 0) {
                     cart.splice(idx, 1);
-                    // Reset voucher jika keranjang kosong atau item yang tersisa kurang dari min. transaksi
                     if(cart.length === 0) {
                         currentVoucher = null;
                         document.getElementById('voucher-msg').innerText = "";
@@ -716,12 +809,12 @@
         document.getElementById('cart-btn').onclick = () => {
             document.getElementById('checkout-modal').style.display = 'flex';
             renderModalCart();
-            // Panggil initMap saat modal dibuka
-            if (!mapInitialized) {
-                setTimeout(initMap, 50); // Delay kecil agar DOM benar-benar siap
-            } else {
-                // Perlu me-refresh ukuran peta jika sebelumnya disembunyikan
-                if(map) map.invalidateSize();
+            
+            // Jika peta sudah di-init (Google Maps), paksa resize agar tampil benar di modal
+            if (window.mapInitialized && window.googleMap) {
+                google.maps.event.trigger(window.googleMap, 'resize');
+                // Posisikan peta ke marker
+                window.googleMap.setCenter(window.googleMarker.getPosition());
             }
         };
 
@@ -757,40 +850,8 @@
             calculateTotal();
         }
 
-        function initMap() {
-            if (mapInitialized) return;
-
-            // Default Semarang (Ganti sesuai kota Anda)
-            const defaultLoc = [-6.9932, 110.4203]; 
-            
-            map = L.map('map-container').setView(defaultLoc, 13);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            // Draggable Marker
-            marker = L.marker(defaultLoc, {draggable: true}).addTo(map);
-
-            // Simpan koordinat saat marker digeser
-            marker.on('dragend', function(e) {
-                const pos = marker.getLatLng();
-                document.getElementById('lat-val').value = pos.lat;
-                document.getElementById('lng-val').value = pos.lng;
-                calculateTotal(); // Hitung ulang total untuk update link WA
-            });
-
-            // Set value awal
-            document.getElementById('lat-val').value = defaultLoc[0];
-            document.getElementById('lng-val').value = defaultLoc[1];
-            
-            map.invalidateSize();
-            mapInitialized = true;
-        }
-
         // --- 7. VOUCHER & TOTAL ---
         window.applyVoucher = () => {
-            // Perbaikan: Gunakan ID yang benar untuk input kode voucher
             const code = document.getElementById('client-voucher-code').value.toUpperCase();
             const msg = document.getElementById('voucher-msg');
             const subtotal = cart.reduce((a, b) => a + (b.price * b.qty), 0);
@@ -821,22 +882,20 @@
             calculateTotal();
         };
 
-        function calculateTotal() {
+        window.calculateTotal = function() {
             const subtotal = cart.reduce((a, b) => a + (b.price * b.qty), 0);
             let disc = 0;
 
             if (currentVoucher) {
-                // Cek ulang syarat min belanja
                 if (subtotal >= currentVoucher.minTransaction) {
                     disc = currentVoucher.discountValue;
                 } else {
-                    currentVoucher = null; // Reset jika item dihapus dan kurang dari min
+                    currentVoucher = null; 
                     document.getElementById('voucher-msg').innerText = "Voucher dibatalkan (Min. transaksi tidak terpenuhi).";
                     document.getElementById('voucher-msg').style.color = "red";
                 }
             }
 
-            // Perbaikan: Pastikan total tidak negatif
             const total = Math.max(0, subtotal + deliveryFee - disc);
 
             document.getElementById('sum-subtotal').innerText = 'Rp ' + formatRupiah(subtotal);
@@ -855,7 +914,7 @@
             const lng = document.getElementById('lng-val').value;
             const addressDetail = document.getElementById('address-detail').value || "Belum diisi";
             
-            // Perbaikan: Gunakan format Google Maps yang lebih standar
+            // Format URL Google Maps standar
             const mapLink = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
             let msg = `Halo Dolan Sawah, saya mau pesan:\n\n`;
@@ -901,11 +960,8 @@
         function formatRupiah(n) {
             return new Intl.NumberFormat('id-ID').format(n);
         }
-        
-        // Perbaikan: Fungsi filterCategory sekarang menerima element, sehingga tidak perlu cari lagi
 
         document.getElementById('search-input').addEventListener('input', (e) => {
-            // Nonaktifkan filter kategori saat mencari
             activeCategory = 'all';
             document.querySelectorAll('.cat-pill').forEach(el => el.classList.remove('active'));
             document.querySelector(`.cat-pill[data-cat="all"]`).classList.add('active');
