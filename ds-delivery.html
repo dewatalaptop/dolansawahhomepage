@@ -129,7 +129,7 @@
         .search-icon {
             position: absolute;
             left: 25px; 
-            top: 50% !important; /* Dibuat penting agar tidak tertimpa */
+            top: 50% !important; 
             transform: translateY(-50%);
             color: var(--text-grey);
         }
@@ -439,10 +439,10 @@
             border-radius: 12px;
             margin-top: 1.5rem;
             border: 1px solid #eee;
-            position: relative; /* Penting agar tombol absolute bisa bekerja */
+            position: relative; 
         }
 
-        /* === PERBAIKAN: CONTAINER PETA NON-FULLSCREEN DAN TOMBOL === */
+        /* === CONTAINER PETA NON-FULLSCREEN DAN TOMBOL === */
         #map-control-area {
             position: relative; 
             width: 100%;
@@ -498,8 +498,6 @@
             padding: 0;
         }
 
-        /* Hapus .modal.fullscreen .modal-content { display: none; } - agar kontrol peta di dalamnya bisa fixed */
-        
         /* Peta utama di HTML: di modal fullscreen dia akan mengambil alih layar */
         .modal.fullscreen #map-container {
             position: fixed; 
@@ -509,15 +507,15 @@
             height: 100%;
             margin: 0;
             border-radius: 0;
-            z-index: 9999; 
+            z-index: 9999; /* Z-Index Peta */
             display: block !important;
         }
 
         /* === PERBAIKAN UTAMA TOMBOL: Memastikan tombol terlihat di mode fullscreen === */
         .modal.fullscreen #fullscreen-toggle-btn {
             /* Tombol Kembali di pojok kanan atas */
-            position: fixed; 
-            z-index: 10000; 
+            position: fixed; /* KRITIS: Agar tombol selalu di atas peta */
+            z-index: 10000; /* KRITIS: JAUH DI ATAS PETA (z-index: 9999) */
             top: 10px;
             right: 10px;
             background: rgba(255, 255, 255, 0.9); 
@@ -526,7 +524,7 @@
             display: flex !important; 
         }
 
-        /* === BARU: KONTROL PETA DI MODE FULLSCREEN (Fixed) === */
+        /* === KONTROL PETA DI MODE FULLSCREEN (Fixed) === */
         .modal.fullscreen #map-search-container,
         .modal.fullscreen .location-helper {
             position: fixed; 
@@ -1048,7 +1046,6 @@
             updateProductCardControl(id);
             updateCartUI();
             
-            // PERBAIKAN: Gunakan window.mapInitialized dan window.googleMap
             if (document.getElementById('checkout-modal').style.display === 'flex') {
                  renderModalCart();
                  renderVoucherSelection(); 
@@ -1101,9 +1098,7 @@
             renderModalCart();
             renderVoucherSelection(); 
             
-            // PERBAIKAN: Gunakan window.mapInitialized dan window.googleMap
             if (window.mapInitialized && window.googleMap) {
-                // Perbaiki posisi peta di container non-fullscreen
                 if (window.copyMapToContainer) {
                     window.copyMapToContainer('map-container-non-fullscreen');
                 }
@@ -1114,14 +1109,8 @@
 
         window.closeModal = () => {
             document.getElementById('checkout-modal').style.display = 'none';
-            // Pastikan tidak dalam mode fullscreen saat menutup modal
             const modal = document.getElementById('checkout-modal');
             if (modal.classList.contains('fullscreen')) {
-                modal.classList.remove('fullscreen');
-            }
-            // Panggil kembali toggle untuk mereset tampilan jika perlu
-            if (window.googleMap) {
-                 // Kirim false agar logic "KELUAR MODE" dieksekusi saat force close
                  window.toggleFullscreenMap(false); 
             }
         };
@@ -1273,7 +1262,6 @@
             const lng = document.getElementById('lng-val').value;
             const addressDetail = document.getElementById('address-detail').value || "*Detail Alamat Belum Diisi*";
             
-            // PERBAIKAN: Menggunakan HTTPS dan string interpolation yang benar
             const mapLink = (lat && lng) ? `https://maps.google.com/maps?q=${lat},${lng}` : "Lokasi belum ditentukan/diseret";
 
             let msg = `Halo Jeggboy, saya mau pesan makanan dari Resto Dolan Sawah Pulutan Salatiga:\n\n`;
@@ -1347,27 +1335,25 @@
 
         // --- FUNGSI SPESIAL MAPS: MEMINDAHKAN PETA KE CONTAINER YANG TEPAT ---
         window.copyMapToContainer = function(targetId) {
-            const targetElement = document.getElementById(targetId);
             const mapElement = document.getElementById('map-container');
+            const targetElement = document.getElementById(targetId);
             
-            let actualTarget = targetId;
+            let actualTargetId = targetId;
+
             if (targetId === 'map-container-non-fullscreen') {
-                 actualTarget = 'map-control-area';
+                 // Ketika kembali ke mode normal, target sebenarnya adalah div #map-control-area
+                 actualTargetId = 'map-control-area';
             }
-            const actualTargetElement = document.getElementById(actualTarget);
+            const actualTargetElement = document.getElementById(actualTargetId);
 
             if (actualTargetElement && mapElement && mapElement.parentNode !== actualTargetElement) {
                 actualTargetElement.appendChild(mapElement);
                 mapElement.style.display = 'block'; 
                 
-                // Jika kembali ke normal, pindahkan peta ke container kecil
+                // Jika dipindahkan ke container kecil, atur parentnya agar tampilan benar
                 if (targetId === 'map-container-non-fullscreen') {
                     document.getElementById('map-container-non-fullscreen').appendChild(mapElement);
                 }
-            } else if (targetId === 'checkout-modal' && mapElement && mapElement.parentNode !== targetElement) {
-                 // Ketika target adalah modal untuk fullscreen, langsung append ke modal
-                 targetElement.insertBefore(mapElement, targetElement.firstChild);
-                 mapElement.style.display = 'block';
             }
         }
 
@@ -1406,6 +1392,7 @@
             const errorDiv = document.getElementById('map-error-message');
             errorDiv.style.display = 'none'; 
             
+            // Pindahkan peta ke container non-fullscreen untuk inisialisasi awal
             window.copyMapToContainer('map-container-non-fullscreen');
             
             let defaultLoc = { lat: -6.9932, lng: 110.4203 }; 
@@ -1453,12 +1440,11 @@
             
             mapInitialized = true;
 
-            // PERBAIKAN KRITIS: Assign ke window agar script module bisa mengakses
+            // Variabel Global untuk akses dari script module
             window.googleMap = googleMap;
             window.googleMarker = googleMarker;
             window.geocoder = geocoder;
             window.mapInitialized = mapInitialized;
-            // END PERBAIKAN KRITIS
             
             document.getElementById('map-search-input').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
@@ -1497,6 +1483,7 @@
         
         /**
          * FUNGSI KRITIS: Mengubah tampilan peta menjadi layar penuh (fullscreen)
+         * - Diperbaiki untuk memastikan tombol kembali selalu terlihat.
          */
         window.toggleFullscreenMap = function(forceClose = undefined) {
             const modal = document.getElementById('checkout-modal');
@@ -1505,59 +1492,71 @@
             let isFullscreen;
             
             if (forceClose !== undefined) {
-                 if (forceClose === false) {
-                     modal.classList.remove('fullscreen');
-                     isFullscreen = false;
-                 } else {
-                     modal.classList.add('fullscreen');
-                     isFullscreen = true;
-                 }
+                 isFullscreen = forceClose;
             } else {
                  isFullscreen = modal.classList.toggle('fullscreen');
             }
             
             // Elemen-elemen non-peta utama yang harus disembunyikan saat fullscreen
-            // PERBAIKAN: Menggunakan ID/QuerySelector yang lebih aman dan filter(Boolean)
             const nonMapContentElements = [
-                document.getElementById('cart-items-list')?.parentElement, // .modal-body
+                document.getElementById('cart-items-list')?.parentElement, 
                 document.querySelector('.voucher-section-header'),
                 document.getElementById('voucher-selection-area'),
                 document.querySelector('.location-section .address-detail-label'),
                 document.getElementById('address-detail'),
-                document.getElementById('summary-section'), // Menggunakan ID baru
+                document.getElementById('summary-section'), 
                 document.getElementById('wa-checkout-btn'),
-                document.querySelector('.modal-header'), // Sembunyikan header modal lama
-            ].filter(Boolean); // Filter elemen yang null
+                document.querySelector('.modal-header'), 
+                document.getElementById('map-control-area'), // Container peta kecil
+            ].filter(Boolean); 
             
-            const nonFullscreenMapContainer = document.getElementById('map-control-area');
+            // Kontrol peta yang fixed di atas (search dan helper)
+            const fixedControls = [
+                document.getElementById('map-search-container'),
+                document.querySelector('.location-helper')
+            ].filter(Boolean);
+            
 
             if (isFullscreen) {
                 // MASUK MODE FULLSCREEN
+                modal.classList.add('fullscreen');
                 btn.innerHTML = '<i class="fas fa-compress-alt"></i> <span id="fullscreen-text">Kembali</span>';
                 btn.style.color = 'var(--danger)'; 
                 
-                // 1. Sembunyikan elemen NON-PETA secara selektif
+                // 1. Sembunyikan elemen NON-PETA (kecuali tombol ini)
                 nonMapContentElements.forEach(el => {
                     if(el) el.style.display = 'none';
                 });
                 
-                // 2. Pindahkan peta ke level root modal
+                // 2. Tampilkan Kontrol Peta Fixed di Fullscreen
+                fixedControls.forEach(el => {
+                     el.style.display = 'block'; 
+                });
+                
+                // 3. Pindahkan peta ke level root modal
                 window.copyMapToContainer('checkout-modal'); 
-                nonFullscreenMapContainer.style.display = 'none'; 
                 
             } else {
                 // KELUAR MODE FULLSCREEN (KEMBALI NORMAL)
+                modal.classList.remove('fullscreen');
                 btn.innerHTML = '<i class="fas fa-expand-arrows-alt"></i> <span id="fullscreen-text">Layar Penuh</span>';
                 btn.style.color = 'var(--primary-color)';
 
                 // 1. Tampilkan kembali semua elemen non-peta yang disembunyikan
                 nonMapContentElements.forEach(el => {
-                    if(el) el.style.display = ''; 
+                    if (el.id !== 'map-control-area') {
+                         el.style.display = ''; 
+                    }
+                });
+                document.getElementById('map-control-area').style.display = 'block';
+
+                // 2. Sembunyikan Kontrol Peta Fixed (agar kembali ke tampilan normal)
+                fixedControls.forEach(el => {
+                     el.style.display = ''; 
                 });
                 
-                // 2. Pindahkan peta kembali ke container aslinya
+                // 3. Pindahkan peta kembali ke container aslinya
                 window.copyMapToContainer('map-container-non-fullscreen');
-                nonFullscreenMapContainer.style.display = 'block'; 
             }
             
             // PENTING: Paksa peta untuk merender ulang setelah perubahan ukuran
