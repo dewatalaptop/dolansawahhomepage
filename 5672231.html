@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Admin Dashboard - Dolan Sawah</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,8 +21,8 @@
       --secondary: #264653;
       --accent: #e9c46a;
       --danger: #e76f51;
-      --success: #2a9d8f;
-      --warning: #f4a261;
+      --success: #10b981; /* Emerald Green yang lebih fresh */
+      --warning: #f59e0b;
       --bg-body: #f3f4f6;
       --bg-card: #ffffff;
       --text-main: #1f2937;
@@ -31,7 +31,7 @@
       --sidebar-width: 260px;
     }
 
-    * { box-sizing: border-box; outline: none; }
+    * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
     body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
 
     /* --- LOGIN SCREEN --- */
@@ -41,11 +41,12 @@
       z-index: 9999; display: flex; justify-content: center; align-items: center;
     }
     .login-box {
-      background: white; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px;
+      background: white; padding: 40px; border-radius: 16px; width: 90%; max-width: 400px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center;
     }
-    .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--border); border-radius: 8px; }
-    .login-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; }
+    .login-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 1rem; transition: 0.2s; }
+    .login-box button:hover { background: var(--primary-dark); }
 
     /* --- SIDEBAR --- */
     .sidebar {
@@ -64,12 +65,50 @@
     .nav-item .badge { margin-left: auto; background: var(--danger); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; display: none; }
     
     .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); }
-    .btn-logout { width: 100%; padding: 10px; background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn-logout { width: 100%; padding: 10px; background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+    .btn-logout:hover { background: #fecaca; }
 
     /* --- MAIN CONTENT --- */
     .main-content {
       flex: 1; margin-left: var(--sidebar-width); padding: 30px; overflow-y: auto; height: 100vh;
       display: none; /* Hidden by default until login */
+    }
+
+    /* --- MOBILE TOGGLE BUTTON --- */
+    #mobile-toggle { 
+        display: none; /* Hidden on desktop */
+        position: fixed; top: 15px; left: 15px; z-index: 2001;
+        background: var(--primary); color: white; border: none;
+        width: 45px; height: 45px; border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        cursor: pointer; font-size: 1.2rem;
+        align-items: center; justify-content: center;
+    }
+
+    /* --- RESPONSIVE FIX (PERBAIKAN UTAMA) --- */
+    @media (max-width: 768px) {
+      .sidebar { 
+        position: fixed;
+        left: 0; top: 0; bottom: 0;
+        width: 260px !important; /* Lebar tetap */
+        transform: translateX(-100%); /* Sembunyi ke kiri */
+        transition: transform 0.3s ease-in-out;
+        z-index: 2000;
+        box-shadow: none;
+      }
+      
+      .sidebar.open { 
+        transform: translateX(0); /* Muncul */
+        box-shadow: 5px 0 25px rgba(0,0,0,0.2); /* Bayangan agar terlihat mengambang */
+      }
+      
+      .main-content { 
+        margin-left: 0 !important; 
+        padding: 80px 20px 20px 20px; /* Padding top besar agar tidak tertutup tombol toggle */
+        width: 100%;
+      }
+      
+      #mobile-toggle { display: flex; } /* Munculkan tombol di HP */
     }
 
     /* --- HEADER STATS --- */
@@ -84,56 +123,56 @@
     .section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
     .section-title { font-size: 1.5rem; font-weight: 700; color: var(--secondary); margin: 0; }
-    .btn-primary { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .btn-primary { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
     .btn-primary:hover { background: var(--primary-dark); }
 
     /* --- INBOX CARDS --- */
-    .request-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+    .request-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
     .request-card { background: white; border-radius: 12px; padding: 20px; border-left: 5px solid var(--warning); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; }
-    .request-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-    .req-name { font-weight: 700; font-size: 1.1rem; }
-    .req-via { font-size: 0.75rem; background: #eee; padding: 2px 8px; border-radius: 4px; color: #666; }
+    .request-header { display: flex; justify-content: space-between; margin-bottom: 10px; align-items: flex-start; }
+    .req-name { font-weight: 700; font-size: 1.1rem; color: var(--secondary); }
+    .req-via { font-size: 0.7rem; background: #eee; padding: 3px 8px; border-radius: 4px; color: #666; white-space: nowrap; }
     .req-details { font-size: 0.9rem; color: #555; line-height: 1.6; }
     .req-menu-box { background: #f9fafb; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 0.85rem; border: 1px dashed #ccc; }
     .req-actions { display: flex; gap: 10px; margin-top: 15px; }
-    .req-actions button { flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 5px; }
+    .req-actions button { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 5px; transition: 0.2s; }
     .btn-accept { background: var(--success); color: white; }
+    .btn-accept:hover { background: #059669; }
     .btn-reject { background: #fee2e2; color: var(--danger); }
+    .btn-reject:hover { background: #fecaca; }
     .btn-chat { background: #25D366; color: white; }
+    .btn-chat:hover { background: #128C7E; }
 
     /* --- CALENDAR & LIST --- */
     .calendar-wrapper { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 20px; }
-    .cal-day { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 8px; padding: 5px; cursor: pointer; transition: 0.2s; position: relative; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
+    .cal-day { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 8px; padding: 5px; cursor: pointer; transition: 0.2s; position: relative; display: flex; justify-content: center; align-items: center; font-weight: 500; }
     .cal-day:hover { border-color: var(--primary); background: #f0fdf4; }
-    .cal-day.today { background: #fff7ed; border-color: var(--warning); }
+    .cal-day.today { background: #fff7ed; border-color: var(--warning); font-weight: 700; }
     .cal-day.selected { background: var(--primary); color: white; border-color: var(--primary); }
-    .cal-marker { position: absolute; bottom: 5px; right: 5px; background: var(--accent); width: 8px; height: 8px; border-radius: 50%; }
+    .cal-marker { position: absolute; bottom: 6px; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
+    .cal-day.selected .cal-marker { background: white; }
 
     .reservation-list-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     
-    /* --- RESPONSIVE --- */
-    @media (max-width: 768px) {
-      .sidebar { transform: translateX(-100%); width: 0; }
-      .sidebar.open { transform: translateX(0); width: 260px; }
-      .main-content { margin-left: 0; padding: 15px; }
-      #mobile-toggle { display: block !important; }
-    }
-    #mobile-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 200; background: var(--primary); color: white; padding: 10px; border-radius: 8px; border: none; }
-
+    /* --- DATA MASTER LIST --- */
+    .master-item { padding: 12px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; align-items: center; }
+    .master-item:last-child { border-bottom: none; }
+    .master-item span { font-size: 0.95rem; }
+    
   </style>
 </head>
 <body>
 
   <div id="login-overlay">
     <div class="login-box">
-      <h2 style="color:var(--primary-dark); margin-bottom: 10px;">Admin Dolan Sawah</h2>
-      <p style="color:#666; margin-bottom: 20px;">Silakan login untuk mengakses dashboard.</p>
+      <h2 style="color:var(--primary-dark); margin-bottom: 10px;"><i class="fas fa-leaf"></i> Admin</h2>
+      <p style="color:#666; margin-bottom: 20px;">Dolan Sawah Dashboard</p>
       <input type="email" id="email" placeholder="Email Admin">
       <input type="password" id="password" placeholder="Password">
-      <button onclick="handleLogin()">Masuk</button>
+      <button onclick="handleLogin()">Masuk Dashboard</button>
     </div>
   </div>
 
@@ -176,25 +215,27 @@
           <div class="stat-info"><h4>Tamu Hari Ini</h4><span class="value" id="stat-today-pax">0</span></div>
         </div>
         <div class="stat-card" onclick="switchTab('inbox')" style="cursor:pointer;">
-          <div class="stat-icon" style="background:#ffedd5; color:#c2410c;"><i class="fas fa-clock"></i></div>
-          <div class="stat-info"><h4>Menunggu Persetujuan</h4><span class="value" id="stat-pending">0</span></div>
+          <div class="stat-icon" style="background:#ffedd5; color:#c2410c;"><i class="fas fa-inbox"></i></div>
+          <div class="stat-info"><h4>Request Pending</h4><span class="value" id="stat-pending">0</span></div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon" style="background:#dcfce7; color:#15803d;"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-icon" style="background:#dcfce7; color:#15803d;"><i class="fas fa-calendar-check"></i></div>
           <div class="stat-info"><h4>Reservasi Bulan Ini</h4><span class="value" id="stat-month-total">0</span></div>
         </div>
       </div>
 
       <div class="calendar-wrapper">
-         <h3 style="margin-top:0;">Reservasi Terbaru</h3>
-         <div id="recent-reservations-list"></div>
+         <h3 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">Reservasi Terbaru Masuk</h3>
+         <div id="recent-reservations-list">
+             <p style="color:#999; text-align:center;">Memuat data...</p>
+         </div>
       </div>
     </div>
 
     <div id="tab-inbox" class="section">
       <div class="section-header">
         <h2 class="section-title">Inbox Permintaan</h2>
-        <button class="btn-primary" onclick="loadRequests()"><i class="fas fa-sync"></i> Refresh</button>
+        <button class="btn-primary" onclick="initApp()"><i class="fas fa-sync"></i> Refresh Data</button>
       </div>
       <div id="inbox-container" class="request-grid">
         </div>
@@ -203,44 +244,44 @@
     <div id="tab-calendar" class="section">
       <div class="section-header">
         <h2 class="section-title">Kalender Reservasi</h2>
-        <div style="display: flex; gap:10px;">
+        <div style="display: flex; gap:10px; align-items:center;">
            <button class="btn-primary" onclick="prevMonth()"><</button>
-           <span id="cal-month-year" style="font-weight:700; font-size:1.2rem; padding: 5px 15px; display:flex; align-items:center;">...</span>
+           <span id="cal-month-year" style="font-weight:700; font-size:1.1rem; min-width:150px; text-align:center;">...</span>
            <button class="btn-primary" onclick="nextMonth()">></button>
         </div>
       </div>
       
       <div class="calendar-wrapper">
-        <div style="display:grid; grid-template-columns: repeat(7,1fr); text-align:center; font-weight:600; margin-bottom:10px; color:#888;">
+        <div style="display:grid; grid-template-columns: repeat(7,1fr); text-align:center; font-weight:600; margin-bottom:10px; color:#888; font-size:0.9rem;">
             <div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div>
         </div>
         <div id="calendar-grid" class="calendar-grid"></div>
       </div>
 
       <div style="margin-top: 30px;">
-          <h3>Detail Tanggal: <span id="selected-date-text">-</span></h3>
+          <h3><i class="fas fa-list"></i> Detail Tanggal: <span id="selected-date-text" style="color:var(--primary);">Pilih Tanggal</span></h3>
           <div id="day-detail-list"></div>
       </div>
     </div>
 
     <div id="tab-data" class="section">
        <div class="section-header">
-         <h2 class="section-title">Kelola Data</h2>
+         <h2 class="section-title">Kelola Data Master</h2>
        </div>
        
-       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">
          <div class="calendar-wrapper">
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <h3>Daftar Menu</h3>
-                <button onclick="addMenu()" style="border:none; background:var(--bg-body); cursor:pointer; width:30px; height:30px; border-radius:50%;"><i class="fas fa-plus"></i></button>
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+                <h3 style="margin:0;">Daftar Menu</h3>
+                <button class="btn-primary" onclick="addMenu()" style="padding: 5px 12px; font-size:0.9rem;"><i class="fas fa-plus"></i> Tambah</button>
             </div>
             <div id="master-menu-list" style="max-height:300px; overflow-y:auto;"></div>
          </div>
          
          <div class="calendar-wrapper">
-            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
-                <h3>Daftar Lokasi</h3>
-                <button onclick="addLocation()" style="border:none; background:var(--bg-body); cursor:pointer; width:30px; height:30px; border-radius:50%;"><i class="fas fa-plus"></i></button>
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px; align-items:center;">
+                <h3 style="margin:0;">Daftar Lokasi</h3>
+                <button class="btn-primary" onclick="addLocation()" style="padding: 5px 12px; font-size:0.9rem;"><i class="fas fa-plus"></i> Tambah</button>
             </div>
             <div id="master-location-list" style="max-height:300px; overflow-y:auto;"></div>
          </div>
@@ -248,7 +289,7 @@
     </div>
 
     <div id="tab-analysis" class="section">
-      <h2 class="section-title">Analisis Data</h2>
+      <h2 class="section-title">Analisis Bisnis</h2>
       <div class="calendar-wrapper" style="height: 400px; margin-bottom: 20px;">
           <canvas id="chartAnalysis"></canvas>
       </div>
@@ -258,7 +299,7 @@
 
   <script>
     // --- KONFIGURASI FIREBASE ---
-    // GANTI DENGAN CONFIG ASLI ANDA
+    // PENTING: Ganti dengan Config Firebase Project Anda sendiri
     const firebaseConfig = {
       apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
       authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -268,7 +309,9 @@
       appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
     const db = firebase.firestore();
     const auth = firebase.auth();
 
@@ -295,7 +338,11 @@
     function handleLogin() {
       const e = document.getElementById('email').value;
       const p = document.getElementById('password').value;
-      auth.signInWithEmailAndPassword(e, p).catch(err => Swal.fire('Error', err.message, 'error'));
+      if(!e || !p) return Swal.fire('Error', 'Email dan password wajib diisi', 'warning');
+      
+      auth.signInWithEmailAndPassword(e, p).catch(err => {
+          Swal.fire('Login Gagal', err.message, 'error');
+      });
     }
     function handleLogout() { auth.signOut(); }
 
@@ -334,7 +381,7 @@
         // Render Kartu Inbox
         const container = document.getElementById('inbox-container');
         if (count === 0) {
-            container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:#999;"><i class="fas fa-inbox fa-3x"></i><p>Tidak ada permintaan baru.</p></div>`;
+            container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:#999;"><i class="fas fa-inbox fa-3x" style="opacity:0.3; margin-bottom:15px;"></i><p>Tidak ada permintaan baru.</p></div>`;
             return;
         }
 
@@ -351,16 +398,18 @@
                     <span class="req-via">${r.via}</span>
                 </div>
                 <div class="req-details">
-                    <i class="fas fa-calendar"></i> ${r.date} &nbsp; <i class="fas fa-clock"></i> ${r.jam}<br>
-                    <i class="fas fa-users"></i> ${r.jumlah} Orang &nbsp; <i class="fas fa-map-marker-alt"></i> ${r.tempat}
+                    <i class="fas fa-calendar" style="color:var(--primary); width:20px;"></i> ${r.date} &nbsp; 
+                    <i class="fas fa-clock" style="color:var(--primary); width:20px;"></i> ${r.jam}<br>
+                    <i class="fas fa-users" style="color:var(--primary); width:20px;"></i> ${r.jumlah} Orang &nbsp; 
+                    <i class="fas fa-map-marker-alt" style="color:var(--primary); width:20px;"></i> ${r.tempat}
                 </div>
                 <div class="req-menu-box">${menuHtml}</div>
-                ${r.tambahan ? `<div style="font-size:0.85rem; color:#d97706;">Note: ${r.tambahan}</div>` : ''}
+                ${r.tambahan ? `<div style="font-size:0.85rem; color:#d97706; background:#fffbeb; padding:5px; border-radius:4px;"><i class="fas fa-sticky-note"></i> Note: ${r.tambahan}</div>` : ''}
                 
                 <div class="req-actions">
-                    <button class="btn-chat" onclick="wa('${r.nomorHp}', '${r.nama}')"><i class="fab fa-whatsapp"></i></button>
-                    <button class="btn-reject" onclick="rejectRequest('${r.id}')">Tolak</button>
-                    <button class="btn-accept" onclick="approveRequest('${r.id}')">Terima</button>
+                    <button class="btn-chat" onclick="wa('${r.nomorHp}', '${r.nama}')"><i class="fab fa-whatsapp"></i> Chat</button>
+                    <button class="btn-reject" onclick="rejectRequest('${r.id}')"><i class="fas fa-times"></i> Tolak</button>
+                    <button class="btn-accept" onclick="approveRequest('${r.id}')"><i class="fas fa-check"></i> Terima</button>
                 </div>
             </div>`;
         }).join('');
@@ -390,7 +439,7 @@
 
                 Swal.fire('Berhasil', 'Reservasi disetujui dan masuk jadwal.', 'success');
                 // Otomatis buka WA untuk konfirmasi (Opsional)
-                wa(req.nomorHp, req.nama, `Halo Kak ${req.nama}, reservasi Anda di Dolan Sawah pada tgl ${req.date} jam ${req.jam} sudah kami *SETUJUI*. Kami tunggu kedatangannya ya! 🙏`);
+                // wa(req.nomorHp, req.nama, `Halo Kak ${req.nama}, reservasi Anda di Dolan Sawah pada tgl ${req.date} jam ${req.jam} sudah kami *SETUJUI*. Kami tunggu kedatangannya ya! 🙏`);
 
             } catch (e) { Swal.fire('Error', e.message, 'error'); }
         }
@@ -413,8 +462,7 @@
 
     // --- 2. LOGIKA RESERVASI (KALENDER) ---
     function listenReservations() {
-        const start = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
-        // Tarik data agak luas (3 bulan) atau filter per bulan jika data besar
+        // Untuk demo, kita ambil semua. Untuk produksi, baiknya filter by date range
         db.collection('reservations').onSnapshot(snap => {
             reservationsCache = snap.docs.map(d => ({id:d.id, ...d.data()}));
             updateDashboardStats();
@@ -435,12 +483,25 @@
 
         // List Recent
         const recent = reservationsCache.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)).slice(0, 5);
-        document.getElementById('recent-reservations-list').innerHTML = recent.map(r => 
-            `<div class="reservation-list-item">
-                <div><b>${r.nama}</b><br><small>${r.date} - ${r.jam}</small></div>
-                <div>${r.jumlah} Org</div>
-             </div>`
-        ).join('');
+        const listContainer = document.getElementById('recent-reservations-list');
+        
+        if (recent.length === 0) {
+            listContainer.innerHTML = '<p style="color:#999; text-align:center;">Belum ada reservasi.</p>';
+        } else {
+            listContainer.innerHTML = recent.map(r => 
+                `<div class="reservation-list-item">
+                    <div>
+                        <div style="font-weight:600; font-size:1.05rem;">${r.nama}</div>
+                        <div style="font-size:0.85rem; color:#666;">
+                           <i class="far fa-calendar"></i> ${r.date} &bull; <i class="far fa-clock"></i> ${r.jam}
+                        </div>
+                    </div>
+                    <div style="background:var(--primary); color:white; padding:4px 10px; border-radius:15px; font-size:0.85rem; font-weight:600;">
+                        ${r.jumlah} Org
+                    </div>
+                 </div>`
+            ).join('');
+        }
         
         // Update Chart
         updateChart();
@@ -468,6 +529,8 @@
 
             const div = document.createElement('div');
             div.className = `cal-day ${isToday}`;
+            if (selectedDate === dateStr) div.classList.add('selected');
+            
             div.innerHTML = `<span>${i}</span>${marker}`;
             div.onclick = () => selectDate(dateStr, div);
             grid.appendChild(div);
@@ -482,21 +545,23 @@
         const displayDate = new Date(dateStr).toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'});
         document.getElementById('selected-date-text').textContent = displayDate;
 
-        const resOnDate = reservationsCache.filter(r => r.date === dateStr);
+        const resOnDate = reservationsCache.filter(r => r.date === dateStr).sort((a,b) => a.jam.localeCompare(b.jam));
         const list = document.getElementById('day-detail-list');
         
         if(resOnDate.length === 0) {
-            list.innerHTML = '<p style="color:#888;">Tidak ada reservasi.</p>';
+            list.innerHTML = '<p style="color:#888; padding:20px; text-align:center; background:#f9f9f9; border-radius:8px;">Tidak ada reservasi pada tanggal ini.</p>';
         } else {
             list.innerHTML = resOnDate.map(r => `
                 <div class="reservation-list-item">
                     <div style="flex:1;">
-                        <span style="font-weight:bold; color:var(--primary);">${r.jam}</span> - ${r.nama} (${r.jumlah} Org)<br>
-                        <small style="color:#666;">${r.tempat}</small>
+                        <span style="font-weight:bold; color:var(--primary); font-size:1.1rem;">${r.jam}</span> 
+                        <span style="font-weight:600;">${r.nama}</span> <span style="color:#666;">(${r.jumlah} Org)</span><br>
+                        <small style="color:#666;"><i class="fas fa-map-marker-alt"></i> ${r.tempat}</small>
+                        ${r.menus ? `<br><small style="color:#555; font-style:italic;">Menu: ${r.menus.map(m=>m.name).join(', ')}</small>` : ''}
                     </div>
-                    <div>
-                        <button onclick="wa('${r.nomorHp}', '${r.nama}')" style="border:none;background:none;cursor:pointer;color:green;"><i class="fab fa-whatsapp"></i></button>
-                        <button onclick="deleteRes('${r.id}')" style="border:none;background:none;cursor:pointer;color:red;"><i class="fas fa-trash"></i></button>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="wa('${r.nomorHp}', '${r.nama}')" style="border:none;background:#e5e7eb;width:35px;height:35px;border-radius:50%;cursor:pointer;color:green; display:flex;align-items:center;justify-content:center;"><i class="fab fa-whatsapp"></i></button>
+                        <button onclick="deleteRes('${r.id}')" style="border:none;background:#fee2e2;width:35px;height:35px;border-radius:50%;cursor:pointer;color:red; display:flex;align-items:center;justify-content:center;"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             `).join('');
@@ -504,9 +569,10 @@
     }
     
     async function deleteRes(id) {
-        if(confirm("Hapus reservasi ini?")) {
+        if(confirm("Hapus reservasi ini dari jadwal?")) {
             await db.collection('reservations').doc(id).delete();
-            selectDate(selectedDate, null); // Refresh list
+            // List akan update otomatis karena onSnapshot
+            Swal.fire('Terhapus', 'Data berhasil dihapus', 'success');
         }
     }
 
@@ -519,9 +585,9 @@
         db.collection('menus').onSnapshot(snap => {
             const list = document.getElementById('master-menu-list');
             list.innerHTML = snap.docs.map(d => 
-                `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-                    <span>${d.id}</span>
-                    <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="deleteDoc('menus','${d.id}')"></i>
+                `<div class="master-item">
+                    <span style="font-weight:500;">${d.id}</span>
+                    <i class="fas fa-trash" style="color:#e76f51; cursor:pointer;" onclick="deleteDoc('menus','${d.id}')"></i>
                  </div>`
             ).join('');
         });
@@ -529,42 +595,49 @@
         db.collection('locations').onSnapshot(snap => {
             const list = document.getElementById('master-location-list');
             list.innerHTML = snap.docs.map(d => 
-                `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
-                    <span>${d.data().name} (Cap: ${d.data().capacity})</span>
-                    <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="deleteDoc('locations','${d.id}')"></i>
+                `<div class="master-item">
+                    <div>
+                        <span style="font-weight:600; display:block;">${d.data().name}</span>
+                        <small style="color:#888;">Kapasitas: ${d.data().capacity} Org</small>
+                    </div>
+                    <i class="fas fa-trash" style="color:#e76f51; cursor:pointer;" onclick="deleteDoc('locations','${d.id}')"></i>
                  </div>`
             ).join('');
         });
     }
 
     async function addMenu() {
-        const { value: name } = await Swal.fire({input: 'text', inputLabel: 'Nama Menu'});
+        const { value: name } = await Swal.fire({input: 'text', inputLabel: 'Nama Menu Baru', confirmButtonColor: 'var(--primary)'});
         if(name) {
-            const { value: desc } = await Swal.fire({input: 'textarea', inputLabel: 'Deskripsi (pisahkan koma)'});
-            await db.collection('menus').doc(name).set({details: desc.split(',')});
+            const { value: desc } = await Swal.fire({input: 'textarea', inputLabel: 'Deskripsi (pisahkan koma)', confirmButtonColor: 'var(--primary)'});
+            await db.collection('menus').doc(name).set({details: desc ? desc.split(',') : []});
+            Swal.fire('Sukses', 'Menu ditambahkan', 'success');
         }
     }
 
     async function addLocation() {
-        const { value: name } = await Swal.fire({input: 'text', inputLabel: 'Nama Lokasi'});
+        const { value: name } = await Swal.fire({input: 'text', inputLabel: 'Nama Lokasi Baru', confirmButtonColor: 'var(--primary)'});
         if(name) {
-            const { value: cap } = await Swal.fire({input: 'number', inputLabel: 'Kapasitas'});
+            const { value: cap } = await Swal.fire({input: 'number', inputLabel: 'Kapasitas (Angka)', confirmButtonColor: 'var(--primary)'});
             await db.collection('locations').add({name: name, capacity: parseInt(cap)});
+            Swal.fire('Sukses', 'Lokasi ditambahkan', 'success');
         }
     }
     
     function deleteDoc(col, id) {
-        if(confirm("Hapus data ini?")) db.collection(col).doc(id).delete();
+        if(confirm("Yakin ingin menghapus data ini?")) db.collection(col).doc(id).delete();
     }
 
     // --- CHART ANALYSIS ---
     function updateChart() {
         const ctx = document.getElementById('chartAnalysis').getContext('2d');
-        // Group by month (Simple logic)
+        // Group by month
         const counts = Array(12).fill(0);
         reservationsCache.forEach(r => {
-            const m = new Date(r.date).getMonth();
-            if(new Date(r.date).getFullYear() === currentYear) counts[m]++;
+            if (r.date) {
+                const d = new Date(r.date);
+                if(d.getFullYear() === currentYear) counts[d.getMonth()]++;
+            }
         });
 
         if(window.myChart) window.myChart.destroy();
@@ -573,37 +646,89 @@
             data: {
                 labels: monthNames,
                 datasets: [{
-                    label: 'Jumlah Reservasi Tahun Ini',
+                    label: 'Reservasi Tahun ' + currentYear,
                     data: counts,
-                    backgroundColor: '#2a9d8f',
-                    borderRadius: 5
+                    backgroundColor: 'rgba(42, 157, 143, 0.7)',
+                    borderColor: 'rgba(42, 157, 143, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    x: { grid: { display: false } }
+                }
+            }
         });
     }
 
-    // --- UTILS ---
+    // --- UTILS & NAVIGATION ---
     function switchTab(tabId) {
+        // Hide all sections
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        // Show selected section
         document.getElementById('tab-'+tabId).classList.add('active');
         
+        // Update nav active state
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        // Highlight active nav logic here if needed
+        // Find the nav item that calls this function (rough approximation for simplicity)
+        // In a clearer implementation, we would pass 'this' or ID. 
+        // For now, we manually highlight based on tabId if needed, or rely on click event bubbling
+        const navs = document.querySelectorAll('.nav-item');
+        if(tabId === 'dashboard') navs[0].classList.add('active');
+        if(tabId === 'inbox') navs[1].classList.add('active');
+        if(tabId === 'calendar') navs[2].classList.add('active');
+        if(tabId === 'data') navs[3].classList.add('active');
+        if(tabId === 'analysis') navs[4].classList.add('active');
         
-        // Mobile sidebar auto close
-        if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
+        // Mobile Sidebar: Close on selection
+        if(window.innerWidth < 768) {
+             const sidebar = document.getElementById('sidebar');
+             const toggleBtn = document.getElementById('mobile-toggle');
+             sidebar.classList.remove('open');
+             toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+        }
     }
 
     function wa(phone, name, msg) {
-        let p = phone.startsWith('0') ? '62'+phone.slice(1) : phone;
+        if (!phone) return Swal.fire('Error', 'Nomor HP tidak tersedia', 'error');
+        let p = phone.replace(/[^0-9]/g, '');
+        if (p.startsWith('0')) p = '62'+p.slice(1);
+        
         let txt = msg || `Halo Kak ${name}, ini dari Admin Dolan Sawah...`;
         window.open(`https://wa.me/${p}?text=${encodeURIComponent(txt)}`, '_blank');
     }
     
+    // Toggle Sidebar Function (Fixed)
     function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('open');
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('mobile-toggle');
+        
+        sidebar.classList.toggle('open');
+        
+        if (sidebar.classList.contains('open')) {
+            toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
+        } else {
+            toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
+        }
     }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('mobile-toggle');
+        
+        // Jika layar mobile DAN sidebar terbuka
+        if (window.innerWidth < 768 && sidebar.classList.contains('open')) {
+            // Jika yang diklik BUKAN sidebar DAN BUKAN tombol toggle
+            if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+                toggleSidebar(); // Tutup
+            }
+        }
+    });
 
   </script>
 </body>
