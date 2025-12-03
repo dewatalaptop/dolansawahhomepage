@@ -29,33 +29,34 @@
       font-family: 'Poppins', sans-serif;
       background-color: #f0f2f5;
       margin: 0;
-      padding-bottom: 80px; /* Space for bottom bar */
+      padding-bottom: 90px; /* Ruang untuk bottom bar */
       color: var(--dark);
     }
 
     header {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: white;
-      padding: 20px;
+      padding: 25px 20px;
       text-align: center;
-      border-bottom-left-radius: 20px;
-      border-bottom-right-radius: 20px;
+      border-bottom-left-radius: 25px;
+      border-bottom-right-radius: 25px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       position: sticky;
       top: 0;
       z-index: 100;
     }
-    header h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
-    header p { margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9; }
+    header h1 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: 0.5px; }
+    header p { margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9; font-weight: 300; }
 
-    .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+    .container { max-width: 600px; margin: -20px auto 0; padding: 15px; position: relative; z-index: 101; }
 
     .card {
       background: white;
-      border-radius: 12px;
+      border-radius: 15px;
       padding: 20px;
       margin-bottom: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.02);
     }
 
     .section-title {
@@ -66,56 +67,70 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 10px;
     }
-    .section-title i { color: var(--accent); }
+    .section-title i { color: var(--accent); font-size: 1.2rem; }
 
     /* Form Styles */
-    label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #666; }
+    label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #555; font-weight: 500; }
     input, select, textarea {
       width: 100%;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      padding: 12px 15px;
+      border: 2px solid #eee;
+      border-radius: 10px;
       font-family: 'Poppins', sans-serif;
       font-size: 1rem;
       margin-bottom: 15px;
       background: #fafafa;
+      transition: all 0.3s;
     }
     input:focus, select:focus, textarea:focus {
       border-color: var(--primary);
       background: white;
+      box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
     }
 
     /* Location Cards */
     .location-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      gap: 12px;
     }
     .location-option {
       border: 2px solid #eee;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 15px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s;
       position: relative;
+      background: white;
     }
     .location-option.selected {
       border-color: var(--primary);
-      background-color: rgba(42, 157, 143, 0.05);
+      background-color: rgba(42, 157, 143, 0.08);
+    }
+    .location-option.selected::after {
+      content: '\f00c';
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      position: absolute;
+      top: 5px; right: 5px;
+      color: var(--primary);
+      font-size: 0.8rem;
     }
     .location-option.disabled {
       opacity: 0.6;
-      background-color: #eee;
+      background-color: #f5f5f5;
       cursor: not-allowed;
-      border-color: #ddd;
+      border-color: #e0e0e0;
     }
-    .loc-name { font-weight: 600; display: block; margin-bottom: 5px; }
-    .loc-cap { font-size: 0.75rem; color: #888; }
+    .loc-name { font-weight: 700; display: block; margin-bottom: 5px; color: var(--primary-dark); }
+    .loc-cap { font-size: 0.75rem; color: #888; display: block; }
     .loc-status { 
-      font-size: 0.7rem; font-weight: bold; 
-      display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 5px; 
+      font-size: 0.7rem; font-weight: 600; 
+      display: inline-block; padding: 3px 8px; border-radius: 20px; margin-top: 8px; 
     }
     .status-ok { background: #d4edda; color: #155724; }
     .status-full { background: #f8d7da; color: #721c24; }
@@ -125,23 +140,24 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 0;
+      padding: 15px 0;
       border-bottom: 1px solid #f0f0f0;
     }
     .menu-item:last-child { border-bottom: none; }
-    .menu-info h4 { margin: 0; font-size: 1rem; color: var(--dark); }
-    .menu-info p { margin: 2px 0 0; font-size: 0.8rem; color: #888; }
+    .menu-info h4 { margin: 0; font-size: 1rem; color: var(--dark); font-weight: 600; }
+    .menu-info p { margin: 4px 0 0; font-size: 0.8rem; color: #888; line-height: 1.4; }
     
     .qty-control {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       background: #f8f9fa;
-      padding: 5px;
-      border-radius: 20px;
+      padding: 5px 8px;
+      border-radius: 25px;
+      border: 1px solid #eee;
     }
     .qty-btn {
-      width: 28px; height: 28px;
+      width: 30px; height: 30px;
       border-radius: 50%;
       border: none;
       background: white;
@@ -150,8 +166,11 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      transition: transform 0.1s;
     }
-    .qty-val { font-weight: 600; width: 20px; text-align: center; font-size: 0.9rem; }
+    .qty-btn:active { transform: scale(0.9); }
+    .qty-val { font-weight: 700; width: 20px; text-align: center; font-size: 1rem; color: var(--primary-dark); }
 
     /* Bottom Bar */
     .bottom-bar {
@@ -159,41 +178,44 @@
       bottom: 0; left: 0; width: 100%;
       background: white;
       padding: 15px 20px;
-      box-shadow: 0 -2px 15px rgba(0,0,0,0.1);
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
       z-index: 1000;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
     }
-    .total-info span { display: block; font-size: 0.8rem; color: #666; }
+    .total-info span { display: block; font-size: 0.8rem; color: #888; }
     .total-info strong { font-size: 1.1rem; color: var(--primary-dark); }
     
     .btn-book {
       background-color: var(--primary);
       color: white;
       border: none;
-      padding: 12px 30px;
+      padding: 12px 25px;
       border-radius: 30px;
       font-weight: 600;
       font-size: 1rem;
-      box-shadow: 0 4px 10px rgba(42, 157, 143, 0.3);
+      box-shadow: 0 4px 15px rgba(42, 157, 143, 0.4);
       cursor: pointer;
-      transition: transform 0.2s;
+      transition: transform 0.2s, background 0.2s;
+      display: flex; align-items: center; gap: 8px;
     }
     .btn-book:active { transform: scale(0.95); }
-    .btn-book:disabled { background-color: #ccc; box-shadow: none; }
+    .btn-book:hover { background-color: var(--primary-dark); }
 
     /* Loading Spinner */
     .loader-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(255,255,255,0.9); z-index: 2000;
+      background: white; z-index: 2000;
       display: flex; justify-content: center; align-items: center;
       flex-direction: column;
     }
     .spinner {
-      width: 40px; height: 40px; border: 4px solid #eee;
-      border-top: 4px solid var(--primary); border-radius: 50%;
-      animation: spin 1s linear infinite; margin-bottom: 10px;
+      width: 50px; height: 50px; border: 5px solid #f3f3f3;
+      border-top: 5px solid var(--primary); border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 15px;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -203,19 +225,19 @@
 
   <header>
     <h1><i class="fas fa-leaf"></i> Dolan Sawah</h1>
-    <p>Reservasi Mandiri</p>
+    <p>Formulir Reservasi Mandiri</p>
   </header>
 
   <div class="loader-overlay" id="loader">
     <div class="spinner"></div>
-    <p>Memuat Data...</p>
+    <p style="color: #666; font-weight: 500;">Memuat Data...</p>
   </div>
 
   <div class="container">
     
     <div class="card">
       <div class="section-title"><i class="far fa-calendar-alt"></i> Waktu Kunjungan</div>
-      <label>Tanggal</label>
+      <label>Tanggal Rencana Datang</label>
       <input type="date" id="inputDate" onchange="checkAvailability()">
       
       <div style="display: flex; gap: 15px;">
@@ -231,46 +253,49 @@
     </div>
 
     <div class="card">
-      <div class="section-title"><i class="fas fa-map-marker-alt"></i> Pilih Tempat</div>
-      <p style="font-size: 0.8rem; color: #888; margin-bottom: 10px;">Tempat yang tersedia untuk tanggal & jumlah tamu yang dipilih:</p>
+      <div class="section-title"><i class="fas fa-map-marker-alt"></i> Pilih Tempat Duduk</div>
+      <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px; background: #e3f2fd; padding: 10px; border-radius: 8px; border-left: 4px solid #2196f3;">
+        <i class="fas fa-info-circle"></i> Sistem otomatis mengecek ketersediaan kursi di tanggal yang Anda pilih.
+      </p>
       <div class="location-grid" id="locationList">
-        <p style="grid-column: span 2; text-align: center; color: #999;">Silakan pilih tanggal dahulu.</p>
+        <p style="grid-column: span 2; text-align: center; color: #999; padding: 20px;">Silakan pilih tanggal terlebih dahulu.</p>
       </div>
       <input type="hidden" id="selectedLocation">
     </div>
 
     <div class="card">
-      <div class="section-title"><i class="fas fa-utensils"></i> Pilih Menu</div>
+      <div class="section-title"><i class="fas fa-utensils"></i> Pilih Menu (Pre-Order)</div>
       <div id="menuList">
         </div>
     </div>
 
     <div class="card">
-      <div class="section-title"><i class="fas fa-user"></i> Data Pemesan</div>
+      <div class="section-title"><i class="fas fa-user-edit"></i> Data Pemesan</div>
       <label>Nama Lengkap</label>
       <input type="text" id="inputName" placeholder="Contoh: Budi Santoso">
       
-      <label>Nomor WhatsApp</label>
+      <label>Nomor WhatsApp (Aktif)</label>
       <input type="tel" id="inputPhone" placeholder="Contoh: 081234567890">
+      <small style="display:block; margin-top:-10px; margin-bottom:15px; color:#888; font-size:0.75rem;">Kami akan menghubungi nomor ini untuk konfirmasi.</small>
       
       <label>Catatan Tambahan (Opsional)</label>
-      <textarea id="inputNote" rows="2" placeholder="Contoh: Kursi bayi, jangan pedas, dll."></textarea>
+      <textarea id="inputNote" rows="2" placeholder="Contoh: Butuh kursi bayi, alergi kacang, dll."></textarea>
     </div>
-
-    <div style="height: 50px;"></div>
 
   </div>
 
   <div class="bottom-bar">
     <div class="total-info">
       <span id="totalItems">0 Menu Dipilih</span>
-      <strong>Siap Booking?</strong>
+      <strong id="statusText">Siap Booking?</strong>
     </div>
-    <button class="btn-book" onclick="submitReservation()">Booking Sekarang</button>
+    <button class="btn-book" onclick="submitReservation()">
+      Kirim Request <i class="fas fa-paper-plane"></i>
+    </button>
   </div>
 
   <script>
-    // --- KONFIGURASI FIREBASE SAMA PERSIS DENGAN WEB ADMIN ANDA ---
+    // --- KONFIGURASI FIREBASE ---
     const firebaseConfig = {
       apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
       authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -288,7 +313,7 @@
     // --- VARIABEL GLOBAL ---
     let locationsData = [];
     let menusData = {};
-    let selectedMenus = {}; // { "Nasi Goreng": 2 }
+    let selectedMenus = {}; 
     let selectedLocationName = "";
 
     // --- INISIALISASI ---
@@ -296,36 +321,46 @@
       // Set min date ke hari ini
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('inputDate').setAttribute('min', today);
-      document.getElementById('inputDate').value = today;
-
+      
       await loadData();
       document.getElementById('loader').style.display = 'none';
-      
-      // Cek ketersediaan awal
-      checkAvailability();
     });
 
     // --- 1. LOAD DATA DARI FIREBASE ---
     async function loadData() {
       try {
-        // Load Locations
-        const locSnapshot = await db.collection('locations').get();
-        locationsData = [];
-        locSnapshot.forEach(doc => {
-            locationsData.push({ id: doc.id, ...doc.data() });
-        });
+        // Load Locations (Pastikan nama koleksi 'locations' atau 'Locations' sesuai database)
+        // Gunakan try-catch per collection agar tidak blank semua jika salah satu gagal
+        try {
+            const locSnapshot = await db.collection('locations').get(); // Cek huruf besar/kecil di sini
+            locationsData = [];
+            locSnapshot.forEach(doc => {
+                locationsData.push({ id: doc.id, ...doc.data() });
+            });
+        } catch (e) {
+            console.warn("Gagal load lokasi, coba pakai huruf kapital 'Locations'...", e);
+            const locSnapshot = await db.collection('Locations').get(); 
+            locationsData = [];
+            locSnapshot.forEach(doc => {
+                locationsData.push({ id: doc.id, ...doc.data() });
+            });
+        }
 
         // Load Menus
-        const menuSnapshot = await db.collection('menus').get();
-        menusData = {};
-        menuSnapshot.forEach(doc => {
-            menusData[doc.id] = doc.data().details || [];
-        });
+        try {
+            const menuSnapshot = await db.collection('menus').get();
+            menusData = {};
+            menuSnapshot.forEach(doc => {
+                menusData[doc.id] = doc.data().details || [];
+            });
+        } catch (e) {
+             console.warn("Gagal load menu", e);
+        }
 
         renderMenu();
       } catch (error) {
         console.error("Error loading data:", error);
-        Swal.fire('Error', 'Gagal memuat data. Periksa koneksi internet.', 'error');
+        Swal.fire('Koneksi Bermasalah', 'Gagal memuat data. Pastikan internet lancar atau hubungi admin.', 'error');
       }
     }
 
@@ -337,15 +372,16 @@
       if (!dateVal) return;
 
       const locContainer = document.getElementById('locationList');
-      locContainer.innerHTML = '<p style="grid-column: span 2; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Mengecek ketersediaan...</p>';
+      locContainer.innerHTML = '<p style="grid-column: span 2; text-align: center; padding:20px; color:var(--primary);"><i class="fas fa-spinner fa-spin"></i> Sedang mengecek kapasitas...</p>';
 
       try {
-        // Ambil semua reservasi pada tanggal tersebut
+        // Kita tetap mengecek koleksi 'reservations' (yang sudah diapprove)
+        // Agar tamu tidak memesan tempat yang sudah fix penuh.
         const snapshot = await db.collection('reservations')
           .where('date', '==', dateVal)
           .get();
 
-        const usageMap = {}; // { "Indoor": 50, "Outdoor": 20 }
+        const usageMap = {}; 
 
         snapshot.forEach(doc => {
           const r = doc.data();
@@ -356,11 +392,17 @@
 
         // Render Lokasi
         locContainer.innerHTML = '';
+        
+        if (locationsData.length === 0) {
+             locContainer.innerHTML = '<p style="color:red; text-align:center;">Data lokasi tidak ditemukan.</p>';
+             return;
+        }
+
         locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
           const used = usageMap[loc.name] || 0;
           const capacity = loc.capacity;
           const remaining = capacity - used;
-          const isFull = remaining < paxVal; // Tidak cukup untuk rombongan ini
+          const isFull = remaining < paxVal; 
 
           const div = document.createElement('div');
           div.className = `location-option ${isFull ? 'disabled' : ''}`;
@@ -368,14 +410,16 @@
 
           div.innerHTML = `
             <span class="loc-name">${loc.name}</span>
-            <span class="loc-cap">Kapasitas Total: ${capacity}</span><br>
+            <span class="loc-cap">Kapasitas: ${capacity} org</span>
             <span class="loc-status ${isFull ? 'status-full' : 'status-ok'}">
-              ${isFull ? 'Penuh / Tidak Cukup' : `Sisa Kuota: ${remaining}`}
+              ${isFull ? 'PENUH' : `Tersedia: ${remaining} kursi`}
             </span>
           `;
 
           if (!isFull) {
             div.onclick = () => selectLocation(loc.name, div);
+          } else {
+            div.onclick = () => Swal.fire('Tempat Penuh', `Maaf, tempat ${loc.name} tidak cukup untuk ${paxVal} orang di tanggal ini.`, 'warning');
           }
 
           locContainer.appendChild(div);
@@ -383,7 +427,7 @@
 
       } catch (error) {
         console.error(error);
-        locContainer.innerHTML = '<p style="color:red">Gagal mengecek ketersediaan.</p>';
+        locContainer.innerHTML = '<p style="color:red; text-align:center;">Gagal mengecek ketersediaan. (Cek console)</p>';
       }
     }
 
@@ -401,19 +445,24 @@
       const container = document.getElementById('menuList');
       container.innerHTML = '';
 
+      if (Object.keys(menusData).length === 0) {
+          container.innerHTML = '<p style="text-align:center; padding:10px;">Menu sedang dimuat atau kosong.</p>';
+          return;
+      }
+
       Object.keys(menusData).sort().forEach(menuName => {
-        const details = menusData[menuName].join(', '); // Gabung detail jadi string
+        const details = menusData[menuName].join(', '); 
         
         const div = document.createElement('div');
         div.className = 'menu-item';
         div.innerHTML = `
           <div class="menu-info">
             <h4>${menuName}</h4>
-            <p>${details.substring(0, 50)}${details.length > 50 ? '...' : ''}</p>
+            <p>${details.substring(0, 60)}${details.length > 60 ? '...' : ''}</p>
           </div>
           <div class="qty-control">
             <button class="qty-btn" onclick="updateQty('${menuName}', -1)">-</button>
-            <span class="qty-val" id="qty-${menuName.replace(/\s/g, '-')}">0</span>
+            <span class="qty-val" id="qty-${menuName.replace(/[^a-zA-Z0-9]/g, '-')}" data-name="${menuName}">0</span>
             <button class="qty-btn" onclick="updateQty('${menuName}', 1)">+</button>
           </div>
         `;
@@ -422,6 +471,7 @@
     }
 
     function updateQty(name, change) {
+      const safeId = name.replace(/[^a-zA-Z0-9]/g, '-');
       const current = selectedMenus[name] || 0;
       const newVal = current + change;
       
@@ -434,8 +484,7 @@
       }
 
       // Update UI Angka
-      const id = 'qty-' + name.replace(/\s/g, '-');
-      const el = document.getElementById(id);
+      const el = document.getElementById(`qty-${safeId}`);
       if(el) el.textContent = newVal;
 
       updateBottomBar();
@@ -444,9 +493,17 @@
     function updateBottomBar() {
       const count = Object.values(selectedMenus).reduce((a, b) => a + b, 0);
       document.getElementById('totalItems').textContent = `${count} Menu Dipilih`;
+      
+      const btn = document.querySelector('.btn-book');
+      if (count > 0 && selectedLocationName && document.getElementById('inputDate').value) {
+          document.getElementById('statusText').textContent = "Data Lengkap";
+          btn.style.opacity = "1";
+      } else {
+          document.getElementById('statusText').textContent = "Lengkapi Data";
+      }
     }
 
-    // --- 4. SUBMIT RESERVASI ---
+    // --- 4. SUBMIT RESERVASI (MODIFIKASI UTAMA) ---
     async function submitReservation() {
       // Validasi Input
       const date = document.getElementById('inputDate').value;
@@ -462,7 +519,7 @@
       }
 
       if (!selectedLocationName) {
-        Swal.fire('Tempat Belum Dipilih', 'Silakan pilih tempat yang tersedia.', 'warning');
+        Swal.fire('Tempat Belum Dipilih', 'Silakan pilih tempat duduk yang tersedia di Step 2.', 'warning');
         return;
       }
 
@@ -471,13 +528,13 @@
         return;
       }
 
-      // Format Data Menu untuk Database
+      // Format Data Menu
       const menuArray = Object.entries(selectedMenus).map(([key, val]) => ({
         name: key,
         quantity: val
       }));
 
-      // Siapkan Data Object (Sesuai Format Admin)
+      // --- PERUBAHAN DATA DISINI ---
       const reservationData = {
         date: date,
         jam: time,
@@ -487,42 +544,51 @@
         tempat: selectedLocationName,
         tambahan: note,
         menus: menuArray,
-        dp: 0, // Default 0
+        dp: 0, 
         tipeDp: '',
-        via: 'Website Mandiri', // Penanda sumber booking
-        thankYouSent: false,
+        via: 'Website Mandiri',
+        status: 'pending', // Menandakan perlu persetujuan admin
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      // Proses Simpan
       Swal.fire({
-        title: 'Memproses...',
-        text: 'Sedang mengirim data reservasi.',
+        title: 'Mengirim Permintaan...',
+        text: 'Mohon tunggu sebentar, jangan tutup halaman.',
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
       });
 
       try {
-        await db.collection('reservations').add(reservationData);
+        // SIMPAN KE KOLEKSI 'reservation_requests' (RUANG TUNGGU)
+        await db.collection('reservation_requests').add(reservationData);
         
         Swal.fire({
           icon: 'success',
-          title: 'Booking Berhasil!',
-          text: 'Terima kasih, data reservasi Anda sudah tersimpan. Mohon datang tepat waktu ya!',
-          confirmButtonText: 'OK Siap!',
+          title: 'Permintaan Terkirim!',
+          html: `
+            <div style="text-align:left; font-size:0.95rem;">
+                <p>Halo <b>${name}</b>, permintaan reservasi Anda telah kami terima.</p>
+                <p>Status saat ini: <span style="background:orange; color:white; padding:2px 8px; border-radius:10px;">Menunggu Konfirmasi</span></p>
+                <p>Admin kami akan mengecek ketersediaan dan segera menghubungi Anda via WhatsApp jika disetujui.</p>
+                <p style="margin-top:10px; font-weight:bold;">Terima Kasih!</p>
+            </div>
+          `,
+          confirmButtonText: 'Oke, Saya Tunggu',
           confirmButtonColor: 'var(--primary)'
         }).then(() => {
-            window.location.reload(); // Reset halaman
+            window.location.reload(); // Refresh agar form bersih kembali
         });
 
       } catch (error) {
         console.error("Submit Error:", error);
-        Swal.fire('Gagal', 'Terjadi kesalahan saat menyimpan reservasi. Silakan coba lagi.', 'error');
+        Swal.fire('Gagal Mengirim', 'Terjadi kesalahan sistem atau izin ditolak. Silakan coba lagi atau hubungi admin.', 'error');
       }
     }
 
     function cleanPhoneNumber(phone) {
-      return phone.replace(/[^0-9]/g, '');
+      let p = phone.replace(/[^0-9]/g, '');
+      if (p.startsWith('0')) p = '62' + p.substring(1); // Format ke 62
+      return p;
     }
 
   </script>
