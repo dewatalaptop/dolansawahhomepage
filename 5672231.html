@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - Dolan Sawah</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <style>
+    :root {
+      --primary: #2a9d8f;
+      --primary-dark: #21867a;
+      --secondary: #264653;
+      --accent: #e9c46a;
+      --danger: #e76f51;
+      --success: #2a9d8f;
+      --warning: #f4a261;
+      --bg-body: #f3f4f6;
+      --bg-card: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --sidebar-width: 260px;
+    }
+
+    * { box-sizing: border-box; outline: none; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
+
+    /* --- LOGIN SCREEN --- */
+    #login-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      z-index: 9999; display: flex; justify-content: center; align-items: center;
+    }
+    .login-box {
+      background: white; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center;
+    }
+    .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--border); border-radius: 8px; }
+    .login-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+    /* --- SIDEBAR --- */
+    .sidebar {
+      width: var(--sidebar-width); background: white; border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; height: 100vh; transition: 0.3s;
+      position: fixed; left: 0; top: 0; z-index: 100;
+    }
+    .brand { padding: 25px; font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+    .nav-menu { flex: 1; padding: 20px; overflow-y: auto; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 15px;
+      color: var(--text-muted); text-decoration: none; border-radius: 10px;
+      margin-bottom: 5px; transition: 0.2s; cursor: pointer; font-weight: 500;
+    }
+    .nav-item:hover, .nav-item.active { background-color: #f0fdf4; color: var(--primary); }
+    .nav-item .badge { margin-left: auto; background: var(--danger); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; display: none; }
+    
+    .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); }
+    .btn-logout { width: 100%; padding: 10px; background: #fee2e2; color: #ef4444; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    /* --- MAIN CONTENT --- */
+    .main-content {
+      flex: 1; margin-left: var(--sidebar-width); padding: 30px; overflow-y: auto; height: 100vh;
+      display: none; /* Hidden by default until login */
+    }
+
+    /* --- HEADER STATS --- */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border); display: flex; align-items: center; gap: 20px; }
+    .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .stat-info h4 { margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+    .stat-info .value { font-size: 1.5rem; font-weight: 700; color: var(--text-main); display: block; margin-top: 5px; }
+
+    /* --- SECTIONS --- */
+    .section { display: none; animation: fadeIn 0.3s ease; }
+    .section.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .section-title { font-size: 1.5rem; font-weight: 700; color: var(--secondary); margin: 0; }
+    .btn-primary { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: var(--primary-dark); }
+
+    /* --- INBOX CARDS --- */
+    .request-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+    .request-card { background: white; border-radius: 12px; padding: 20px; border-left: 5px solid var(--warning); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; }
+    .request-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .req-name { font-weight: 700; font-size: 1.1rem; }
+    .req-via { font-size: 0.75rem; background: #eee; padding: 2px 8px; border-radius: 4px; color: #666; }
+    .req-details { font-size: 0.9rem; color: #555; line-height: 1.6; }
+    .req-menu-box { background: #f9fafb; padding: 10px; border-radius: 6px; margin: 10px 0; font-size: 0.85rem; border: 1px dashed #ccc; }
+    .req-actions { display: flex; gap: 10px; margin-top: 15px; }
+    .req-actions button { flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 5px; }
+    .btn-accept { background: var(--success); color: white; }
+    .btn-reject { background: #fee2e2; color: var(--danger); }
+    .btn-chat { background: #25D366; color: white; }
+
+    /* --- CALENDAR & LIST --- */
+    .calendar-wrapper { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 20px; }
+    .cal-day { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 8px; padding: 5px; cursor: pointer; transition: 0.2s; position: relative; }
+    .cal-day:hover { border-color: var(--primary); background: #f0fdf4; }
+    .cal-day.today { background: #fff7ed; border-color: var(--warning); }
+    .cal-day.selected { background: var(--primary); color: white; border-color: var(--primary); }
+    .cal-marker { position: absolute; bottom: 5px; right: 5px; background: var(--accent); width: 8px; height: 8px; border-radius: 50%; }
+
+    .reservation-list-item { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid var(--primary); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    
+    /* --- RESPONSIVE --- */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); width: 0; }
+      .sidebar.open { transform: translateX(0); width: 260px; }
+      .main-content { margin-left: 0; padding: 15px; }
+      #mobile-toggle { display: block !important; }
+    }
+    #mobile-toggle { display: none; position: fixed; top: 15px; left: 15px; z-index: 200; background: var(--primary); color: white; padding: 10px; border-radius: 8px; border: none; }
+
+  </style>
+</head>
+<body>
+
+  <div id="login-overlay">
+    <div class="login-box">
+      <h2 style="color:var(--primary-dark); margin-bottom: 10px;">Admin Dolan Sawah</h2>
+      <p style="color:#666; margin-bottom: 20px;">Silakan login untuk mengakses dashboard.</p>
+      <input type="email" id="email" placeholder="Email Admin">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="handleLogin()">Masuk</button>
+    </div>
+  </div>
+
+  <button id="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+
+  <div class="sidebar" id="sidebar">
+    <div class="brand"><i class="fas fa-seedling"></i> Dolan Sawah</div>
+    <div class="nav-menu">
+      <div class="nav-item active" onclick="switchTab('dashboard')">
+        <i class="fas fa-home"></i> Dashboard
+      </div>
+      <div class="nav-item" onclick="switchTab('inbox')">
+        <i class="fas fa-inbox"></i> Permintaan
+        <span class="badge" id="sidebar-badge">0</span>
+      </div>
+      <div class="nav-item" onclick="switchTab('calendar')">
+        <i class="far fa-calendar-alt"></i> Kalender
+      </div>
+      <div class="nav-item" onclick="switchTab('data')">
+        <i class="fas fa-database"></i> Data Master
+      </div>
+      <div class="nav-item" onclick="switchTab('analysis')">
+        <i class="fas fa-chart-pie"></i> Analisis
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+
+  <div class="main-content" id="main-content">
+    
+    <div id="tab-dashboard" class="section active">
+      <h2 class="section-title">Overview Hari Ini</h2>
+      <p style="color:#666; margin-bottom: 20px;" id="date-display"></p>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#e0f2fe; color:#0284c7;"><i class="fas fa-users"></i></div>
+          <div class="stat-info"><h4>Tamu Hari Ini</h4><span class="value" id="stat-today-pax">0</span></div>
+        </div>
+        <div class="stat-card" onclick="switchTab('inbox')" style="cursor:pointer;">
+          <div class="stat-icon" style="background:#ffedd5; color:#c2410c;"><i class="fas fa-clock"></i></div>
+          <div class="stat-info"><h4>Menunggu Persetujuan</h4><span class="value" id="stat-pending">0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#dcfce7; color:#15803d;"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-info"><h4>Reservasi Bulan Ini</h4><span class="value" id="stat-month-total">0</span></div>
+        </div>
+      </div>
+
+      <div class="calendar-wrapper">
+         <h3 style="margin-top:0;">Reservasi Terbaru</h3>
+         <div id="recent-reservations-list"></div>
+      </div>
+    </div>
+
+    <div id="tab-inbox" class="section">
+      <div class="section-header">
+        <h2 class="section-title">Inbox Permintaan</h2>
+        <button class="btn-primary" onclick="loadRequests()"><i class="fas fa-sync"></i> Refresh</button>
+      </div>
+      <div id="inbox-container" class="request-grid">
+        </div>
+    </div>
+
+    <div id="tab-calendar" class="section">
+      <div class="section-header">
+        <h2 class="section-title">Kalender Reservasi</h2>
+        <div style="display: flex; gap:10px;">
+           <button class="btn-primary" onclick="prevMonth()"><</button>
+           <span id="cal-month-year" style="font-weight:700; font-size:1.2rem; padding: 5px 15px; display:flex; align-items:center;">...</span>
+           <button class="btn-primary" onclick="nextMonth()">></button>
+        </div>
+      </div>
+      
+      <div class="calendar-wrapper">
+        <div style="display:grid; grid-template-columns: repeat(7,1fr); text-align:center; font-weight:600; margin-bottom:10px; color:#888;">
+            <div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div>
+        </div>
+        <div id="calendar-grid" class="calendar-grid"></div>
+      </div>
+
+      <div style="margin-top: 30px;">
+          <h3>Detail Tanggal: <span id="selected-date-text">-</span></h3>
+          <div id="day-detail-list"></div>
+      </div>
+    </div>
+
+    <div id="tab-data" class="section">
+       <div class="section-header">
+         <h2 class="section-title">Kelola Data</h2>
+       </div>
+       
+       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+         <div class="calendar-wrapper">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3>Daftar Menu</h3>
+                <button onclick="addMenu()" style="border:none; background:var(--bg-body); cursor:pointer; width:30px; height:30px; border-radius:50%;"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="master-menu-list" style="max-height:300px; overflow-y:auto;"></div>
+         </div>
+         
+         <div class="calendar-wrapper">
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+                <h3>Daftar Lokasi</h3>
+                <button onclick="addLocation()" style="border:none; background:var(--bg-body); cursor:pointer; width:30px; height:30px; border-radius:50%;"><i class="fas fa-plus"></i></button>
+            </div>
+            <div id="master-location-list" style="max-height:300px; overflow-y:auto;"></div>
+         </div>
+       </div>
+    </div>
+
+    <div id="tab-analysis" class="section">
+      <h2 class="section-title">Analisis Data</h2>
+      <div class="calendar-wrapper" style="height: 400px; margin-bottom: 20px;">
+          <canvas id="chartAnalysis"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // --- KONFIGURASI FIREBASE ---
+    // GANTI DENGAN CONFIG ASLI ANDA
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
+      authDomain: "reservasi-dolan-sawah.firebaseapp.com",
+      projectId: "reservasi-dolan-sawah",
+      storageBucket: "reservasi-dolan-sawah.appspot.com",
+      messagingSenderId: "213151400721",
+      appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    // --- STATE VARIABLES ---
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let selectedDate = null;
+    let reservationsCache = []; // Data reservasi approved
+    let requestsCache = []; // Data request pending
+    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+    // --- AUTH ---
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        initApp();
+      } else {
+        document.getElementById('login-overlay').style.display = 'flex';
+        document.getElementById('main-content').style.display = 'none';
+      }
+    });
+
+    function handleLogin() {
+      const e = document.getElementById('email').value;
+      const p = document.getElementById('password').value;
+      auth.signInWithEmailAndPassword(e, p).catch(err => Swal.fire('Error', err.message, 'error'));
+    }
+    function handleLogout() { auth.signOut(); }
+
+    // --- CORE INIT ---
+    function initApp() {
+        document.getElementById('date-display').textContent = new Date().toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+        
+        // Listeners Realtime
+        listenRequests();     // Pantau Inbox
+        listenReservations(); // Pantau Kalender Utama
+        loadMasterData();     // Load Menu & Lokasi
+    }
+
+    // --- 1. LOGIKA INBOX (REQUESTS) ---
+    function listenRequests() {
+        db.collection('reservation_requests').orderBy('createdAt', 'desc')
+          .onSnapshot(snapshot => {
+             requestsCache = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+             updateRequestUI();
+          });
+    }
+
+    function updateRequestUI() {
+        // Update Badge Sidebar
+        const count = requestsCache.length;
+        const badge = document.getElementById('sidebar-badge');
+        document.getElementById('stat-pending').textContent = count;
+        
+        if (count > 0) {
+            badge.style.display = 'inline-block';
+            badge.textContent = count;
+        } else {
+            badge.style.display = 'none';
+        }
+
+        // Render Kartu Inbox
+        const container = document.getElementById('inbox-container');
+        if (count === 0) {
+            container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:#999;"><i class="fas fa-inbox fa-3x"></i><p>Tidak ada permintaan baru.</p></div>`;
+            return;
+        }
+
+        container.innerHTML = requestsCache.map(r => {
+            let menuHtml = 'Tidak ada menu';
+            if(r.menus && r.menus.length > 0) {
+                menuHtml = r.menus.map(m => `<b>${m.quantity}x</b> ${m.name}`).join('<br>');
+            }
+
+            return `
+            <div class="request-card">
+                <div class="request-header">
+                    <span class="req-name">${r.nama}</span>
+                    <span class="req-via">${r.via}</span>
+                </div>
+                <div class="req-details">
+                    <i class="fas fa-calendar"></i> ${r.date} &nbsp; <i class="fas fa-clock"></i> ${r.jam}<br>
+                    <i class="fas fa-users"></i> ${r.jumlah} Orang &nbsp; <i class="fas fa-map-marker-alt"></i> ${r.tempat}
+                </div>
+                <div class="req-menu-box">${menuHtml}</div>
+                ${r.tambahan ? `<div style="font-size:0.85rem; color:#d97706;">Note: ${r.tambahan}</div>` : ''}
+                
+                <div class="req-actions">
+                    <button class="btn-chat" onclick="wa('${r.nomorHp}', '${r.nama}')"><i class="fab fa-whatsapp"></i></button>
+                    <button class="btn-reject" onclick="rejectRequest('${r.id}')">Tolak</button>
+                    <button class="btn-accept" onclick="approveRequest('${r.id}')">Terima</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function approveRequest(id) {
+        const req = requestsCache.find(r => r.id === id);
+        if(!req) return;
+
+        const confirm = await Swal.fire({
+            title: 'Terima Reservasi?',
+            text: `Setujui reservasi atas nama ${req.nama}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Terima',
+            confirmButtonColor: 'var(--success)'
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                // Pindahkan ke koleksi utama
+                const newData = { ...req, status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp() };
+                delete newData.id; // Hapus ID lama
+
+                await db.collection('reservations').add(newData);
+                await db.collection('reservation_requests').doc(id).delete();
+
+                Swal.fire('Berhasil', 'Reservasi disetujui dan masuk jadwal.', 'success');
+                // Otomatis buka WA untuk konfirmasi (Opsional)
+                wa(req.nomorHp, req.nama, `Halo Kak ${req.nama}, reservasi Anda di Dolan Sawah pada tgl ${req.date} jam ${req.jam} sudah kami *SETUJUI*. Kami tunggu kedatangannya ya! 🙏`);
+
+            } catch (e) { Swal.fire('Error', e.message, 'error'); }
+        }
+    }
+
+    async function rejectRequest(id) {
+        const confirm = await Swal.fire({
+            title: 'Tolak Permintaan?',
+            text: "Data akan dihapus permanen.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Ya, Tolak'
+        });
+        if(confirm.isConfirmed) {
+             await db.collection('reservation_requests').doc(id).delete();
+             Swal.fire('Dihapus', 'Permintaan ditolak.', 'success');
+        }
+    }
+
+    // --- 2. LOGIKA RESERVASI (KALENDER) ---
+    function listenReservations() {
+        const start = new Date(currentYear, currentMonth, 1).toISOString().split('T')[0];
+        // Tarik data agak luas (3 bulan) atau filter per bulan jika data besar
+        db.collection('reservations').onSnapshot(snap => {
+            reservationsCache = snap.docs.map(d => ({id:d.id, ...d.data()}));
+            updateDashboardStats();
+            renderCalendar();
+        });
+    }
+
+    function updateDashboardStats() {
+        const todayStr = new Date().toISOString().split('T')[0];
+        // Filter hari ini
+        const todayRes = reservationsCache.filter(r => r.date === todayStr);
+        const todayPax = todayRes.reduce((sum, r) => sum + (parseInt(r.jumlah)||0), 0);
+        document.getElementById('stat-today-pax').textContent = todayPax;
+
+        // Filter bulan ini
+        const monthRes = reservationsCache.filter(r => new Date(r.date).getMonth() === new Date().getMonth());
+        document.getElementById('stat-month-total').textContent = monthRes.length;
+
+        // List Recent
+        const recent = reservationsCache.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)).slice(0, 5);
+        document.getElementById('recent-reservations-list').innerHTML = recent.map(r => 
+            `<div class="reservation-list-item">
+                <div><b>${r.nama}</b><br><small>${r.date} - ${r.jam}</small></div>
+                <div>${r.jumlah} Org</div>
+             </div>`
+        ).join('');
+        
+        // Update Chart
+        updateChart();
+    }
+
+    function renderCalendar() {
+        const grid = document.getElementById('calendar-grid');
+        grid.innerHTML = '';
+        document.getElementById('cal-month-year').innerText = `${monthNames[currentMonth]} ${currentYear}`;
+
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        // Empty slots
+        for(let i=0; i<firstDay; i++) grid.innerHTML += `<div></div>`;
+
+        // Days
+        for(let i=1; i<=daysInMonth; i++) {
+            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+            const isToday = (dateStr === new Date().toISOString().split('T')[0]) ? 'today' : '';
+            
+            // Cek ada reservasi gak
+            const count = reservationsCache.filter(r => r.date === dateStr).length;
+            const marker = count > 0 ? `<div class="cal-marker"></div>` : '';
+
+            const div = document.createElement('div');
+            div.className = `cal-day ${isToday}`;
+            div.innerHTML = `<span>${i}</span>${marker}`;
+            div.onclick = () => selectDate(dateStr, div);
+            grid.appendChild(div);
+        }
+    }
+
+    function selectDate(dateStr, el) {
+        document.querySelectorAll('.cal-day').forEach(e => e.classList.remove('selected'));
+        if(el) el.classList.add('selected');
+        
+        selectedDate = dateStr;
+        const displayDate = new Date(dateStr).toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'});
+        document.getElementById('selected-date-text').textContent = displayDate;
+
+        const resOnDate = reservationsCache.filter(r => r.date === dateStr);
+        const list = document.getElementById('day-detail-list');
+        
+        if(resOnDate.length === 0) {
+            list.innerHTML = '<p style="color:#888;">Tidak ada reservasi.</p>';
+        } else {
+            list.innerHTML = resOnDate.map(r => `
+                <div class="reservation-list-item">
+                    <div style="flex:1;">
+                        <span style="font-weight:bold; color:var(--primary);">${r.jam}</span> - ${r.nama} (${r.jumlah} Org)<br>
+                        <small style="color:#666;">${r.tempat}</small>
+                    </div>
+                    <div>
+                        <button onclick="wa('${r.nomorHp}', '${r.nama}')" style="border:none;background:none;cursor:pointer;color:green;"><i class="fab fa-whatsapp"></i></button>
+                        <button onclick="deleteRes('${r.id}')" style="border:none;background:none;cursor:pointer;color:red;"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    async function deleteRes(id) {
+        if(confirm("Hapus reservasi ini?")) {
+            await db.collection('reservations').doc(id).delete();
+            selectDate(selectedDate, null); // Refresh list
+        }
+    }
+
+    function prevMonth() { currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--;} renderCalendar(); }
+    function nextMonth() { currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++;} renderCalendar(); }
+
+    // --- 3. MASTER DATA ---
+    async function loadMasterData() {
+        // Menu
+        db.collection('menus').onSnapshot(snap => {
+            const list = document.getElementById('master-menu-list');
+            list.innerHTML = snap.docs.map(d => 
+                `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                    <span>${d.id}</span>
+                    <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="deleteDoc('menus','${d.id}')"></i>
+                 </div>`
+            ).join('');
+        });
+        // Lokasi
+        db.collection('locations').onSnapshot(snap => {
+            const list = document.getElementById('master-location-list');
+            list.innerHTML = snap.docs.map(d => 
+                `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                    <span>${d.data().name} (Cap: ${d.data().capacity})</span>
+                    <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="deleteDoc('locations','${d.id}')"></i>
+                 </div>`
+            ).join('');
+        });
+    }
+
+    async function addMenu() {
+        const { value: name } = await Swal.fire({input: 'text', inputLabel: 'Nama Menu'});
+        if(name) {
+            const { value: desc } = await Swal.fire({input: 'textarea', inputLabel: 'Deskripsi (pisahkan koma)'});
+            await db.collection('menus').doc(name).set({details: desc.split(',')});
+        }
+    }
+
+    async function addLocation() {
+        const { value: name } = await Swal.fire({input: 'text', inputLabel: 'Nama Lokasi'});
+        if(name) {
+            const { value: cap } = await Swal.fire({input: 'number', inputLabel: 'Kapasitas'});
+            await db.collection('locations').add({name: name, capacity: parseInt(cap)});
+        }
+    }
+    
+    function deleteDoc(col, id) {
+        if(confirm("Hapus data ini?")) db.collection(col).doc(id).delete();
+    }
+
+    // --- CHART ANALYSIS ---
+    function updateChart() {
+        const ctx = document.getElementById('chartAnalysis').getContext('2d');
+        // Group by month (Simple logic)
+        const counts = Array(12).fill(0);
+        reservationsCache.forEach(r => {
+            const m = new Date(r.date).getMonth();
+            if(new Date(r.date).getFullYear() === currentYear) counts[m]++;
+        });
+
+        if(window.myChart) window.myChart.destroy();
+        window.myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: monthNames,
+                datasets: [{
+                    label: 'Jumlah Reservasi Tahun Ini',
+                    data: counts,
+                    backgroundColor: '#2a9d8f',
+                    borderRadius: 5
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // --- UTILS ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-'+tabId).classList.add('active');
+        
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        // Highlight active nav logic here if needed
+        
+        // Mobile sidebar auto close
+        if(window.innerWidth < 768) document.getElementById('sidebar').classList.remove('open');
+    }
+
+    function wa(phone, name, msg) {
+        let p = phone.startsWith('0') ? '62'+phone.slice(1) : phone;
+        let txt = msg || `Halo Kak ${name}, ini dari Admin Dolan Sawah...`;
+        window.open(`https://wa.me/${p}?text=${encodeURIComponent(txt)}`, '_blank');
+    }
+    
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
+
+  </script>
+</body>
+</html>
