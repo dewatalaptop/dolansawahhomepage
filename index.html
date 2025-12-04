@@ -22,7 +22,9 @@
             color: black;
             transition: background 0.5s ease;
             line-height: 1.6;
+            background-color: #f0f0f0; /* Fallback color */
         }
+        /* Default Themes */
         body.theme-home { background: linear-gradient(135deg, #ff9800, #ffcc80); }
         body.theme-menu { background: linear-gradient(135deg, #ff9800, #e65100); }
         body.theme-gallery { background: linear-gradient(135deg, #f6d365, #fda085); }
@@ -40,6 +42,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        /* LOADING SCREEN */
         .loading-screen {
             position: fixed; width: 100%; height: 100%;
             background: white; display: flex; justify-content: center;
@@ -58,6 +61,7 @@
             font-size: 18px; margin-top: 10px; font-weight: bold; color: #ff9800;
         }
 
+        /* HEADER HOME */
         #page-home .header-gallery {
             width: 100%; position: fixed; top: 0; left: 0; 
             z-index: 1000;
@@ -69,16 +73,18 @@
             object-fit: cover;
         }
         
+        /* CONTAINER HOME */
         #page-home .main-container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 220px 20px 50px;
+            padding: 220px 20px 80px; /* Padding bawah ditambah agar tidak ketutup tombol floating */
             background: white; 
             border-radius: 15px;
             box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
             position: relative;
         }
         
+        /* SLIDESHOW */
         .slideshow-container {
             width: 100%;
             aspect-ratio: 16 / 9;
@@ -101,29 +107,78 @@
         .slide-image.active {
             opacity: 1;
         }
-        
-        #page-home .button {
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-            width: 90%; max-width: 300px; padding: 14px; margin: 12px auto;
-            font-size: clamp(1rem, 4vw, 1.1rem);
-            font-weight: bold; text-decoration: none; color: white;
-            border-radius: 10px; text-align: center; border: none; cursor: pointer;
-            transition: transform 0.3s, opacity 0.3s;
-        }
-        #page-home .button svg {
-            width: 22px; height: 22px; fill: currentColor;
-        }
-        
-        #page-home .orange { background: linear-gradient(45deg, #ff9800, #ff5722); }
-        #page-home .green { background: linear-gradient(45deg, #4caf50, #8bc34a); }
-        #page-home .button:hover { transform: scale(1.05); opacity: 0.9; }
 
-        #tombol-penting {
-            animation: blink-effect 1.5s infinite alternate;
-            box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8);
-            border: 2px solid #ffeb3b;
+        /* --- CSS MENU GRID DASHBOARD (BARU) --- */
+        .menu-grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 Kolom */
+            gap: 15px;
+            padding: 10px 0;
+            width: 100%;
         }
+
+        .menu-card {
+            display: flex;
+            flex-direction: column; /* Ikon di atas, Teks di bawah */
+            align-items: center;
+            justify-content: center;
+            padding: 20px 10px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+            aspect-ratio: 1.3 / 1; /* Agar bentuknya agak kotak persegi panjang */
+        }
+
+        .menu-card:active {
+            transform: scale(0.95);
+        }
+        .menu-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .menu-card svg {
+            width: 36px;
+            height: 36px;
+            margin-bottom: 10px;
+            fill: white;
+        }
+
+        .menu-card span {
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Warna Gradient Tombol */
+        .bg-orange { background: linear-gradient(135deg, #ff9800, #f57c00); }
+        .bg-green  { background: linear-gradient(135deg, #4caf50, #2e7d32); }
+        .bg-blue   { background: linear-gradient(135deg, #2196f3, #1976d2); }
         
+        /* Tombol Penting (Cek Ketersediaan) - Full Width */
+        .full-width-btn {
+            grid-column: span 2; /* Lebar penuh */
+            flex-direction: row; /* Ikon di samping kiri */
+            aspect-ratio: auto;
+            padding: 15px;
+            background: linear-gradient(135deg, #d32f2f, #c62828);
+            border: 2px solid #ffeb3b;
+            animation: blink-effect 1.5s infinite alternate;
+        }
+        .full-width-btn svg { margin-bottom: 0; margin-right: 10px; }
+        
+        @keyframes blink-effect {
+            from { box-shadow: 0px 0px 5px rgba(255, 152, 0, 0.5); }
+            to { box-shadow: 0px 0px 15px rgba(255, 152, 0, 1); }
+        }
+
+        /* --- END CSS GRID --- */
+
+        /* FLOATING BUTTON WHATSAPP */
         #page-home .floating-button {
             display: flex; justify-content: center; align-items: center; gap: 10px;
             width: 90%; max-width: 320px; padding: 14px; margin: 30px auto 10px; 
@@ -131,15 +186,16 @@
             color: black; background: linear-gradient(45deg, #ffeb3b, #fbc02d);
             border-radius: 10px; text-align: center; border: none; cursor: pointer;
             box-shadow: 0px 5px 15px rgba(255, 235, 59, 0.7);
-            animation: blink-effect 1.5s infinite alternate;
+            animation: blink-float 1.5s infinite alternate;
         }
         #page-home .floating-button svg { width: 24px; height: 24px; }
-        @keyframes blink-effect {
+        @keyframes blink-float {
             from { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.02); }
+            50% { opacity: 0.9; transform: scale(1.02); }
             to { opacity: 1; transform: scale(1); }
         }
 
+        /* PAGE MENU RESERVASI */
         #page-menu .container { max-width: 600px; margin: auto; background: #111; padding: 20px; border-radius: 12px; box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8); color: white; }
         #page-menu h1 { font-size: clamp(1.8rem, 5vw, 2.2rem); color: #ff9800; text-shadow: 0 0 10px rgba(255, 152, 0, 0.8); margin-bottom: 20px; }
         #page-menu h2 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: #fbc02d; margin-top: 30px; margin-bottom: 15px; }
@@ -147,21 +203,25 @@
         #page-menu .image-container img { width: 100%; max-width: 100%; border-radius: 10px; border: 3px solid #ff9800; transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; }
         #page-menu .image-container img:hover { transform: scale(1.05); box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8); }
 
+        /* PAGE GALLERY */
         #page-gallery .container { max-width: 95%; margin: 20px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15); }
         #page-gallery h1 { font-size: clamp(1.8rem, 5vw, 2.2rem); }
         #page-gallery .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; padding: 10px; }
         #page-gallery .gallery img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1 / 1; border-radius: 10px; cursor: pointer; transition: transform 0.3s ease-in-out; }
         #page-gallery .gallery img:hover { transform: scale(1.05); }
 
+        /* MODAL FULLSCREEN */
         .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: none; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s ease-in-out; z-index: 5000; }
         .fullscreen-modal.show { display: flex; opacity: 1; visibility: visible; }
         .fullscreen-modal img { max-width: 90%; max-height: 90%; border-radius: 10px; }
         .close-btn { position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; background: red; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.3s; }
         .close-btn:hover { background: darkred; }
 
+        /* PAGE JADWAL */
         #page-jadwal .container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2); max-width: 400px; width: 90%; margin: 20px auto; }
         #page-jadwal h1 { font-size: clamp(1.5rem, 5vw, 1.8rem); color: #ff5733; margin-top: 15px; }
 
+        /* PAGE REGULER */
         #page-reguler .menu-container { max-width: 800px; margin: 0 auto; padding-bottom: 80px; }
         #page-reguler h1 { color: #2c3e50; margin-bottom: 25px; font-size: clamp(2rem, 6vw, 2.5rem); }
         #page-reguler .menu-category { background: white; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 20px; text-align: left; overflow: hidden; }
@@ -172,6 +232,7 @@
         #page-reguler .item-dots { flex-grow: 1; border-bottom: 2px dotted #bdc3c7; margin: 0 10px; transform: translateY(-4px); }
         #page-reguler .item-price { font-size: clamp(0.9rem, 3vw, 1rem); color: #2c3e50; font-weight: bold; background-color: #f1c40f; padding: 3px 8px; border-radius: 5px; flex-shrink: 0; }
 
+        /* POPUP */
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 4000; padding: 20px; animation: fadeInPopup 0.3s ease-out; }
         .popup-overlay.show { display: flex; }
         .popup-content { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); max-width: 500px; width: 100%; text-align: center; position: relative; }
@@ -182,6 +243,7 @@
         .popup-button:hover { transform: scale(1.05); background: #e64a19; }
         @keyframes fadeInPopup { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         
+        /* SCROLL INDICATOR */
         #scroll-indicator {
             position: fixed; bottom: 20px; right: 20px;
             background: rgba(0, 0, 0, 0.6); color: white; padding: 8px 15px;
@@ -194,6 +256,7 @@
             50% { transform: translateY(-10px); }
         }
 
+        /* FLOATING NAVIGATION BUTTONS */
         #floating-home-button {
             position: fixed; bottom: 20px; left: 20px;
             background: linear-gradient(45deg, #ff9800, #ff5722); color: white;
@@ -208,134 +271,37 @@
         }
         #floating-home-button svg { width: 20px; height: 20px; }
         
-        /* --- PERUBAHAN CSS DIMULAI DI SINI --- */
-        
-        /* 1. Keyframe baru untuk animasi BOUNCE (naik-turun) */
+        /* ANIMASI BOUNCE BUTTON MEMBER */
         @keyframes bounce-button {
-            0%, 100% {
-                transform: translateY(0);
-                filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-            }
-            50% {
-                transform: translateY(-8px); /* Animasi naik */
-                filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4));
-            }
+            0%, 100% { transform: translateY(0); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+            50% { transform: translateY(-8px); filter: drop-shadow(0 8px 16px rgba(0,0,0,0.4)); }
         }
 
-        /* 2. Mengubah style tombol member menjadi GAMBAR */
         #floating-member-button {
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px;
-            
-            /* Ukuran proporsional */
-            width: 140px;  /* Cukup besar terlihat, tidak menutupi konten */
-            height: 140px; /* Cukup besar terlihat, tidak menutupi konten */
-            
-            /* Hapus style tombol teks (background, border, padding, dll) */
-            background: transparent; 
-            border: none;
-            padding: 0;
-            border-radius: 50%; /* Membuat area klik bundar */
-            
-            display: flex; /* Untuk memusatkan <img> jika perlu */
-            align-items: center;
-            justify-content: center;
-            
-            cursor: pointer; 
-            z-index: 3500;
-            text-decoration: none;
-            
-            /* Terapkan animasi BOUNCE baru */
+            position: fixed; bottom: 20px; right: 20px;
+            width: 140px; height: 140px;
+            background: transparent; border: none; padding: 0; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 3500; text-decoration: none;
             animation: bounce-button 1.5s infinite ease-in-out;
-            transition: transform 0.3s, filter 0.3s; /* Transisi halus untuk hover */
+            transition: transform 0.3s, filter 0.3s;
         }
+        #floating-member-button img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        #floating-member-button:hover { animation-play-state: paused; transform: scale(1.1); }
         
-        /* 3. Style untuk gambar di dalam tombol */
-        #floating-member-button img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%; /* Memastikan gambar tetap bundar */
-            object-fit: cover;
-        }
-
-        /* 4. Mengubah style hover tombol member */
-        #floating-member-button:hover { 
-            animation-play-state: paused; /* Jeda animasi saat di-hover */
-            transform: scale(1.1); /* Sedikit membesar saat di-hover */
-        }
-        
-        /* --- AKHIR PERUBAHAN CSS --- */
-
-
         /* --- CSS UNTUK HALAMAN JEEP ADVENTURE --- */
-        #page-jeep .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px 15px;
-        }
-        #page-jeep h1 {
-            font-size: clamp(2rem, 6vw, 2.8rem);
-            color: #f39c12;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
-        }
-        #page-jeep p.subtitle {
-            font-size: clamp(1rem, 3vw, 1.2rem);
-            color: #ccc;
-            margin-bottom: 40px;
-        }
-        .jeep-packages-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-        .jeep-package-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            color: white;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            overflow: hidden; /* Penting untuk border-radius pada gambar */
-            display: flex;
-            flex-direction: column;
-        }
-        .jeep-package-card:hover {
-            transform: translateY(-10px) scale(1.03);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(243, 156, 18, 0.7);
-            background: rgba(255, 255, 255, 0.1);
-        }
-        .jeep-package-card img {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            object-fit: cover;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .jeep-package-card .card-content {
-            padding: 20px;
-            text-align: center;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .jeep-package-card h3 {
-            font-size: clamp(1.1rem, 4vw, 1.3rem);
-            margin-bottom: 10px;
-            color: #fff;
-        }
-        .jeep-package-card .view-brochure {
-            font-size: 0.9rem;
-            color: #f39c12;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        /* --- AKHIR CSS JEEP --- */
+        #page-jeep .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
+        #page-jeep h1 { font-size: clamp(2rem, 6vw, 2.8rem); color: #f39c12; text-transform: uppercase; margin-bottom: 10px; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); }
+        #page-jeep p.subtitle { font-size: clamp(1rem, 3vw, 1.2rem); color: #ccc; margin-bottom: 40px; }
+        .jeep-packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .jeep-package-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; color: white; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.3); overflow: hidden; display: flex; flex-direction: column; }
+        .jeep-package-card:hover { transform: translateY(-10px) scale(1.03); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(243, 156, 18, 0.7); background: rgba(255, 255, 255, 0.1); }
+        .jeep-package-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.2); }
+        .jeep-package-card .card-content { padding: 20px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .jeep-package-card h3 { font-size: clamp(1.1rem, 4vw, 1.3rem); margin-bottom: 10px; color: #fff; }
+        .jeep-package-card .view-brochure { font-size: 0.9rem; color: #f39c12; font-weight: bold; text-transform: uppercase; }
 
-
+        /* MEDIA QUERIES */
         @media screen and (max-width: 768px) {
             #page-home .main-container { padding-top: 180px; }
             #page-home .header-gallery img { max-height: 160px; }
@@ -365,30 +331,40 @@
                 <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755557/IMG_5226_eokpod.jpg" class="slide-image" alt="Suasana Dolan Sawah 6">
                 <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755559/IMG_5222_rhdzta.jpg" class="slide-image" alt="Suasana Dolan Sawah 7">
             </div>
-            <a href="#" onclick="showPage('page-reguler')" class="button orange">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
-                <span>Menu Reguler</span>
-            </a>
-            <a href="#" onclick="showPage('page-menu')" class="button green">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V5h10v14zM9 7h6v2H9zm0 4h6v2H9zm0 4h4v2H9z"/></svg>
-                <span>Menu Reservasi</span>
-            </a>
-            <a href="#" onclick="showPage('page-gallery')" class="button orange">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-                <span>Gallery Lokasi</span>
-            </a>
-            <a href="#" onclick="showPage('page-jadwal')" class="button green">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                <span>Jadwal Buka</span>
-            </a>
-            <a href="#" onclick="showPage('page-jeep')" class="button orange">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.92,6.62a1,1,0,0,0-.54-.54l-1-1-4-4A1,1,0,0,0,16,1H8A1,1,0,0,0,7.38,1.08l-4,4-1,1a1,1,0,0,0-.54.54L1,11v6a1,1,0,0,0,1,1H4a1,1,0,0,0,1-1V16H6v2a1,1,0,0,0,1,1H8a1,1,0,0,0,0-2H7V16H17v1H16a1,1,0,0,0,0,2h1a1,1,0,0,0,1-1V16h1v2a1,1,0,0,0,1,1h2a1,1,0,0,0,1-1V11ZM8.5,3h7l3,3H16V5a1,1,0,0,0-1-1H9A1,1,0,0,0,8,5V6H5.5ZM3,12a1,1,0,0,1,1-1H20a1,1,0,0,1,1,1v1H3Zm2,5a2,2,0,1,1,2-2A2,2,0,0,1,5,17Zm14,0a2,2,0,1,1,2-2A2,2,0,0,1,19,17Z"/></svg>
-                <span>Paket Jeep Adventure</span>
-            </a>
-            <a href="https://dewatalaptop.github.io/checkerds" target="_blank" rel="noopener noreferrer" id="tombol-penting" class="button green">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
-                <span>Periksa Ketersediaan Tempat</span>
-            </a>
+
+            <div class="menu-grid-container">
+                
+                <a href="#" onclick="showPage('page-reguler')" class="menu-card bg-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
+                    <span>Menu<br>Reguler</span>
+                </a>
+                
+                <a href="#" onclick="showPage('page-menu')" class="menu-card bg-green">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V5h10v14zM9 7h6v2H9zm0 4h6v2H9zm0 4h4v2H9z"/></svg>
+                    <span>Menu<br>Reservasi</span>
+                </a>
+                
+                <a href="#" onclick="showPage('page-gallery')" class="menu-card bg-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Gallery<br>Lokasi</span>
+                </a>
+                
+                <a href="#" onclick="showPage('page-jadwal')" class="menu-card bg-green">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                    <span>Jadwal<br>Buka</span>
+                </a>
+                
+                <a href="#" onclick="showPage('page-jeep')" class="menu-card bg-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.92,6.62a1,1,0,0,0-.54-.54l-1-1-4-4A1,1,0,0,0,16,1H8A1,1,0,0,0,7.38,1.08l-4,4-1,1a1,1,0,0,0-.54.54L1,11v6a1,1,0,0,0,1,1H4a1,1,0,0,0,1-1V16H6v2a1,1,0,0,0,1,1H8a1,1,0,0,0,0-2H7V16H17v1H16a1,1,0,0,0,0,2h1a1,1,0,0,0,1-1V16h1v2a1,1,0,0,0,1,1h2a1,1,0,0,0,1-1V11ZM8.5,3h7l3,3H16V5a1,1,0,0,0-1-1H9A1,1,0,0,0,8,5V6H5.5ZM3,12a1,1,0,0,1,1-1H20a1,1,0,0,1,1,1v1H3Zm2,5a2,2,0,1,1,2-2A2,2,0,0,1,5,17Zm14,0a2,2,0,1,1,2-2A2,2,0,0,1,19,17Z"/></svg>
+                    <span>Jeep<br>Adventure</span>
+                </a>
+
+                <a href="https://dewatalaptop.github.io/checkerds" target="_blank" rel="noopener noreferrer" class="menu-card full-width-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
+                    <span>Cek Ketersediaan Tempat</span>
+                </a>
+            </div>
+            
             <a href="https://wa.me/6285601393640?text=Nama%20%3A%0AAlamat%20%3A%0ATanggal%20acara%20%3A%0AJam%20acara%20%3A%0AJumlah%20peserta%20%3A%0APilihan%20Tempat%20%3A%0APilihan%20Menu%20%3A" class="floating-button">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01s-.521.074-.792.372c-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" fill-rule="evenodd"/></svg>
                 <span>Reservasi via WhatsApp</span>
@@ -487,7 +463,6 @@
                         <span class="view-brochure">Lihat Brosur</span>
                     </div>
                 </div>
-    
             </div>
         </div>
     </div>
@@ -514,7 +489,6 @@
     <script>
         // --- SCRIPT GABUNGAN UNTUK SEMUA FUNGSI ---
         
-        // Variabel global untuk data config
         let configData = {};
         
         const scrollIndicator = document.getElementById('scroll-indicator');
@@ -534,30 +508,29 @@
             genericPopup.classList.remove("show");
         }
 
-        // --- FUNGSI BARU UNTUK MEMBACA DATA DARI JSON ---
-        
-        // Fungsi ini akan dipanggil di `DOMContentLoaded` setelah config.json dimuat
+        // FUNGSI POPULATE PAGE (Membaca data dari config.json)
         function populatePage(data) {
-            configData = data; // Simpan data di global scope
+            configData = data; 
             
             // 1. Pengaturan Umum
             if (data.umum) {
                 document.querySelector('#page-home .header-gallery img').src = data.umum.headerImage;
                 document.querySelector('#page-jadwal .container p.schedule').innerHTML = data.umum.jadwalBuka;
-                document.querySelector('.floating-button').href = data.umum.linkWA; // Tombol WA
-                document.querySelector('#tombol-penting').href = data.umum.linkKetersediaan; // Cek Ketersediaan
-                document.querySelector('#floating-member-button').href = data.umum.linkMember; // Member Area
+                document.querySelector('.floating-button').href = data.umum.linkWA; 
+                document.querySelector('#floating-member-button').href = data.umum.linkMember; 
+                
+                // Update link tombol Cek Ketersediaan (yang baru)
+                const cekButton = document.querySelector('.full-width-btn');
+                if(cekButton) cekButton.href = data.umum.linkKetersediaan;
             }
             
             // 2. Homepage Slideshow
             if (data.slideshow && data.slideshow.length > 0) {
                 const slideshowContainer = document.querySelector('.slideshow-container');
-                slideshowContainer.innerHTML = ''; // Hapus slide hardcode
+                slideshowContainer.innerHTML = '';
                 data.slideshow.forEach((url, index) => {
                     slideshowContainer.innerHTML += `<img src="${url}" class="slide-image" alt="Suasana Dolan Sawah ${index + 1}">`;
                 });
-                
-                // Aktifkan slide pertama
                 if (slideshowContainer.querySelector('.slide-image')) {
                     slideshowContainer.querySelector('.slide-image').classList.add('active');
                 }
@@ -565,17 +538,23 @@
             
             // 3. Menu Reservasi (Gambar)
             if (data.menuReservasiImg) {
-                document.querySelector('img[alt="Menu Prasmanan"]').src = data.menuReservasiImg.prasmanan;
-                document.querySelector('img[alt="Paket Kembulan"]').src = data.menuReservasiImg.kembulan;
-                document.querySelector('img[alt="Paket Tumpeng Nasi Kuning"]').src = data.menuReservasiImg.tumpeng;
-                document.querySelector('img[alt="Paket Rantang"]').src = data.menuReservasiImg.rantang;
-                document.querySelector('img[alt="Paket Rantang Nasi Kuning"]').src = data.menuReservasiImg.rantangKuning;
-                document.querySelector('img[alt="Paket Grill Hemat Berdua"]').src = data.menuReservasiImg.grill1;
-                document.querySelector('img[alt="Paket Grill Hemat Berempat"]').src = data.menuReservasiImg.grill2;
+                const imgMap = {
+                    'Menu Prasmanan': data.menuReservasiImg.prasmanan,
+                    'Paket Kembulan': data.menuReservasiImg.kembulan,
+                    'Paket Tumpeng Nasi Kuning': data.menuReservasiImg.tumpeng,
+                    'Paket Rantang': data.menuReservasiImg.rantang,
+                    'Paket Rantang Nasi Kuning': data.menuReservasiImg.rantangKuning,
+                    'Paket Grill Hemat Berdua': data.menuReservasiImg.grill1,
+                    'Paket Grill Hemat Berempat': data.menuReservasiImg.grill2
+                };
+
+                for (const [altText, src] of Object.entries(imgMap)) {
+                    const img = document.querySelector(`img[alt="${altText}"]`);
+                    if (img) img.src = src;
+                }
             }
             
             // 4. Menu Reservasi (Terms/Ketentuan)
-            // Fungsi-fungsi ini sekarang membaca dari configData
             window.showPrasmananTerms = () => openPopup("Ketentuan Menu Prasmanan", data.menuReservasiTerms.prasmanan);
             window.showKembulanTerms = () => openPopup("Ketentuan Menu Kembulan", data.menuReservasiTerms.kembulan);
             window.showRantangTerms = () => openPopup("Ketentuan Paket Rantang", data.menuReservasiTerms.rantang);
@@ -584,7 +563,7 @@
             // 5. Jeep Adventure
             if (data.jeep && data.jeep.length > 0) {
                 const jeepGrid = document.querySelector('.jeep-packages-grid');
-                jeepGrid.innerHTML = ''; // Hapus paket hardcode
+                jeepGrid.innerHTML = ''; 
                 data.jeep.forEach(pkg => {
                     jeepGrid.innerHTML += `
                         <div class="jeep-package-card" data-src="${pkg.fullImg}">
@@ -596,13 +575,10 @@
                         </div>
                     `;
                 });
-                // Re-bind event listener untuk paket jeep yang baru
                 document.querySelectorAll('.jeep-package-card').forEach(card => {
                     card.addEventListener('click', function() {
                         const imageUrl = this.dataset.src;
-                        if (imageUrl) {
-                            openFullscreenImage(imageUrl);
-                        }
+                        if (imageUrl) openFullscreenImage(imageUrl);
                     });
                 });
             }
@@ -610,7 +586,7 @@
             // 6. Menu Reguler
             if (data.regulerMenu && data.regulerMenu.length > 0) {
                 const regulerContainer = document.querySelector('#page-reguler .menu-container');
-                regulerContainer.innerHTML = '<h1>Daftar Menu Reguler</h1>'; // Hapus menu hardcode
+                regulerContainer.innerHTML = '<h1>Daftar Menu Reguler</h1>';
                 data.regulerMenu.forEach(category => {
                     let itemsHtml = '';
                     category.items.forEach(item => {
@@ -622,7 +598,6 @@
                             </div>
                         `;
                     });
-                    
                     regulerContainer.innerHTML += `
                         <div class="menu-category">
                             <h2 class="category-title">${category.title}</h2>
@@ -635,7 +610,7 @@
             // 7. Galeri
             if (data.gallery && data.gallery.length > 0) {
                 const galleryContainer = document.querySelector('#page-gallery .gallery');
-                galleryContainer.innerHTML = ''; // Hapus galeri hardcode
+                galleryContainer.innerHTML = '';
                 data.gallery.forEach(url => {
                     galleryContainer.innerHTML += `<img src="${url}" alt="Foto Galeri" onclick="openFullscreen(this)">`;
                 });
@@ -643,17 +618,13 @@
             
             // 8. Tema Warna
             if (data.themes) {
-                const styleSheet = document.styleSheets[0]; // Ambil stylesheet pertama (inline)
-                
-                // Hapus aturan CSS lama (jika ada)
+                const styleSheet = document.styleSheets[0]; 
                 for (let i = styleSheet.cssRules.length - 1; i >= 0; i--) {
                     const rule = styleSheet.cssRules[i];
                     if (rule.selectorText && rule.selectorText.startsWith('body.theme-')) {
                         styleSheet.deleteRule(i);
                     }
                 }
-                
-                // Tambahkan aturan CSS baru
                 styleSheet.insertRule(`body.theme-home { background: linear-gradient(135deg, ${data.themes.home[0]}, ${data.themes.home[1]}); }`, styleSheet.cssRules.length);
                 styleSheet.insertRule(`body.theme-menu { background: linear-gradient(135deg, ${data.themes.menu[0]}, ${data.themes.menu[1]}); }`, styleSheet.cssRules.length);
                 styleSheet.insertRule(`body.theme-gallery { background: linear-gradient(135deg, ${data.themes.gallery[0]}, ${data.themes.gallery[1]}); }`, styleSheet.cssRules.length);
@@ -662,8 +633,6 @@
                 styleSheet.insertRule(`body.theme-jeep { background: linear-gradient(135deg, ${data.themes.jeep[0]}, ${data.themes.jeep[1]}); }`, styleSheet.cssRules.length);
             }
         }
-        
-        // --------------------------------------------------
         
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(page => {
@@ -732,18 +701,17 @@
             }, 100);
         }, false);
         
-        // --- INI ADALAH BAGIAN UTAMA YANG DIUBAH ---
         document.addEventListener("DOMContentLoaded", () => {
             const loadingText = document.querySelector(".loading-text");
             const loadingFill = document.querySelector(".loading-fill");
             const loadingScreen = document.querySelector(".loading-screen");
             let progress = 0;
             
-            let slideImages = document.querySelectorAll('.slide-image'); // Ambil slide hardcode dulu
+            let slideImages = document.querySelectorAll('.slide-image');
             let currentSlideIndex = 0;
 
             function showNextSlide() {
-                slideImages = document.querySelectorAll('.slide-image'); // Update daftar slide
+                slideImages = document.querySelectorAll('.slide-image'); 
                 if (slideImages.length === 0) return;
                 slideImages[currentSlideIndex].classList.remove('active');
                 currentSlideIndex = (currentSlideIndex + 1) % slideImages.length;
@@ -756,13 +724,10 @@
             
             setInterval(showNextSlide, 4000);
             
-            // Bind event untuk jeep hardcode (sebelum JSON dimuat)
             document.querySelectorAll('.jeep-package-card').forEach(card => {
                 card.addEventListener('click', function() {
                     const imageUrl = this.dataset.src;
-                    if (imageUrl) {
-                        openFullscreenImage(imageUrl);
-                    }
+                    if (imageUrl) openFullscreenImage(imageUrl);
                 });
             });
 
@@ -777,21 +742,15 @@
                 }
             }
 
-            // --- FUNGSI BARU UNTUK MEMUAT DATA ---
             async function loadContent() {
                 try {
-                    // Tambahkan cache-busting query
                     const response = await fetch(`config.json?v=${new Date().getTime()}`);
-                    if (!response.ok) {
-                        throw new Error('Gagal memuat config.json. Menampilkan konten default.');
-                    }
+                    if (!response.ok) throw new Error('Gagal memuat config.json');
                     const data = await response.json();
-                    populatePage(data); // Isi halaman dengan data dari JSON
+                    populatePage(data); 
                 } catch (error) {
                     console.warn(error.message);
-                    // Jika gagal, website akan tetap tampil dengan data hardcode
                 } finally {
-                    // Selesaikan loading screen
                     progress = 100;
                     loadingFill.style.width = "100%";
                     loadingText.textContent = "100%";
@@ -799,9 +758,8 @@
                 }
             }
 
-            // Ganti progress bar palsu dengan pemuat data asli
             (function startLoading() {
-                if (progress < 90) { // Berhenti di 90% sambil menunggu fetch
+                if (progress < 90) { 
                     progress += Math.floor(Math.random() * 5) + 5;
                     if (progress > 90) progress = 90;
                     loadingFill.style.width = progress + "%";
@@ -810,7 +768,6 @@
                 }
             })();
             
-            // Mulai muat konten
             loadContent();
         });
     </script>
