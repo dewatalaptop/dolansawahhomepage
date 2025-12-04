@@ -319,7 +319,6 @@
 <body>
     <div class="loading-screen"><h2>Memuat Halaman...</h2><div class="loading-bar"><div class="loading-fill"></div></div><p class="loading-text">0%</p></div>
     
-    <!-- PAGE HOME (DENGAN TAMPILAN GRID BARU) -->
     <div id="page-home" class="page-content">
         <div class="header-gallery"><img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752467234/IMG_5184_qcsvrt.jpg" alt="Gallery Image" /></div>
         <div class="main-container">
@@ -333,53 +332,44 @@
                 <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755559/IMG_5222_rhdzta.jpg" class="slide-image" alt="Suasana Dolan Sawah 7">
             </div>
 
-            <!-- GRID MENU CONTAINER -->
             <div class="menu-grid-container">
                 
-                <!-- Tombol 1: Menu Reguler -->
                 <a href="#" onclick="showPage('page-reguler')" class="menu-card bg-orange">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg>
                     <span>Menu<br>Reguler</span>
                 </a>
                 
-                <!-- Tombol 2: Menu Reservasi -->
                 <a href="#" onclick="showPage('page-menu')" class="menu-card bg-green">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V5h10v14zM9 7h6v2H9zm0 4h6v2H9zm0 4h4v2H9z"/></svg>
                     <span>Menu<br>Reservasi</span>
                 </a>
                 
-                <!-- Tombol 3: Gallery Lokasi -->
                 <a href="#" onclick="showPage('page-gallery')" class="menu-card bg-orange">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
                     <span>Gallery<br>Lokasi</span>
                 </a>
                 
-                <!-- Tombol 4: Jadwal Buka -->
                 <a href="#" onclick="showPage('page-jadwal')" class="menu-card bg-green">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                     <span>Jadwal<br>Buka</span>
                 </a>
                 
-                <!-- Tombol 5: Jeep Adventure -->
                 <a href="#" onclick="showPage('page-jeep')" class="menu-card bg-orange">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21.92,6.62a1,1,0,0,0-.54-.54l-1-1-4-4A1,1,0,0,0,16,1H8A1,1,0,0,0,7.38,1.08l-4,4-1,1a1,1,0,0,0-.54.54L1,11v6a1,1,0,0,0,1,1H4a1,1,0,0,0,1-1V16H6v2a1,1,0,0,0,1,1H8a1,1,0,0,0,0-2H7V16H17v1H16a1,1,0,0,0,0,2h1a1,1,0,0,0,1-1V16h1v2a1,1,0,0,0,1,1h2a1,1,0,0,0,1-1V11ZM8.5,3h7l3,3H16V5a1,1,0,0,0-1-1H9A1,1,0,0,0,8,5V6H5.5ZM3,12a1,1,0,0,1,1-1H20a1,1,0,0,1,1,1v1H3Zm2,5a2,2,0,1,1,2-2A2,2,0,0,1,5,17Zm14,0a2,2,0,1,1,2-2A2,2,0,0,1,19,17Z"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,12H5L6,8H18L19,12M20,13V7H4V13L2,13V16C2,17.1 2.9,18 4,18V21C4,21.55 4.45,22 5,22H7C7.55,22 8,21.55 8,21V18H16V21C16,21.55 16.45,22 17,22H19C19.55,22 20,21.55 20,21V18C21.1,18 22,17.1 22,16V13L20,13M6.5,16C5.67,16 5,15.33 5,14.5C5,13.67 5.67,13 6.5,13C7.33,13 8,13.67 8,14.5C8,15.33 7.33,16 6.5,16M17.5,16C16.67,16 16,15.33 16,14.5C16,13.67 16.67,13 17.5,13C18.33,13 19,13.67 19,14.5C19,15.33 18.33,16 17.5,16Z"/></svg>
                     <span>Jeep<br>Adventure</span>
                 </a>
                 
-                <!-- Tombol 6 (BARU): Lokasi Maps -->
                 <a href="https://maps.app.goo.gl/gCyTugKbGJEdobXs8?g_st=ic" target="_blank" rel="noopener noreferrer" class="menu-card bg-green">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
                     <span>Lokasi<br>Maps</span>
                 </a>
 
-                <!-- Tombol Khusus Full Width: Cek Ketersediaan -->
                 <a href="https://dewatalaptop.github.io/checkerds" target="_blank" rel="noopener noreferrer" class="menu-card full-width-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg>
                     <span>Cek Ketersediaan Tempat</span>
                 </a>
             </div>
             
-            <!-- Tombol WA Floating di dalam konten -->
             <a href="https://wa.me/6285601393640?text=Nama%20%3A%0AAlamat%20%3A%0ATanggal%20acara%20%3A%0AJam%20acara%20%3A%0AJumlah%20peserta%20%3A%0APilihan%20Tempat%20%3A%0APilihan%20Menu%20%3A" class="floating-button">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01s-.521.074-.792.372c-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" fill-rule="evenodd"/></svg>
                 <span>Reservasi via WhatsApp</span>
@@ -488,7 +478,7 @@
     <div id="generic-popup" class="popup-overlay" onclick="closePopup()"><div class="popup-content" onclick="event.stopPropagation()"><h2 id="popup-title"></h2><div id="popup-body"></div><button id="popup-button" class="popup-button" onclick="closePopup()">Tutup</button></div></div>
     
     <div id="scroll-indicator">
-        Scroll ke Bawah <span>&darr;</span>
+        Scroll ke Bawah <span>↓</span>
     </div>
 
     <button id="floating-home-button" onclick="showPage('page-home')">
@@ -788,4 +778,3 @@
     </script>
 </body>
 </html>
-
