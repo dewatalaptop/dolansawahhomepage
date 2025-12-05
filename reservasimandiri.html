@@ -43,12 +43,12 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 99;
     }
     header h1 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: 0.5px; }
     header p { margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9; font-weight: 300; }
 
-    .container { max-width: 600px; margin: -20px auto 0; padding: 15px; position: relative; z-index: 101; }
+    .container { max-width: 600px; margin: -20px auto 0; padding: 15px; position: relative; z-index: 100; }
 
     .card {
       background: white;
@@ -91,49 +91,146 @@
       box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
     }
 
-    /* Location Cards */
+    /* --- MODIFIED LOCATION CARDS --- */
     .location-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      grid-template-columns: 1fr 1fr; /* Tetap 2 kolom */
+      gap: 15px;
     }
+    
     .location-option {
-      border: 2px solid #eee;
+      border: 1px solid #ddd;
       border-radius: 12px;
-      padding: 15px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
+      overflow: hidden; /* Agar gambar tidak keluar border */
       background: white;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
     }
+
+    /* Style untuk Thumbnail */
+    .loc-thumb-wrapper {
+        width: 100%;
+        height: 100px;
+        background-color: #eee;
+        position: relative;
+    }
+    .loc-thumb-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .loc-content {
+        padding: 10px;
+        text-align: center;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
     .location-option.selected {
-      border-color: var(--primary);
-      background-color: rgba(42, 157, 143, 0.08);
+      border: 2px solid var(--primary);
+      box-shadow: 0 0 10px rgba(42, 157, 143, 0.2);
     }
-    .location-option.selected::after {
-      content: '\f00c';
-      font-family: "Font Awesome 6 Free";
-      font-weight: 900;
-      position: absolute;
-      top: 5px; right: 5px;
-      color: var(--primary);
-      font-size: 0.8rem;
-    }
+    
     .location-option.disabled {
       opacity: 0.6;
-      background-color: #f5f5f5;
-      cursor: not-allowed;
-      border-color: #e0e0e0;
+      background-color: #f9f9f9;
+      filter: grayscale(100%);
     }
-    .loc-name { font-weight: 700; display: block; margin-bottom: 5px; color: var(--primary-dark); }
-    .loc-cap { font-size: 0.75rem; color: #888; display: block; }
+
+    .loc-name { font-weight: 700; font-size: 0.9rem; display: block; margin-bottom: 4px; color: var(--primary-dark); line-height: 1.2;}
+    .loc-cap { font-size: 0.75rem; color: #666; display: block; margin-bottom: 8px;}
+    
     .loc-status { 
       font-size: 0.7rem; font-weight: 600; 
-      display: inline-block; padding: 3px 8px; border-radius: 20px; margin-top: 8px; 
+      display: inline-block; padding: 3px 8px; border-radius: 4px; margin-bottom: 10px;
     }
     .status-ok { background: #d4edda; color: #155724; }
     .status-full { background: #f8d7da; color: #721c24; }
+
+    /* Tombol Aksi di Kartu Lokasi */
+    .loc-actions {
+        display: flex;
+        gap: 5px;
+        margin-top: auto;
+    }
+    .btn-loc-view, .btn-loc-select {
+        border: none;
+        padding: 8px 0;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+    .btn-loc-view {
+        background: #eee;
+        color: #555;
+        flex: 1; /* Lebar lebih kecil */
+    }
+    .btn-loc-view:hover { background: #e0e0e0; }
+
+    .btn-loc-select {
+        background: var(--primary);
+        color: white;
+        flex: 2; /* Lebar lebih besar */
+    }
+    .btn-loc-select:hover { background: var(--primary-dark); }
+    
+    /* State tombol saat terpilih */
+    .location-option.selected .btn-loc-select {
+        background: var(--primary-dark);
+        content: "Terpilih";
+    }
+
+    /* --- IMAGE MODAL / POPUP --- */
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.9);
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    .modal-content {
+        margin: auto;
+        display: block;
+        max-width: 90%;
+        max-height: 80vh;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(255,255,255,0.2);
+    }
+    .modal-caption {
+        margin-top: 15px;
+        color: #ccc;
+        font-size: 1rem;
+        text-align: center;
+    }
+    .close-modal {
+        position: absolute;
+        top: 20px;
+        right: 35px;
+        color: #f1f1f1;
+        font-size: 40px;
+        font-weight: bold;
+        transition: 0.3s;
+        cursor: pointer;
+    }
+    .close-modal:hover,
+    .close-modal:focus {
+        color: #bbb;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
 
     /* Menu List */
     .menu-item {
@@ -233,6 +330,12 @@
     <p style="color: #666; font-weight: 500;">Memuat Data...</p>
   </div>
 
+  <div id="imgModal" class="image-modal">
+    <span class="close-modal" onclick="closeImage()">&times;</span>
+    <img class="modal-content" id="modalImg">
+    <div id="modalCaption" class="modal-caption"></div>
+  </div>
+
   <div class="container">
     
     <div class="card">
@@ -255,7 +358,7 @@
     <div class="card">
       <div class="section-title"><i class="fas fa-map-marker-alt"></i> Pilih Tempat Duduk</div>
       <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px; background: #e3f2fd; padding: 10px; border-radius: 8px; border-left: 4px solid #2196f3;">
-        <i class="fas fa-info-circle"></i> Sistem otomatis mengecek ketersediaan kursi di tanggal yang Anda pilih.
+        <i class="fas fa-info-circle"></i> Sistem otomatis mengecek ketersediaan kursi di tanggal yang Anda pilih. Klik tombol <b>Pilih</b> untuk mengunci.
       </p>
       <div class="location-grid" id="locationList">
         <p style="grid-column: span 2; text-align: center; color: #999; padding: 20px;">Silakan pilih tanggal terlebih dahulu.</p>
@@ -310,6 +413,20 @@
     }
     const db = firebase.firestore();
 
+    // --- MAPPING DATA FOTO LOKASI ---
+    const locationImages = {
+        "Lantai 1 belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
+        "Gubug 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7477_bxsmc6.jpg",
+        "Lantai 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7475_s9rtpo.jpg",
+        "Lantai 1 depan": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935935/IMG_7472_gd2zsf.jpg",
+        "Lantai 1 Full Blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935936/IMG_7473_vy6o4b.jpg",
+        "Pondok 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936109/3ac34945-6aef-4921-8c08-f9cbf8ab4892_mfdft0.jpg",
+        "Pondok 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/49d5f9c2-da86-461e-bdca-ad04398bfd99_yturyb.jpg",
+        "Pondok 1": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/ae454394-906a-43d6-a3e7-7453e5ef91b7_fdzogh.jpg"
+    };
+    // Gambar default jika nama lokasi tidak ada di list
+    const defaultImage = "https://via.placeholder.com/300x200?text=No+Image";
+
     // --- VARIABEL GLOBAL ---
     let locationsData = [];
     let menusData = {};
@@ -329,16 +446,15 @@
     // --- 1. LOAD DATA DARI FIREBASE ---
     async function loadData() {
       try {
-        // Load Locations (Pastikan nama koleksi 'locations' atau 'Locations' sesuai database)
-        // Gunakan try-catch per collection agar tidak blank semua jika salah satu gagal
+        // Load Locations
         try {
-            const locSnapshot = await db.collection('locations').get(); // Cek huruf besar/kecil di sini
+            const locSnapshot = await db.collection('locations').get(); 
             locationsData = [];
             locSnapshot.forEach(doc => {
                 locationsData.push({ id: doc.id, ...doc.data() });
             });
         } catch (e) {
-            console.warn("Gagal load lokasi, coba pakai huruf kapital 'Locations'...", e);
+            console.warn("Mencoba load 'Locations' kapital...", e);
             const locSnapshot = await db.collection('Locations').get(); 
             locationsData = [];
             locSnapshot.forEach(doc => {
@@ -360,11 +476,11 @@
         renderMenu();
       } catch (error) {
         console.error("Error loading data:", error);
-        Swal.fire('Koneksi Bermasalah', 'Gagal memuat data. Pastikan internet lancar atau hubungi admin.', 'error');
+        Swal.fire('Koneksi Bermasalah', 'Gagal memuat data. Pastikan internet lancar.', 'error');
       }
     }
 
-    // --- 2. LOGIKA KETERSEDIAAN TEMPAT ---
+    // --- 2. LOGIKA KETERSEDIAAN TEMPAT (UPDATED) ---
     async function checkAvailability() {
       const dateVal = document.getElementById('inputDate').value;
       const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
@@ -375,14 +491,11 @@
       locContainer.innerHTML = '<p style="grid-column: span 2; text-align: center; padding:20px; color:var(--primary);"><i class="fas fa-spinner fa-spin"></i> Sedang mengecek kapasitas...</p>';
 
       try {
-        // Kita tetap mengecek koleksi 'reservations' (yang sudah diapprove)
-        // Agar tamu tidak memesan tempat yang sudah fix penuh.
         const snapshot = await db.collection('reservations')
           .where('date', '==', dateVal)
           .get();
 
         const usageMap = {}; 
-
         snapshot.forEach(doc => {
           const r = doc.data();
           if (r.tempat) {
@@ -390,7 +503,7 @@
           }
         });
 
-        // Render Lokasi
+        // Reset Container
         locContainer.innerHTML = '';
         
         if (locationsData.length === 0) {
@@ -398,29 +511,42 @@
              return;
         }
 
+        // Render Kartu Lokasi
         locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
           const used = usageMap[loc.name] || 0;
           const capacity = loc.capacity;
           const remaining = capacity - used;
           const isFull = remaining < paxVal; 
+          const imageUrl = locationImages[loc.name] || defaultImage;
 
           const div = document.createElement('div');
           div.className = `location-option ${isFull ? 'disabled' : ''}`;
           if (selectedLocationName === loc.name && !isFull) div.classList.add('selected');
 
+          // HTML Struktur Baru
           div.innerHTML = `
-            <span class="loc-name">${loc.name}</span>
-            <span class="loc-cap">Kapasitas: ${capacity} org</span>
-            <span class="loc-status ${isFull ? 'status-full' : 'status-ok'}">
-              ${isFull ? 'PENUH' : `Tersedia: ${remaining} kursi`}
-            </span>
+            <div class="loc-thumb-wrapper">
+                <img src="${imageUrl}" class="loc-thumb-img" alt="${loc.name}" loading="lazy">
+            </div>
+            <div class="loc-content">
+                <div>
+                    <span class="loc-name">${loc.name}</span>
+                    <span class="loc-cap">Kap: ${capacity} | Sisa: ${remaining}</span>
+                    <span class="loc-status ${isFull ? 'status-full' : 'status-ok'}">
+                        ${isFull ? 'PENUH' : 'TERSEDIA'}
+                    </span>
+                </div>
+                
+                <div class="loc-actions">
+                     <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')" title="Lihat Foto"><i class="fas fa-eye"></i></button>
+                     ${!isFull ? 
+                        `<button class="btn-loc-select" onclick="selectLocation('${loc.name}', this)">${selectedLocationName === loc.name ? '<i class="fas fa-check"></i> Dipilih' : 'Pilih'}</button>` 
+                        : 
+                        `<button class="btn-loc-select" disabled style="background:#ccc; cursor:not-allowed;">Penuh</button>`
+                     }
+                </div>
+            </div>
           `;
-
-          if (!isFull) {
-            div.onclick = () => selectLocation(loc.name, div);
-          } else {
-            div.onclick = () => Swal.fire('Tempat Penuh', `Maaf, tempat ${loc.name} tidak cukup untuk ${paxVal} orang di tanggal ini.`, 'warning');
-          }
 
           locContainer.appendChild(div);
         });
@@ -431,13 +557,53 @@
       }
     }
 
-    function selectLocation(name, element) {
+    // --- FUNGSI MODAL GAMBAR ---
+    function openImage(url, caption) {
+        const modal = document.getElementById("imgModal");
+        const modalImg = document.getElementById("modalImg");
+        const captionText = document.getElementById("modalCaption");
+        
+        modal.style.display = "flex";
+        modalImg.src = url;
+        captionText.innerHTML = caption;
+    }
+
+    function closeImage() {
+        document.getElementById("imgModal").style.display = "none";
+    }
+    
+    // Tutup modal jika klik di luar gambar
+    window.onclick = function(event) {
+        const modal = document.getElementById("imgModal");
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    // --- FUNGSI PILIH LOKASI ---
+    function selectLocation(name, btnElement) {
       selectedLocationName = name;
       document.getElementById('selectedLocation').value = name;
       
-      // Visual Feedback
+      // Reset visual seleksi semua kartu
       document.querySelectorAll('.location-option').forEach(el => el.classList.remove('selected'));
-      element.classList.add('selected');
+      document.querySelectorAll('.btn-loc-select').forEach(btn => {
+          if(!btn.disabled) {
+              btn.innerHTML = "Pilih";
+              btn.style.background = "var(--primary)";
+          }
+      });
+
+      // Set visual kartu yang dipilih
+      // Naik ke parent div.location-option
+      const parentCard = btnElement.closest('.location-option');
+      parentCard.classList.add('selected');
+      
+      // Ubah teks tombol
+      btnElement.innerHTML = '<i class="fas fa-check"></i> Dipilih';
+      btnElement.style.background = "var(--primary-dark)";
+
+      updateBottomBar();
     }
 
     // --- 3. RENDER & LOGIKA MENU ---
@@ -503,7 +669,7 @@
       }
     }
 
-    // --- 4. SUBMIT RESERVASI (MODIFIKASI UTAMA) ---
+    // --- 4. SUBMIT RESERVASI ---
     async function submitReservation() {
       // Validasi Input
       const date = document.getElementById('inputDate').value;
@@ -519,7 +685,7 @@
       }
 
       if (!selectedLocationName) {
-        Swal.fire('Tempat Belum Dipilih', 'Silakan pilih tempat duduk yang tersedia di Step 2.', 'warning');
+        Swal.fire('Tempat Belum Dipilih', 'Silakan pilih tempat duduk dan klik tombol PILIH.', 'warning');
         return;
       }
 
@@ -528,13 +694,11 @@
         return;
       }
 
-      // Format Data Menu
       const menuArray = Object.entries(selectedMenus).map(([key, val]) => ({
         name: key,
         quantity: val
       }));
 
-      // --- PERUBAHAN DATA DISINI ---
       const reservationData = {
         date: date,
         jam: time,
@@ -547,7 +711,7 @@
         dp: 0, 
         tipeDp: '',
         via: 'Website Mandiri',
-        status: 'pending', // Menandakan perlu persetujuan admin
+        status: 'pending', 
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
@@ -559,7 +723,6 @@
       });
 
       try {
-        // SIMPAN KE KOLEKSI 'reservation_requests' (RUANG TUNGGU)
         await db.collection('reservation_requests').add(reservationData);
         
         Swal.fire({
@@ -576,18 +739,18 @@
           confirmButtonText: 'Oke, Saya Tunggu',
           confirmButtonColor: 'var(--primary)'
         }).then(() => {
-            window.location.reload(); // Refresh agar form bersih kembali
+            window.location.reload(); 
         });
 
       } catch (error) {
         console.error("Submit Error:", error);
-        Swal.fire('Gagal Mengirim', 'Terjadi kesalahan sistem atau izin ditolak. Silakan coba lagi atau hubungi admin.', 'error');
+        Swal.fire('Gagal Mengirim', 'Terjadi kesalahan sistem. Silakan coba lagi.', 'error');
       }
     }
 
     function cleanPhoneNumber(phone) {
       let p = phone.replace(/[^0-9]/g, '');
-      if (p.startsWith('0')) p = '62' + p.substring(1); // Format ke 62
+      if (p.startsWith('0')) p = '62' + p.substring(1); 
       return p;
     }
 
