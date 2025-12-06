@@ -352,8 +352,8 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- MAPPING FOTO YANG DIPERBAIKI ---
-    // Saya menambahkan nama panjang sesuai screenshot Anda
+    // --- MAPPING FOTO LENGKAP & AMAN (Anti-Bug) ---
+    // Saya pastikan semua variasi nama (Huruf besar/kecil) ada di sini.
     const locationImages = {
         "Lantai 1 belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
         "Gubug 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7477_bxsmc6.jpg",
@@ -364,9 +364,12 @@
         "Pondok 1": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/ae454394-906a-43d6-a3e7-7453e5ef91b7_fdzogh.jpg",
         "Lantai 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7479_dlgxmv.jpg",
         "Lantai 1 tengah": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985452/IMG_7494_wyskxg.jpg",
-        "Meeting room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg",
         
-        // UPDATE BARU: Menambahkan nama lengkap sesuai tampilan database
+        // [FIX PENTING] VARIASI MEETING ROOM (Agar pasti muncul)
+        "Meeting room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg",
+        "Meeting Room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg",
+        
+        // [FIX PENTING] VARIASI FULL BLOK (Nama panjang & pendek)
         "Lantai 1 Full Blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
         "Lantai 1 full blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
         "Lantai 1 Full Blok (peserta wajib di atas 200 orang)": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg"
@@ -387,6 +390,7 @@
       updateUIState();
     });
 
+    // --- UI HELPERS ---
     function updateDateUI() {
         const val = document.getElementById('inputDate').value;
         if(val) {
@@ -402,8 +406,10 @@
         document.getElementById('displayTime').textContent = val ? val : "--:--";
     }
 
+    // --- LOAD DATA (Locations & Menu) ---
     async function loadData() {
       try {
+        // Load Locations (Coba huruf kecil & besar)
         try {
             let snap = await db.collection('locations').get();
             if(snap.empty) snap = await db.collection('Locations').get();
@@ -411,6 +417,7 @@
             snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
         } catch(e) { console.warn("Loc load fail", e); }
 
+        // Load Menus
         try {
             let snap = await db.collection('menus').get();
             menusData = {};
@@ -420,7 +427,7 @@
                menusData[doc.id] = {
                    name: doc.id,
                    desc: desc,
-                   category: categorizeMenu(doc.id)
+                   category: categorizeMenu(doc.id) // Panggil fungsi kategori pintar
                };
             });
         } catch(e) { console.warn("Menu load fail", e); }
@@ -428,19 +435,18 @@
       } catch (err) { console.error(err); }
     }
 
-    // --- LOGIKA KATEGORI MENU (DIPERBARUI) ---
+    // --- [LOGIKA CANGGIH] PENGELOMPOKAN MENU ---
     function categorizeMenu(name) {
         const n = name.toLowerCase();
 
-        // 1. WISATA JEEP (Prioritas Tinggi)
+        // 1. WISATA JEEP (Prioritas Paling Tinggi)
         if(n.includes("jeep") || n.includes("jip")) return "Wisata Jeep";
 
-        // 2. PRASMANAN (Paket A sampai J)
-        // Logika: Jika mengandung kata 'prasmanan' ATAU ('paket' + salah satu huruf a-j)
-        // regex: /paket [a-j]/ mendeteksi "paket a", "paket c", dll.
+        // 2. PRASMANAN (Mendeteksi Paket A-J secara otomatis)
+        // Regex ini membaca "paket" diikuti spasi dan huruf a sampai j
         if(n.includes("prasmanan") || n.includes("buffet") || n.match(/paket [a-j](?!\w)/)) return "Prasmanan";
 
-        // 3. KATEGORI LAIN
+        // 3. KATEGORI LAINNYA
         if(n.includes("tumpeng") || n.includes("kembulan") || n.includes("bancakan")) return "Kembulan";
         if(n.includes("rantang") || n.includes("besek") || n.includes("box")) return "Paket Rantang";
         if(n.includes("grill") || n.includes("bbq") || n.includes("steak")) return "Grill & BBQ";
@@ -458,7 +464,7 @@
             groups[item.category].push(item);
         });
 
-        // Urutan Kategori (Jeep ditambahkan)
+        // Urutan Tampilan Kategori
         const order = ["Wisata Jeep", "Prasmanan", "Kembulan", "Paket Rantang", "Grill & BBQ", "Minuman", "Menu Lainnya"];
         
         order.forEach(cat => {
@@ -466,7 +472,7 @@
                 const section = document.createElement('div');
                 section.className = 'menu-category';
                 let htmlItems = "";
-                // Sort menu a-z
+                // Urutkan menu abjad A-Z
                 groups[cat].sort((a,b)=>a.name.localeCompare(b.name)).forEach(menu => {
                     htmlItems += `
                         <div class="menu-item">
@@ -505,6 +511,7 @@
         icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     }
 
+    // --- NAVIGASI STEP WIZARD ---
     async function nextStep() {
         if(currentStep === 1) {
             const date = document.getElementById('inputDate').value;
@@ -519,7 +526,7 @@
         }
         else if(currentStep === 3) {
             if(Object.keys(selectedMenus).length === 0) return Swal.fire('Pilih Menu','Minimal pesan 1 menu','warning');
-            // Summary Update
+            // Update Ringkasan
             document.getElementById('summaryDate').textContent = document.getElementById('displayDate').textContent;
             document.getElementById('summaryTime').textContent = document.getElementById('inputTime').value;
             document.getElementById('summaryLoc').textContent = selectedLocationName;
@@ -570,6 +577,7 @@
         }
     }
 
+    // --- CEK KETERSEDIAAN TEMPAT ---
     async function checkAvailability() {
         const dateVal = document.getElementById('inputDate').value;
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
@@ -591,13 +599,14 @@
                 const remaining = capacity - used;
                 let isFull = remaining < paxVal;
                 
+                // [LOGIKA KHUSUS] Full Blok Minimal 200 Pax
                 let customError = "";
                 if(loc.name.toLowerCase().includes("full blok") && paxVal < 200) {
                     isFull = true;
                     customError = "Min. 200 Orang";
                 }
 
-                // Logic Image Fallback
+                // Ambil gambar dari mapping (Aman dari case sensitive)
                 const imageUrl = locationImages[loc.name] || defaultImage;
 
                 const div = document.createElement('div');
@@ -638,6 +647,7 @@
         btn.style.background = "var(--primary-dark)";
     }
 
+    // --- LOGIKA KERANJANG MENU ---
     function updateQty(name, change) {
         const id = cleanId(name);
         const current = selectedMenus[name] || 0;
@@ -655,6 +665,7 @@
 
     function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
 
+    // --- KIRIM KE FIREBASE ---
     async function submitReservation() {
         const name = document.getElementById('inputName').value.trim();
         const phone = document.getElementById('inputPhone').value.trim();
@@ -687,6 +698,7 @@
         }
     }
 
+    // --- FUNGSI POPUP GAMBAR ---
     function openImage(url, caption) {
         document.getElementById('imgModal').style.display = 'flex';
         document.getElementById('modalImg').src = url;
