@@ -10,7 +10,6 @@
   
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
@@ -19,24 +18,26 @@
       --primary-dark: #264653;
       --secondary: #e9c46a;
       --accent: #f4a261;
-      --light: #f8f9fa;
-      --dark: #333;
+      --bg: #f0f2f5;
+      --white: #ffffff;
+      --text: #333333;
     }
     
     * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
     
     body {
       font-family: 'Poppins', sans-serif;
-      background-color: #f0f2f5;
+      background-color: var(--bg);
       margin: 0;
-      padding-bottom: 90px; /* Ruang untuk bottom bar */
-      color: var(--dark);
+      padding-bottom: 90px;
+      color: var(--text);
     }
 
+    /* HEADER */
     header {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: white;
-      padding: 25px 20px;
+      padding: 20px;
       text-align: center;
       border-bottom-left-radius: 25px;
       border-bottom-right-radius: 25px;
@@ -45,274 +46,185 @@
       top: 0;
       z-index: 99;
     }
-    header h1 { margin: 0; font-size: 1.6rem; font-weight: 700; letter-spacing: 0.5px; }
-    header p { margin: 5px 0 0; font-size: 0.9rem; opacity: 0.9; font-weight: 300; }
+    header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; }
+    header p { margin: 5px 0 0; font-size: 0.85rem; opacity: 0.9; }
 
-    .container { max-width: 600px; margin: -20px auto 0; padding: 15px; position: relative; z-index: 100; }
+    /* STEP INDICATOR */
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      margin: 15px 0;
+      gap: 10px;
+    }
+    .step-dot {
+      width: 10px; height: 10px;
+      background: #ccc;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .step-dot.active { background: var(--primary); transform: scale(1.3); }
 
+    .container { max-width: 600px; margin: 0 auto; padding: 10px 15px; }
+
+    /* CARD STYLE */
     .card {
-      background: white;
+      background: var(--white);
       border-radius: 15px;
       padding: 20px;
-      margin-bottom: 20px;
       box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-      border: 1px solid rgba(0,0,0,0.02);
+      margin-bottom: 20px;
+      animation: fadeIn 0.4s ease;
     }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .section-title {
       font-size: 1.1rem;
       color: var(--primary-dark);
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
       border-bottom: 2px solid #f0f0f0;
       padding-bottom: 10px;
     }
-    .section-title i { color: var(--accent); font-size: 1.2rem; }
+    .section-title i { color: var(--accent); }
 
-    /* Form Styles */
-    label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #555; font-weight: 500; }
-    input, select, textarea {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #eee;
-      border-radius: 10px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 1rem;
+    /* --- STEP WIZARD CONTROL --- */
+    .step-section { display: none; }
+    .step-section.active { display: block; }
+
+    /* --- CUSTOM DATE & TIME INPUTS --- */
+    .input-group-custom {
+      position: relative;
       margin-bottom: 15px;
-      background: #fafafa;
-      transition: all 0.3s;
     }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--primary);
-      background: white;
-      box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.1);
-    }
-
-    /* --- MODIFIED LOCATION CARDS --- */
-    .location-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr; /* Tetap 2 kolom */
-      gap: 15px;
-    }
-    
-    .location-option {
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      overflow: hidden; /* Agar gambar tidak keluar border */
-      background: white;
-      transition: all 0.2s;
+    .input-visual {
       display: flex;
-      flex-direction: column;
-    }
-
-    /* Style untuk Thumbnail */
-    .loc-thumb-wrapper {
-        width: 100%;
-        height: 100px;
-        background-color: #eee;
-        position: relative;
-    }
-    .loc-thumb-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .loc-content {
-        padding: 10px;
-        text-align: center;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .location-option.selected {
-      border: 2px solid var(--primary);
-      box-shadow: 0 0 10px rgba(42, 157, 143, 0.2);
-    }
-    
-    .location-option.disabled {
-      opacity: 0.6;
-      background-color: #f9f9f9;
-      filter: grayscale(100%);
-    }
-
-    .loc-name { font-weight: 700; font-size: 0.9rem; display: block; margin-bottom: 4px; color: var(--primary-dark); line-height: 1.2;}
-    .loc-cap { font-size: 0.75rem; color: #666; display: block; margin-bottom: 8px;}
-    
-    .loc-status { 
-      font-size: 0.7rem; font-weight: 600; 
-      display: inline-block; padding: 3px 8px; border-radius: 4px; margin-bottom: 10px;
-    }
-    .status-ok { background: #d4edda; color: #155724; }
-    .status-full { background: #f8d7da; color: #721c24; }
-
-    /* Tombol Aksi di Kartu Lokasi */
-    .loc-actions {
-        display: flex;
-        gap: 5px;
-        margin-top: auto;
-    }
-    .btn-loc-view, .btn-loc-select {
-        border: none;
-        padding: 8px 0;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        cursor: pointer;
-        font-weight: 600;
-        transition: 0.2s;
-    }
-    .btn-loc-view {
-        background: #eee;
-        color: #555;
-        flex: 1; /* Lebar lebih kecil */
-    }
-    .btn-loc-view:hover { background: #e0e0e0; }
-
-    .btn-loc-select {
-        background: var(--primary);
-        color: white;
-        flex: 2; /* Lebar lebih besar */
-    }
-    .btn-loc-select:hover { background: var(--primary-dark); }
-    
-    /* State tombol saat terpilih */
-    .location-option.selected .btn-loc-select {
-        background: var(--primary-dark);
-        content: "Terpilih";
-    }
-
-    /* --- IMAGE MODAL / POPUP --- */
-    .image-modal {
-        display: none;
-        position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0,0,0,0.9);
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-    }
-    .modal-content {
-        margin: auto;
-        display: block;
-        max-width: 90%;
-        max-height: 80vh;
-        border-radius: 8px;
-        box-shadow: 0 0 20px rgba(255,255,255,0.2);
-    }
-    .modal-caption {
-        margin-top: 15px;
-        color: #ccc;
-        font-size: 1rem;
-        text-align: center;
-    }
-    .close-modal {
-        position: absolute;
-        top: 20px;
-        right: 35px;
-        color: #f1f1f1;
-        font-size: 40px;
-        font-weight: bold;
-        transition: 0.3s;
-        cursor: pointer;
-    }
-    .close-modal:hover,
-    .close-modal:focus {
-        color: #bbb;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-
-    /* Menu List */
-    .menu-item {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 15px 0;
-      border-bottom: 1px solid #f0f0f0;
+      padding: 15px;
+      background: #fff;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      transition: 0.3s;
+      cursor: pointer;
     }
-    .menu-item:last-child { border-bottom: none; }
-    .menu-info h4 { margin: 0; font-size: 1rem; color: var(--dark); font-weight: 600; }
-    .menu-info p { margin: 4px 0 0; font-size: 0.8rem; color: #888; line-height: 1.4; }
+    .input-visual:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.1);
+    }
+    .input-visual i {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-right: 15px;
+      width: 30px; text-align: center;
+    }
+    .input-visual .label-text {
+      flex-grow: 1;
+    }
+    .input-visual .label-text span {
+      display: block; font-size: 0.75rem; color: #888; margin-bottom: 2px;
+    }
+    .input-visual .label-text strong {
+      font-size: 1.1rem; color: var(--dark);
+    }
+    
+    /* Hide actual input but keep functionality */
+    .hidden-input {
+      position: absolute; top:0; left:0; width:100%; height:100%;
+      opacity: 0; cursor: pointer;
+    }
+
+    /* --- LOCATION CARDS --- */
+    .location-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .location-option {
+      border: 1px solid #ddd; border-radius: 12px; overflow: hidden;
+      background: white; display: flex; flex-direction: column;
+      transition: 0.2s;
+    }
+    .loc-thumb-wrapper { width: 100%; height: 110px; background: #eee; position: relative; }
+    .loc-thumb-img { width: 100%; height: 100%; object-fit: cover; }
+    .loc-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
+    
+    .location-option.selected { border: 2px solid var(--primary); transform: translateY(-3px); }
+    .location-option.disabled { opacity: 0.5; background: #f9f9f9; filter: grayscale(100%); pointer-events: none; }
+
+    .loc-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; color: var(--primary-dark); }
+    .loc-cap { font-size: 0.75rem; color: #666; margin-bottom: 5px; }
+    .loc-req { font-size: 0.7rem; color: #d63031; font-weight: bold; font-style: italic; display:block; margin-bottom:5px;}
+
+    .loc-actions { display: flex; gap: 5px; margin-top: auto; }
+    .btn-loc-view, .btn-loc-select {
+      border: none; padding: 8px 0; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600;
+    }
+    .btn-loc-view { background: #eee; color: #555; flex: 1; }
+    .btn-loc-select { background: var(--primary); color: white; flex: 2; }
+    .location-option.selected .btn-loc-select { background: var(--primary-dark); }
+
+    /* --- MENU ACCORDION --- */
+    .menu-category { margin-bottom: 15px; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+    .cat-header {
+      background: #f8f9fa; padding: 15px; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      font-weight: 600; color: var(--primary-dark);
+    }
+    .cat-header:hover { background: #f1f1f1; }
+    .cat-content { display: none; padding: 0 15px; background: white; }
+    .cat-content.show { display: block; }
+    
+    .menu-item {
+      padding: 15px 0; border-bottom: 1px solid #f0f0f0;
+      display: flex; justify-content: space-between; align-items: start;
+    }
+    .menu-info { padding-right: 10px; }
+    .menu-info h4 { margin: 0 0 5px; font-size: 0.95rem; color: var(--dark); }
+    .menu-info p { margin: 0; font-size: 0.8rem; color: #777; line-height: 1.4; }
     
     .qty-control {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #f8f9fa;
-      padding: 5px 8px;
-      border-radius: 25px;
-      border: 1px solid #eee;
+      display: flex; align-items: center; gap: 10px;
+      background: #fff; border: 1px solid #ddd; padding: 4px 8px; border-radius: 20px;
     }
     .qty-btn {
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      border: none;
-      background: white;
-      color: var(--primary);
-      font-weight: bold;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
-      transition: transform 0.1s;
+      width: 25px; height: 25px; border-radius: 50%; border: none;
+      background: var(--primary); color: white; cursor: pointer; font-weight: bold;
     }
-    .qty-btn:active { transform: scale(0.9); }
-    .qty-val { font-weight: 700; width: 20px; text-align: center; font-size: 1rem; color: var(--primary-dark); }
 
-    /* Bottom Bar */
+    /* --- BOTTOM BAR --- */
     .bottom-bar {
-      position: fixed;
-      bottom: 0; left: 0; width: 100%;
-      background: white;
-      padding: 15px 20px;
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background: white; padding: 15px 20px;
       box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1000;
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      z-index: 100; border-top-left-radius: 20px; border-top-right-radius: 20px;
     }
-    .total-info span { display: block; font-size: 0.8rem; color: #888; }
-    .total-info strong { font-size: 1.1rem; color: var(--primary-dark); }
-    
-    .btn-book {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 12px 25px;
-      border-radius: 30px;
-      font-weight: 600;
-      font-size: 1rem;
-      box-shadow: 0 4px 15px rgba(42, 157, 143, 0.4);
-      cursor: pointer;
-      transition: transform 0.2s, background 0.2s;
-      display: flex; align-items: center; gap: 8px;
+    .btn-action {
+      background: var(--primary); color: white; border: none;
+      padding: 12px 30px; border-radius: 30px; font-weight: 600;
+      box-shadow: 0 4px 15px rgba(42, 157, 143, 0.4); cursor: pointer;
+      display: flex; align-items: center; gap: 10px; font-size: 1rem;
     }
-    .btn-book:active { transform: scale(0.95); }
-    .btn-book:hover { background-color: var(--primary-dark); }
+    .btn-back {
+      background: #fff; color: #666; border: 1px solid #ddd;
+      padding: 10px 15px; border-radius: 50%; cursor: pointer; font-size: 1.1rem;
+    }
 
-    /* Loading Spinner */
+    /* --- IMAGE MODAL --- */
+    .image-modal {
+        display: none; position: fixed; z-index: 2000; left: 0; top: 0;
+        width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+        justify-content: center; align-items: center; flex-direction: column;
+    }
+    .modal-content { max-width: 90%; max-height: 80vh; border-radius: 8px; }
+    .close-modal { position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; cursor: pointer; }
+
+    /* Loader */
     .loader-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: white; z-index: 2000;
-      display: flex; justify-content: center; align-items: center;
-      flex-direction: column;
+      background: white; z-index: 3000; display: flex;
+      justify-content: center; align-items: center; flex-direction: column;
     }
     .spinner {
-      width: 50px; height: 50px; border: 5px solid #f3f3f3;
-      border-top: 5px solid var(--primary); border-radius: 50%;
-      animation: spin 1s linear infinite; margin-bottom: 15px;
+      width: 40px; height: 40px; border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--primary); border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 10px;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -322,83 +234,121 @@
 
   <header>
     <h1><i class="fas fa-leaf"></i> Dolan Sawah</h1>
-    <p>Formulir Reservasi Mandiri</p>
+    <p>Reservasi Online</p>
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+      <div class="step-dot" id="dot4"></div>
+    </div>
   </header>
 
   <div class="loader-overlay" id="loader">
     <div class="spinner"></div>
-    <p style="color: #666; font-weight: 500;">Memuat Data...</p>
+    <p>Memuat Data...</p>
   </div>
 
-  <div id="imgModal" class="image-modal">
-    <span class="close-modal" onclick="closeImage()">&times;</span>
+  <div id="imgModal" class="image-modal" onclick="closeImage()">
+    <span class="close-modal">&times;</span>
     <img class="modal-content" id="modalImg">
-    <div id="modalCaption" class="modal-caption"></div>
+    <p style="color:white; margin-top:10px;" id="modalCaption"></p>
   </div>
 
   <div class="container">
     
-    <div class="card">
-      <div class="section-title"><i class="far fa-calendar-alt"></i> Waktu Kunjungan</div>
-      <label>Tanggal Rencana Datang</label>
-      <input type="date" id="inputDate" onchange="checkAvailability()">
-      
-      <div style="display: flex; gap: 15px;">
-        <div style="flex:1">
-            <label>Jam</label>
-            <input type="time" id="inputTime">
+    <div id="step1" class="step-section active">
+      <div class="card">
+        <div class="section-title"><i class="far fa-calendar-alt"></i> Kapan Rencana Datang?</div>
+        
+        <div class="input-group-custom">
+          <div class="input-visual">
+            <i class="far fa-calendar-check"></i>
+            <div class="label-text">
+              <span>Tanggal Kunjungan</span>
+              <strong id="displayDate">Pilih Tanggal</strong>
+            </div>
+          </div>
+          <input type="date" id="inputDate" class="hidden-input" onchange="updateDateUI()">
         </div>
-        <div style="flex:1">
-            <label>Jumlah Orang</label>
-            <input type="number" id="inputPax" min="1" value="2" onchange="checkAvailability()">
+
+        <div class="input-group-custom">
+          <div class="input-visual">
+            <i class="far fa-clock"></i>
+            <div class="label-text">
+              <span>Jam Kedatangan</span>
+              <strong id="displayTime">--:--</strong>
+            </div>
+          </div>
+          <input type="time" id="inputTime" class="hidden-input" onchange="updateTimeUI()">
         </div>
+
+        <div class="input-group-custom">
+           <div class="input-visual">
+            <i class="fas fa-users"></i>
+            <div class="label-text">
+              <span>Jumlah Orang</span>
+              <input type="number" id="inputPax" value="2" min="1" style="border:none; font-size:1.1rem; font-weight:bold; width:100%; color:var(--dark); background:transparent; padding:0;">
+            </div>
+           </div>
+        </div>
+
       </div>
     </div>
 
-    <div class="card">
-      <div class="section-title"><i class="fas fa-map-marker-alt"></i> Pilih Tempat Duduk</div>
-      <p style="font-size: 0.85rem; color: #666; margin-bottom: 15px; background: #e3f2fd; padding: 10px; border-radius: 8px; border-left: 4px solid #2196f3;">
-        <i class="fas fa-info-circle"></i> Sistem otomatis mengecek ketersediaan kursi di tanggal yang Anda pilih. Klik tombol <b>Pilih</b> untuk mengunci.
-      </p>
-      <div class="location-grid" id="locationList">
-        <p style="grid-column: span 2; text-align: center; color: #999; padding: 20px;">Silakan pilih tanggal terlebih dahulu.</p>
+    <div id="step2" class="step-section">
+      <div class="card">
+        <div class="section-title"><i class="fas fa-map-marker-alt"></i> Pilih Tempat</div>
+        <div class="location-grid" id="locationList">
+           </div>
       </div>
-      <input type="hidden" id="selectedLocation">
     </div>
 
-    <div class="card">
-      <div class="section-title"><i class="fas fa-utensils"></i> Pilih Menu (Pre-Order)</div>
-      <div id="menuList">
+    <div id="step3" class="step-section">
+      <div class="card">
+        <div class="section-title"><i class="fas fa-utensils"></i> Pilih Menu</div>
+        <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">Klik kategori untuk melihat menu.</p>
+        <div id="menuContainer">
+          </div>
+      </div>
+    </div>
+
+    <div id="step4" class="step-section">
+      <div class="card">
+        <div class="section-title"><i class="fas fa-user-edit"></i> Data Anda</div>
+        
+        <label>Nama Lengkap</label>
+        <input type="text" id="inputName" placeholder="Nama Pemesan" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:10px;">
+        
+        <label>WhatsApp (Aktif)</label>
+        <input type="tel" id="inputPhone" placeholder="08xxxxxxx" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:10px;">
+        
+        <label>Catatan</label>
+        <textarea id="inputNote" rows="3" placeholder="Contoh: Request kursi bayi" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px;"></textarea>
+
+        <div style="background:#e8f5e9; padding:15px; border-radius:10px; margin-top:20px; font-size:0.85rem; color:#2e7d32;">
+            <i class="fas fa-info-circle"></i> Ringkasan:<br>
+            <b id="summaryDate"></b> jam <b id="summaryTime"></b><br>
+            Tempat: <b id="summaryLoc"></b><br>
+            Total Menu: <b id="summaryMenu">0</b> item
         </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title"><i class="fas fa-user-edit"></i> Data Pemesan</div>
-      <label>Nama Lengkap</label>
-      <input type="text" id="inputName" placeholder="Contoh: Budi Santoso">
-      
-      <label>Nomor WhatsApp (Aktif)</label>
-      <input type="tel" id="inputPhone" placeholder="Contoh: 081234567890">
-      <small style="display:block; margin-top:-10px; margin-bottom:15px; color:#888; font-size:0.75rem;">Kami akan menghubungi nomor ini untuk konfirmasi.</small>
-      
-      <label>Catatan Tambahan (Opsional)</label>
-      <textarea id="inputNote" rows="2" placeholder="Contoh: Butuh kursi bayi, alergi kacang, dll."></textarea>
+      </div>
     </div>
 
   </div>
 
   <div class="bottom-bar">
-    <div class="total-info">
-      <span id="totalItems">0 Menu Dipilih</span>
-      <strong id="statusText">Siap Booking?</strong>
+    <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;"><i class="fas fa-arrow-left"></i></button>
+    <div id="priceInfo" style="display:none; flex-grow:1; margin-left:15px;">
+        <span style="display:block; font-size:0.75rem; color:#888;" id="totalItemText">0 Item</span>
+        <strong style="color:var(--primary);">Booking</strong>
     </div>
-    <button class="btn-book" onclick="submitReservation()">
-      Kirim Request <i class="fas fa-paper-plane"></i>
+    <button class="btn-action" id="btnNext" onclick="nextStep()">
+      Cari Tempat <i class="fas fa-arrow-right"></i>
     </button>
   </div>
 
   <script>
-    // --- KONFIGURASI FIREBASE ---
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
       authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -408,350 +358,376 @@
       appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
     };
 
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- MAPPING DATA FOTO LOKASI ---
+    // --- DATA IMAGE MAPPING (UPDATED) ---
     const locationImages = {
         "Lantai 1 belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
         "Gubug 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7477_bxsmc6.jpg",
         "Lantai 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7475_s9rtpo.jpg",
         "Lantai 1 depan": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935935/IMG_7472_gd2zsf.jpg",
-        "Lantai 1 Full Blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935936/IMG_7473_vy6o4b.jpg",
+        "Lantai 1 Full Blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
         "Pondok 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936109/3ac34945-6aef-4921-8c08-f9cbf8ab4892_mfdft0.jpg",
         "Pondok 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/49d5f9c2-da86-461e-bdca-ad04398bfd99_yturyb.jpg",
-        "Pondok 1": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/ae454394-906a-43d6-a3e7-7453e5ef91b7_fdzogh.jpg"
+        "Pondok 1": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/ae454394-906a-43d6-a3e7-7453e5ef91b7_fdzogh.jpg",
+        "Lantai 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7479_dlgxmv.jpg",
+        "Lantai 1 tengah": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985452/IMG_7494_wyskxg.jpg",
+        "Meeting room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg"
     };
-    // Gambar default jika nama lokasi tidak ada di list
-    const defaultImage = "https://via.placeholder.com/300x200?text=No+Image";
+    const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
 
-    // --- VARIABEL GLOBAL ---
+    // --- VARIABLES ---
+    let currentStep = 1;
     let locationsData = [];
     let menusData = {};
     let selectedMenus = {}; 
     let selectedLocationName = "";
 
-    // --- INISIALISASI ---
+    // --- INIT ---
     document.addEventListener('DOMContentLoaded', async () => {
-      // Set min date ke hari ini
+      // Set min date
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('inputDate').setAttribute('min', today);
       
       await loadData();
       document.getElementById('loader').style.display = 'none';
+      updateUIState();
     });
 
-    // --- 1. LOAD DATA DARI FIREBASE ---
+    function updateDateUI() {
+        const val = document.getElementById('inputDate').value;
+        if(val) {
+            const d = new Date(val);
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('displayDate').textContent = d.toLocaleDateString('id-ID', options);
+        } else {
+            document.getElementById('displayDate').textContent = "Pilih Tanggal";
+        }
+    }
+
+    function updateTimeUI() {
+        const val = document.getElementById('inputTime').value;
+        document.getElementById('displayTime').textContent = val ? val : "--:--";
+    }
+
+    // --- LOAD DATA ---
     async function loadData() {
       try {
-        // Load Locations
+        // Load Location
         try {
-            const locSnapshot = await db.collection('locations').get(); 
+            let snap = await db.collection('locations').get();
+            if(snap.empty) snap = await db.collection('Locations').get();
             locationsData = [];
-            locSnapshot.forEach(doc => {
-                locationsData.push({ id: doc.id, ...doc.data() });
-            });
-        } catch (e) {
-            console.warn("Mencoba load 'Locations' kapital...", e);
-            const locSnapshot = await db.collection('Locations').get(); 
-            locationsData = [];
-            locSnapshot.forEach(doc => {
-                locationsData.push({ id: doc.id, ...doc.data() });
-            });
-        }
+            snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
+        } catch(e) { console.warn("Loc load fail", e); }
 
         // Load Menus
         try {
-            const menuSnapshot = await db.collection('menus').get();
+            let snap = await db.collection('menus').get();
             menusData = {};
-            menuSnapshot.forEach(doc => {
-                menusData[doc.id] = doc.data().details || [];
+            snap.forEach(doc => {
+               // Normalisasi data menu agar punya deskripsi
+               let data = doc.data();
+               let desc = Array.isArray(data.details) ? data.details.join(", ") : (data.deskripsi || "");
+               menusData[doc.id] = {
+                   name: doc.id,
+                   desc: desc,
+                   category: categorizeMenu(doc.id) // Auto categorize
+               };
             });
-        } catch (e) {
-             console.warn("Gagal load menu", e);
-        }
+        } catch(e) { console.warn("Menu load fail", e); }
 
-        renderMenu();
-      } catch (error) {
-        console.error("Error loading data:", error);
-        Swal.fire('Koneksi Bermasalah', 'Gagal memuat data. Pastikan internet lancar.', 'error');
-      }
+        renderMenuAccordions();
+      } catch (err) { console.error(err); }
     }
 
-    // --- 2. LOGIKA KETERSEDIAAN TEMPAT (UPDATED) ---
-    async function checkAvailability() {
-      const dateVal = document.getElementById('inputDate').value;
-      const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
-      
-      if (!dateVal) return;
+    // --- LOGIC KATEGORI MENU OTOMATIS ---
+    function categorizeMenu(name) {
+        const n = name.toLowerCase();
+        if(n.includes("prasmanan") || n.includes("paket a") || n.includes("paket b") || n.includes("buffet")) return "Prasmanan";
+        if(n.includes("tumpeng") || n.includes("kembulan") || n.includes("bancakan")) return "Kembulan";
+        if(n.includes("rantang") || n.includes("besek") || n.includes("box")) return "Paket Rantang";
+        if(n.includes("grill") || n.includes("bbq") || n.includes("steak")) return "Grill & BBQ";
+        if(n.includes("minum") || n.includes("wedang") || n.includes("jus")) return "Minuman";
+        return "Menu Lainnya";
+    }
 
-      const locContainer = document.getElementById('locationList');
-      locContainer.innerHTML = '<p style="grid-column: span 2; text-align: center; padding:20px; color:var(--primary);"><i class="fas fa-spinner fa-spin"></i> Sedang mengecek kapasitas...</p>';
+    // --- RENDER MENU DENGAN ACCORDION ---
+    function renderMenuAccordions() {
+        const container = document.getElementById('menuContainer');
+        container.innerHTML = "";
 
-      try {
-        const snapshot = await db.collection('reservations')
-          .where('date', '==', dateVal)
-          .get();
-
-        const usageMap = {}; 
-        snapshot.forEach(doc => {
-          const r = doc.data();
-          if (r.tempat) {
-            usageMap[r.tempat] = (usageMap[r.tempat] || 0) + (parseInt(r.jumlah) || 0);
-          }
+        // Grouping
+        const groups = {};
+        Object.values(menusData).forEach(item => {
+            if(!groups[item.category]) groups[item.category] = [];
+            groups[item.category].push(item);
         });
 
-        // Reset Container
-        locContainer.innerHTML = '';
+        // Urutan Kategori
+        const order = ["Prasmanan", "Kembulan", "Paket Rantang", "Grill & BBQ", "Menu Lainnya", "Minuman"];
         
-        if (locationsData.length === 0) {
-             locContainer.innerHTML = '<p style="color:red; text-align:center;">Data lokasi tidak ditemukan.</p>';
-             return;
-        }
-
-        // Render Kartu Lokasi
-        locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
-          const used = usageMap[loc.name] || 0;
-          const capacity = loc.capacity;
-          const remaining = capacity - used;
-          const isFull = remaining < paxVal; 
-          const imageUrl = locationImages[loc.name] || defaultImage;
-
-          const div = document.createElement('div');
-          div.className = `location-option ${isFull ? 'disabled' : ''}`;
-          if (selectedLocationName === loc.name && !isFull) div.classList.add('selected');
-
-          // HTML Struktur Baru
-          div.innerHTML = `
-            <div class="loc-thumb-wrapper">
-                <img src="${imageUrl}" class="loc-thumb-img" alt="${loc.name}" loading="lazy">
-            </div>
-            <div class="loc-content">
-                <div>
-                    <span class="loc-name">${loc.name}</span>
-                    <span class="loc-cap">Kap: ${capacity} | Sisa: ${remaining}</span>
-                    <span class="loc-status ${isFull ? 'status-full' : 'status-ok'}">
-                        ${isFull ? 'PENUH' : 'TERSEDIA'}
-                    </span>
-                </div>
+        order.forEach(cat => {
+            if(groups[cat]) {
+                const section = document.createElement('div');
+                section.className = 'menu-category';
                 
-                <div class="loc-actions">
-                     <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')" title="Lihat Foto"><i class="fas fa-eye"></i></button>
-                     ${!isFull ? 
-                        `<button class="btn-loc-select" onclick="selectLocation('${loc.name}', this)">${selectedLocationName === loc.name ? '<i class="fas fa-check"></i> Dipilih' : 'Pilih'}</button>` 
-                        : 
-                        `<button class="btn-loc-select" disabled style="background:#ccc; cursor:not-allowed;">Penuh</button>`
-                     }
-                </div>
-            </div>
-          `;
+                let htmlItems = "";
+                groups[cat].sort((a,b)=>a.name.localeCompare(b.name)).forEach(menu => {
+                    htmlItems += `
+                        <div class="menu-item">
+                            <div class="menu-info">
+                                <h4>${menu.name}</h4>
+                                <p>${menu.desc}</p>
+                            </div>
+                            <div class="qty-control">
+                                <button class="qty-btn" onclick="updateQty('${menu.name}', -1)">-</button>
+                                <span style="width:20px; text-align:center; font-weight:bold;" id="qty-${cleanId(menu.name)}">0</span>
+                                <button class="qty-btn" onclick="updateQty('${menu.name}', 1)">+</button>
+                            </div>
+                        </div>
+                    `;
+                });
 
-          locContainer.appendChild(div);
+                section.innerHTML = `
+                    <div class="cat-header" onclick="toggleAccordion(this)">
+                        <span>${cat}</span> <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="cat-content">
+                        ${htmlItems}
+                    </div>
+                `;
+                container.appendChild(section);
+            }
+        });
+    }
+
+    function toggleAccordion(header) {
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('i');
+        
+        // Tutup yang lain (optional, hilangkan jika ingin bisa buka banyak)
+        document.querySelectorAll('.cat-content').forEach(el => {
+            if(el !== content) el.classList.remove('show');
         });
 
-      } catch (error) {
-        console.error(error);
-        locContainer.innerHTML = '<p style="color:red; text-align:center;">Gagal mengecek ketersediaan. (Cek console)</p>';
-      }
+        content.classList.toggle('show');
+        icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     }
 
-    // --- FUNGSI MODAL GAMBAR ---
-    function openImage(url, caption) {
-        const modal = document.getElementById("imgModal");
-        const modalImg = document.getElementById("modalImg");
-        const captionText = document.getElementById("modalCaption");
+    // --- NAVIGATION LOGIC ---
+    async function nextStep() {
+        if(currentStep === 1) {
+            const date = document.getElementById('inputDate').value;
+            const time = document.getElementById('inputTime').value;
+            if(!date || !time) return Swal.fire('Lengkapi Data','Pilih tanggal dan jam kedatangan','warning');
+            
+            await checkAvailability(); // Cek tempat dulu
+            currentStep = 2;
+        } 
+        else if(currentStep === 2) {
+            if(!selectedLocationName) return Swal.fire('Pilih Tempat','Silakan pilih salah satu tempat duduk','warning');
+            currentStep = 3;
+        }
+        else if(currentStep === 3) {
+            if(Object.keys(selectedMenus).length === 0) return Swal.fire('Pilih Menu','Minimal pesan 1 menu','warning');
+            
+            // Update Summary
+            document.getElementById('summaryDate').textContent = document.getElementById('displayDate').textContent;
+            document.getElementById('summaryTime').textContent = document.getElementById('inputTime').value;
+            document.getElementById('summaryLoc').textContent = selectedLocationName;
+            document.getElementById('summaryMenu').textContent = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
+            
+            currentStep = 4;
+        }
+        else if(currentStep === 4) {
+            submitReservation();
+            return;
+        }
+        updateUIState();
+        window.scrollTo(0,0);
+    }
+
+    function prevStep() {
+        if(currentStep > 1) currentStep--;
+        updateUIState();
+    }
+
+    function updateUIState() {
+        // Sections
+        document.querySelectorAll('.step-section').forEach((el, idx) => {
+            el.classList.toggle('active', (idx + 1) === currentStep);
+        });
         
-        modal.style.display = "flex";
-        modalImg.src = url;
-        captionText.innerHTML = caption;
-    }
+        // Dots
+        document.querySelectorAll('.step-dot').forEach((el, idx) => {
+            el.classList.toggle('active', (idx + 1) <= currentStep);
+        });
 
-    function closeImage() {
-        document.getElementById("imgModal").style.display = "none";
-    }
-    
-    // Tutup modal jika klik di luar gambar
-    window.onclick = function(event) {
-        const modal = document.getElementById("imgModal");
-        if (event.target == modal) {
-            modal.style.display = "none";
+        // Buttons
+        const btnNext = document.getElementById('btnNext');
+        const btnBack = document.getElementById('btnBack');
+        const priceInfo = document.getElementById('priceInfo');
+
+        if(currentStep === 1) {
+            btnBack.style.display = 'none';
+            btnNext.innerHTML = 'Cari Tempat <i class="fas fa-search"></i>';
+            priceInfo.style.display = 'none';
+        } else if(currentStep === 2) {
+            btnBack.style.display = 'block';
+            btnNext.innerHTML = 'Lanjut Menu <i class="fas fa-arrow-right"></i>';
+            priceInfo.style.display = 'none';
+        } else if(currentStep === 3) {
+            btnBack.style.display = 'block';
+            btnNext.innerHTML = 'Lanjut Data <i class="fas fa-arrow-right"></i>';
+            priceInfo.style.display = 'flex';
+        } else if(currentStep === 4) {
+            btnBack.style.display = 'block';
+            btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>';
+            priceInfo.style.display = 'none';
         }
     }
 
-    // --- FUNGSI PILIH LOKASI ---
-    function selectLocation(name, btnElement) {
-      selectedLocationName = name;
-      document.getElementById('selectedLocation').value = name;
-      
-      // Reset visual seleksi semua kartu
-      document.querySelectorAll('.location-option').forEach(el => el.classList.remove('selected'));
-      document.querySelectorAll('.btn-loc-select').forEach(btn => {
-          if(!btn.disabled) {
-              btn.innerHTML = "Pilih";
-              btn.style.background = "var(--primary)";
-          }
-      });
-
-      // Set visual kartu yang dipilih
-      // Naik ke parent div.location-option
-      const parentCard = btnElement.closest('.location-option');
-      parentCard.classList.add('selected');
-      
-      // Ubah teks tombol
-      btnElement.innerHTML = '<i class="fas fa-check"></i> Dipilih';
-      btnElement.style.background = "var(--primary-dark)";
-
-      updateBottomBar();
-    }
-
-    // --- 3. RENDER & LOGIKA MENU ---
-    function renderMenu() {
-      const container = document.getElementById('menuList');
-      container.innerHTML = '';
-
-      if (Object.keys(menusData).length === 0) {
-          container.innerHTML = '<p style="text-align:center; padding:10px;">Menu sedang dimuat atau kosong.</p>';
-          return;
-      }
-
-      Object.keys(menusData).sort().forEach(menuName => {
-        const details = menusData[menuName].join(', '); 
+    // --- CHECK AVAILABILITY ---
+    async function checkAvailability() {
+        const dateVal = document.getElementById('inputDate').value;
+        const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
+        const container = document.getElementById('locationList');
         
-        const div = document.createElement('div');
-        div.className = 'menu-item';
-        div.innerHTML = `
-          <div class="menu-info">
-            <h4>${menuName}</h4>
-            <p>${details.substring(0, 60)}${details.length > 60 ? '...' : ''}</p>
-          </div>
-          <div class="qty-control">
-            <button class="qty-btn" onclick="updateQty('${menuName}', -1)">-</button>
-            <span class="qty-val" id="qty-${menuName.replace(/[^a-zA-Z0-9]/g, '-')}" data-name="${menuName}">0</span>
-            <button class="qty-btn" onclick="updateQty('${menuName}', 1)">+</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
+        container.innerHTML = '<div class="spinner" style="margin:20px auto;"></div>';
+
+        try {
+            // Get reservations
+            const snapshot = await db.collection('reservations').where('date', '==', dateVal).get();
+            const usageMap = {};
+            snapshot.forEach(doc => {
+                const d = doc.data();
+                if(d.tempat) usageMap[d.tempat] = (usageMap[d.tempat] || 0) + (parseInt(d.jumlah) || 0);
+            });
+
+            container.innerHTML = '';
+            locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
+                const used = usageMap[loc.name] || 0;
+                const capacity = loc.capacity;
+                const remaining = capacity - used;
+                let isFull = remaining < paxVal;
+                
+                // --- CUSTOM LOGIC: FULL BLOK MIN 200 PAX ---
+                let customError = "";
+                if(loc.name.toLowerCase().includes("full blok") && paxVal < 200) {
+                    isFull = true;
+                    customError = "Min. 200 Orang";
+                }
+
+                const imageUrl = locationImages[loc.name] || defaultImage;
+
+                const div = document.createElement('div');
+                div.className = `location-option ${isFull ? 'disabled' : ''}`;
+                if(selectedLocationName === loc.name && !isFull) div.classList.add('selected');
+
+                div.innerHTML = `
+                    <div class="loc-thumb-wrapper">
+                        <img src="${imageUrl}" class="loc-thumb-img" loading="lazy">
+                        ${customError ? `<span style="position:absolute; bottom:0; width:100%; background:rgba(214,48,49,0.9); color:white; font-size:0.7rem; text-align:center; padding:2px;">${customError}</span>` : ''}
+                    </div>
+                    <div class="loc-content">
+                        <span class="loc-name">${loc.name}</span>
+                        <span class="loc-cap">Sisa: ${remaining} / Kap: ${capacity}</span>
+                        <div class="loc-actions">
+                            <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')"><i class="fas fa-eye"></i></button>
+                            ${!isFull ? 
+                                `<button class="btn-loc-select" onclick="selectLocation('${loc.name}', this)">${selectedLocationName === loc.name ? 'Dipilih' : 'Pilih'}</button>` 
+                                : `<button class="btn-loc-select" disabled style="background:#ccc;">Penuh</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+        } catch(e) { console.error(e); }
     }
 
-    function updateQty(name, change) {
-      const safeId = name.replace(/[^a-zA-Z0-9]/g, '-');
-      const current = selectedMenus[name] || 0;
-      const newVal = current + change;
-      
-      if (newVal < 0) return;
-      
-      if (newVal === 0) {
-        delete selectedMenus[name];
-      } else {
-        selectedMenus[name] = newVal;
-      }
-
-      // Update UI Angka
-      const el = document.getElementById(`qty-${safeId}`);
-      if(el) el.textContent = newVal;
-
-      updateBottomBar();
-    }
-
-    function updateBottomBar() {
-      const count = Object.values(selectedMenus).reduce((a, b) => a + b, 0);
-      document.getElementById('totalItems').textContent = `${count} Menu Dipilih`;
-      
-      const btn = document.querySelector('.btn-book');
-      if (count > 0 && selectedLocationName && document.getElementById('inputDate').value) {
-          document.getElementById('statusText').textContent = "Data Lengkap";
-          btn.style.opacity = "1";
-      } else {
-          document.getElementById('statusText').textContent = "Lengkapi Data";
-      }
-    }
-
-    // --- 4. SUBMIT RESERVASI ---
-    async function submitReservation() {
-      // Validasi Input
-      const date = document.getElementById('inputDate').value;
-      const time = document.getElementById('inputTime').value;
-      const pax = parseInt(document.getElementById('inputPax').value);
-      const name = document.getElementById('inputName').value.trim();
-      const phone = document.getElementById('inputPhone').value.trim();
-      const note = document.getElementById('inputNote').value.trim();
-      
-      if (!date || !time || !pax || !name || !phone) {
-        Swal.fire('Data Belum Lengkap', 'Mohon lengkapi tanggal, jam, jumlah orang, nama, dan nomor HP.', 'warning');
-        return;
-      }
-
-      if (!selectedLocationName) {
-        Swal.fire('Tempat Belum Dipilih', 'Silakan pilih tempat duduk dan klik tombol PILIH.', 'warning');
-        return;
-      }
-
-      if (Object.keys(selectedMenus).length === 0) {
-        Swal.fire('Menu Belum Dipilih', 'Silakan pilih minimal 1 menu.', 'warning');
-        return;
-      }
-
-      const menuArray = Object.entries(selectedMenus).map(([key, val]) => ({
-        name: key,
-        quantity: val
-      }));
-
-      const reservationData = {
-        date: date,
-        jam: time,
-        jumlah: pax,
-        nama: name,
-        nomorHp: cleanPhoneNumber(phone),
-        tempat: selectedLocationName,
-        tambahan: note,
-        menus: menuArray,
-        dp: 0, 
-        tipeDp: '',
-        via: 'Website Mandiri',
-        status: 'pending', 
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      Swal.fire({
-        title: 'Mengirim Permintaan...',
-        text: 'Mohon tunggu sebentar, jangan tutup halaman.',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-      });
-
-      try {
-        await db.collection('reservation_requests').add(reservationData);
-        
-        Swal.fire({
-          icon: 'success',
-          title: 'Permintaan Terkirim!',
-          html: `
-            <div style="text-align:left; font-size:0.95rem;">
-                <p>Halo <b>${name}</b>, permintaan reservasi Anda telah kami terima.</p>
-                <p>Status saat ini: <span style="background:orange; color:white; padding:2px 8px; border-radius:10px;">Menunggu Konfirmasi</span></p>
-                <p>Admin kami akan mengecek ketersediaan dan segera menghubungi Anda via WhatsApp jika disetujui.</p>
-                <p style="margin-top:10px; font-weight:bold;">Terima Kasih!</p>
-            </div>
-          `,
-          confirmButtonText: 'Oke, Saya Tunggu',
-          confirmButtonColor: 'var(--primary)'
-        }).then(() => {
-            window.location.reload(); 
+    function selectLocation(name, btn) {
+        selectedLocationName = name;
+        document.querySelectorAll('.location-option').forEach(el => el.classList.remove('selected'));
+        document.querySelectorAll('.btn-loc-select').forEach(b => {
+             if(!b.disabled) { b.innerHTML = "Pilih"; b.style.background = "var(--primary)"; }
         });
-
-      } catch (error) {
-        console.error("Submit Error:", error);
-        Swal.fire('Gagal Mengirim', 'Terjadi kesalahan sistem. Silakan coba lagi.', 'error');
-      }
+        
+        btn.closest('.location-option').classList.add('selected');
+        btn.innerHTML = "<i class='fas fa-check'></i>";
+        btn.style.background = "var(--primary-dark)";
     }
 
-    function cleanPhoneNumber(phone) {
-      let p = phone.replace(/[^0-9]/g, '');
-      if (p.startsWith('0')) p = '62' + p.substring(1); 
-      return p;
+    // --- MENU LOGIC ---
+    function updateQty(name, change) {
+        const id = cleanId(name);
+        const current = selectedMenus[name] || 0;
+        const next = current + change;
+        
+        if(next < 0) return;
+        
+        if(next === 0) delete selectedMenus[name];
+        else selectedMenus[name] = next;
+
+        const el = document.getElementById(`qty-${id}`);
+        if(el) el.textContent = next;
+
+        const count = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
+        document.getElementById('totalItemText').textContent = `${count} Menu Dipilih`;
+    }
+
+    function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
+
+    // --- SUBMIT ---
+    async function submitReservation() {
+        const name = document.getElementById('inputName').value.trim();
+        const phone = document.getElementById('inputPhone').value.trim();
+        const note = document.getElementById('inputNote').value.trim();
+
+        if(!name || !phone) return Swal.fire('Data Kurang', 'Isi nama dan nomor WhatsApp', 'warning');
+
+        Swal.showLoading();
+
+        try {
+            const data = {
+                date: document.getElementById('inputDate').value,
+                jam: document.getElementById('inputTime').value,
+                jumlah: parseInt(document.getElementById('inputPax').value),
+                tempat: selectedLocationName,
+                nama: name,
+                nomorHp: phone.replace(/[^0-9]/g,'').replace(/^0/,'62'),
+                tambahan: note,
+                menus: Object.entries(selectedMenus).map(([k,v]) => ({name:k, quantity:v})),
+                status: 'pending',
+                via: 'Website Wizard',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            await db.collection('reservation_requests').add(data);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Terkirim!',
+                text: 'Admin akan segera menghubungi Anda via WhatsApp.',
+                confirmButtonColor: 'var(--primary)'
+            }).then(() => window.location.reload());
+
+        } catch(e) {
+            Swal.fire('Error', 'Gagal mengirim data.', 'error');
+        }
+    }
+
+    // --- UTILS ---
+    function openImage(url, caption) {
+        document.getElementById('imgModal').style.display = 'flex';
+        document.getElementById('modalImg').src = url;
+        document.getElementById('modalCaption').textContent = caption;
+    }
+    function closeImage() {
+        document.getElementById('imgModal').style.display = 'none';
     }
 
   </script>
