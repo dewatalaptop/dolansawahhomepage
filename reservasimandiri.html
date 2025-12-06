@@ -128,13 +128,21 @@
     .cap-safe { background: #e8f5e9; color: #27ae60; }
     .cap-full { background: #ffebee; color: #c0392b; }
     
-    /* FIX: Button View Foto agar bisa diklik di atas overlay */
+    /* --- UPDATE: GAYA TOMBOL LIHAT FOTO --- */
     .btn-loc-view { 
-        background: #f0f2f5; color: #666; border: none; width: 100%; padding: 8px; 
-        border-radius: 8px; font-size: 0.8rem; font-weight: 600; margin-top: auto; cursor: pointer;
-        position: relative; z-index: 10; /* Z-INDEX PENTING */
+        background: var(--primary); /* Warna Tema Utama */
+        color: white;               /* Teks Putih */
+        border: none; width: 100%; padding: 10px; 
+        border-radius: 10px; font-size: 0.85rem; font-weight: 600; margin-top: auto; cursor: pointer;
+        position: relative; z-index: 10; transition: 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .btn-loc-view:hover { background: #e0e0e0; }
+    .btn-loc-view:hover { 
+        background: var(--primary-dark); /* Lebih gelap saat hover */
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(42, 157, 143, 0.3);
+    }
+    .btn-loc-view i { font-size: 1rem; }
 
     /* MENU ACCORDION */
     .menu-category { margin-bottom: 15px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
@@ -613,7 +621,9 @@
                     <div class="loc-content">
                         <span class="loc-name">${loc.name}</span>
                         <span class="cap-badge ${capClass}">${remaining<=0?'PENUH':`Sisa ${remaining}`}</span>
-                        <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')"><i class="fas fa-images"></i> Foto</button>
+                        <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')">
+                            <i class="fas fa-images"></i> Lihat Foto
+                        </button>
                     </div>
                     <div style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer;" onclick="selectLocation('${loc.name}', this)"></div>
                 `;
@@ -641,7 +651,7 @@
                 tambahan: document.getElementById('inputNote').value,
                 menus: Object.entries(selectedMenus).map(([k,v]) => ({name:k, quantity:v})),
                 status: 'pending',
-                via: 'Web App V6',
+                via: 'Web App V7',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             Swal.fire({ icon: 'success', title: 'Terkirim!', text: 'Admin akan menghubungi WhatsApp Anda.', confirmButtonColor: 'var(--primary)' }).then(() => window.location.reload());
@@ -649,7 +659,7 @@
     }
 
     function openImage(url, caption) { 
-        event.stopPropagation(); // INI PENTING AGAR KLIK TIDAK TEMBUS
+        event.stopPropagation(); 
         document.getElementById('imgModal').style.display = 'flex'; 
         document.getElementById('modalImg').src = url; 
         document.getElementById('modalCaption').textContent = caption; 
