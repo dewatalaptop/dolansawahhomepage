@@ -204,7 +204,7 @@
 
   <header>
     <h1><i class="fas fa-leaf"></i> Dolan Sawah</h1>
-    <div class="dynamic-title" id="headerTitle">Halo, Silahkan pilih waktu reservasi Anda?</div>
+    <div class="dynamic-title" id="headerTitle">Halo, Silahkan pilih waktu reservasi Anda</div>
     
     <div class="step-indicator">
       <div class="step-wrapper active" id="dot1"><div class="step-dot"></div><span class="step-label">Waktu</span></div>
@@ -571,7 +571,7 @@
             el.classList.toggle('active', (idx + 1) === currentStep);
             el.classList.toggle('completed', (idx + 1) < currentStep);
         });
-        document.getElementById('headerTitle').textContent = ["Halo, Mau Kapan?", "Pilih Tempat Duduk", "Pilih Menu Favorit", "Isi Data Diri"][currentStep-1];
+        document.getElementById('headerTitle').textContent = ["Halo, Halo, Silahkan pilih waktu reservasi Anda", "Pilih Tempat Duduk", "Pilih Menu Favorit", "Isi Data Diri"][currentStep-1];
         
         const btnNext = document.getElementById('btnNext');
         const btnBack = document.getElementById('btnBack');
