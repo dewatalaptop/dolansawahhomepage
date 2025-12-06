@@ -83,7 +83,7 @@
     .input-visual .label-text span { font-size: 0.75rem; color: #888; }
     .hidden-input { position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0; cursor: pointer; z-index: 10; }
 
-    /* STEPPER QUANTITY (INPUT NUMBER) */
+    /* STEPPER QUANTITY */
     .stepper-control {
       display: flex; align-items: center; justify-content: space-between;
       background: #f8f9fa; border-radius: 12px; padding: 5px;
@@ -97,12 +97,10 @@
       display: flex; align-items: center; justify-content: center;
     }
     .stepper-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
-    
-    /* Input angka di tengah */
     .stepper-input {
       width: 50px; text-align: center; border: none; background: transparent;
       font-weight: 700; font-size: 1.1rem; color: var(--dark);
-      -moz-appearance: textfield; /* Firefox */
+      -moz-appearance: textfield; 
     }
     .stepper-input::-webkit-outer-spin-button,
     .stepper-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -119,7 +117,7 @@
         content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
         position: absolute; top: 10px; right: 10px; background: var(--primary);
         color: white; width: 25px; height: 25px; border-radius: 50%;
-        display: flex; justify-content: center; align-items: center; font-size: 0.8rem;
+        display: flex; justify-content: center; align-items: center; font-size: 0.8rem; z-index: 5;
     }
     .location-option.disabled { opacity: 0.6; filter: grayscale(100%); pointer-events: none; }
     .loc-thumb-wrapper { width: 100%; height: 100px; background: #eee; position: relative; }
@@ -129,7 +127,14 @@
     .cap-badge { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-align: center; margin-bottom: 10px; align-self: start; }
     .cap-safe { background: #e8f5e9; color: #27ae60; }
     .cap-full { background: #ffebee; color: #c0392b; }
-    .btn-loc-view { background: #f0f2f5; color: #666; border: none; width: 100%; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; margin-top: auto; cursor: pointer; }
+    
+    /* FIX: Button View Foto agar bisa diklik di atas overlay */
+    .btn-loc-view { 
+        background: #f0f2f5; color: #666; border: none; width: 100%; padding: 8px; 
+        border-radius: 8px; font-size: 0.8rem; font-weight: 600; margin-top: auto; cursor: pointer;
+        position: relative; z-index: 10; /* Z-INDEX PENTING */
+    }
+    .btn-loc-view:hover { background: #e0e0e0; }
 
     /* MENU ACCORDION */
     .menu-category { margin-bottom: 15px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
@@ -151,8 +156,8 @@
       display: inline-block; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;
       margin-top: 5px; font-weight: 600;
     }
-    .note-warn { background: #ffebee; color: #c0392b; border: 1px solid #ffcdd2; } /* Prasmanan */
-    .note-info { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; } /* Kembulan */
+    .note-warn { background: #ffebee; color: #c0392b; border: 1px solid #ffcdd2; }
+    .note-info { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
 
     /* BOTTOM BAR */
     .bottom-bar {
@@ -175,7 +180,7 @@
       display: flex; justify-content: center; align-items: center;
     }
 
-    /* MODAL & LOADER */
+    /* MODAL */
     .image-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; flex-direction: column; }
     .modal-content { max-width: 90%; max-height: 70vh; border-radius: 10px; }
     .close-modal { position: absolute; top: 30px; right: 30px; color: white; font-size: 2.5rem; cursor: pointer; background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
@@ -194,18 +199,10 @@
     <div class="dynamic-title" id="headerTitle">Halo, Mau Kapan?</div>
     
     <div class="step-indicator">
-      <div class="step-wrapper active" id="dot1">
-        <div class="step-dot"></div><span class="step-label">Waktu</span>
-      </div>
-      <div class="step-wrapper" id="dot2">
-        <div class="step-dot"></div><span class="step-label">Tempat</span>
-      </div>
-      <div class="step-wrapper" id="dot3">
-        <div class="step-dot"></div><span class="step-label">Menu</span>
-      </div>
-      <div class="step-wrapper" id="dot4">
-        <div class="step-dot"></div><span class="step-label">Data</span>
-      </div>
+      <div class="step-wrapper active" id="dot1"><div class="step-dot"></div><span class="step-label">Waktu</span></div>
+      <div class="step-wrapper" id="dot2"><div class="step-dot"></div><span class="step-label">Tempat</span></div>
+      <div class="step-wrapper" id="dot3"><div class="step-dot"></div><span class="step-label">Menu</span></div>
+      <div class="step-wrapper" id="dot4"><div class="step-dot"></div><span class="step-label">Data</span></div>
     </div>
   </header>
 
@@ -223,13 +220,10 @@
     
     <div id="step1" class="step-section active">
       <div class="card">
-        
         <div class="input-group-custom" id="groupDate">
           <div class="input-visual">
             <i class="far fa-calendar-alt"></i>
-            <div class="label-text">
-              <span>Tanggal Kunjungan</span><strong id="displayDate">Pilih Tanggal</strong>
-            </div>
+            <div class="label-text"><span>Tanggal Kunjungan</span><strong id="displayDate">Pilih Tanggal</strong></div>
           </div>
           <input type="date" id="inputDate" class="hidden-input" onchange="updateDateUI()">
           <div class="error-msg">Mohon pilih tanggal.</div>
@@ -238,9 +232,7 @@
         <div class="input-group-custom" id="groupTime">
           <div class="input-visual">
             <i class="far fa-clock"></i>
-            <div class="label-text">
-              <span>Jam Kedatangan</span><strong id="displayTime">--:--</strong>
-            </div>
+            <div class="label-text"><span>Jam Kedatangan</span><strong id="displayTime">--:--</strong></div>
           </div>
           <input type="time" id="inputTime" class="hidden-input" onchange="updateTimeUI()">
           <div class="error-msg">Mohon tentukan jam.</div>
@@ -253,15 +245,13 @@
                 <input type="number" id="inputPax" class="stepper-input" value="2" min="1" onchange="validatePax()">
                 <button class="stepper-btn" onclick="updatePaxStep(1)">+</button>
             </div>
-            <small style="color:#888; font-size:0.75rem; margin-top:4px; display:block;">Bisa diketik manual atau tekan +/-</small>
         </div>
-
       </div>
     </div>
 
     <div id="step2" class="step-section">
       <div class="card" style="background:#e3f2fd; border-left:4px solid #2196f3; padding:15px;">
-        <p style="font-size:0.85rem; color:#0d47a1; margin:0;"><i class="fas fa-info-circle"></i> Klik tempat untuk memilih.</p>
+        <p style="font-size:0.85rem; color:#0d47a1; margin:0;"><i class="fas fa-info-circle"></i> Klik kartu untuk memilih tempat.</p>
       </div>
       <div class="location-grid" id="locationList"></div>
     </div>
@@ -414,7 +404,7 @@
       } catch (err) {}
     }
 
-    // --- MENU LOGIC & INFO ---
+    // --- MENU LOGIC ---
     function categorizeMenu(name) {
         const n = name.toLowerCase();
         if(n.includes("jeep") || n.includes("jip")) return "Wisata Jeep";
@@ -426,18 +416,12 @@
         return "Menu Lainnya";
     }
 
-    // FUNGSI BARU UNTUK KETERANGAN MENU
     function getMenuNote(name, category) {
         const n = name.toLowerCase();
         if(category === "Prasmanan") return `<span class="menu-note-badge note-warn">Min. order 20 porsi</span>`;
-        
-        // Logika Kembulan
         if(n.includes("kembulan 1") || n.includes("kembulan 2")) return `<span class="menu-note-badge note-info">Porsi untuk 5 Orang</span>`;
         if(n.includes("kembulan 3") || n.includes("kembulan 4") || n.includes("kembulan 5") || n.includes("kembulan 6")) return `<span class="menu-note-badge note-info">Porsi untuk 10 Orang</span>`;
-        
-        // Logika Tumpeng
         if(n.includes("tumpeng")) return `<span class="menu-note-badge note-info">Porsi untuk 5 Orang</span>`;
-        
         return "";
     }
 
@@ -499,7 +483,7 @@
         icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     }
 
-    // --- MENU QTY LOGIC (Hybrid Type/Click) ---
+    // --- MENU QTY LOGIC ---
     function updateMenuQty(name, change, safeCat) {
         const id = cleanId(name);
         const input = document.getElementById(`qty-${id}`);
@@ -507,20 +491,16 @@
         val += change;
         if(val < 0) val = 0;
         input.value = val;
-        
         syncMenuData(name, val, safeCat);
     }
-
     function manualMenuQty(name, safeCat) {
         const id = cleanId(name);
         const input = document.getElementById(`qty-${id}`);
         let val = parseInt(input.value) || 0;
         if(val < 0) val = 0;
         input.value = val;
-        
         syncMenuData(name, val, safeCat);
     }
-
     function syncMenuData(name, val, safeCat) {
         if(val === 0) delete selectedMenus[name];
         else selectedMenus[name] = val;
@@ -528,19 +508,14 @@
         const total = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
         document.getElementById('totalItemText').textContent = `${total} Menu`;
         
-        // Update Category Badge
         let catCount = 0;
         for(let key in selectedMenus) {
              let c = categorizeMenu(key).replace(/\s+/g, '-');
              if(c === safeCat) catCount += selectedMenus[key];
         }
         const badge = document.getElementById(`badge-${safeCat}`);
-        if(badge) {
-            badge.textContent = catCount;
-            badge.style.display = catCount > 0 ? 'inline-block' : 'none';
-        }
+        if(badge) { badge.textContent = catCount; badge.style.display = catCount > 0 ? 'inline-block' : 'none'; }
     }
-
     function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
 
     // --- NAVIGATION ---
@@ -666,14 +641,19 @@
                 tambahan: document.getElementById('inputNote').value,
                 menus: Object.entries(selectedMenus).map(([k,v]) => ({name:k, quantity:v})),
                 status: 'pending',
-                via: 'Web App V5',
+                via: 'Web App V6',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             Swal.fire({ icon: 'success', title: 'Terkirim!', text: 'Admin akan menghubungi WhatsApp Anda.', confirmButtonColor: 'var(--primary)' }).then(() => window.location.reload());
         } catch(e) { Swal.fire('Error', 'Gagal koneksi.', 'error'); }
     }
 
-    function openImage(url, caption) { event.stopPropagation(); document.getElementById('imgModal').style.display = 'flex'; document.getElementById('modalImg').src = url; document.getElementById('modalCaption').textContent = caption; }
+    function openImage(url, caption) { 
+        event.stopPropagation(); // INI PENTING AGAR KLIK TIDAK TEMBUS
+        document.getElementById('imgModal').style.display = 'flex'; 
+        document.getElementById('modalImg').src = url; 
+        document.getElementById('modalCaption').textContent = caption; 
+    }
     function closeImage() { document.getElementById('imgModal').style.display = 'none'; }
   </script>
 </body>
