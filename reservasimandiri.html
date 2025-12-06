@@ -2,10 +2,10 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>Reservasi Dolan Sawah</title>
   
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -21,6 +21,9 @@
       --bg: #f0f2f5;
       --white: #ffffff;
       --text: #333333;
+      --dark: #222222;
+      --danger: #e74c3c;
+      --success: #27ae60;
     }
     
     * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -29,188 +32,179 @@
       font-family: 'Poppins', sans-serif;
       background-color: var(--bg);
       margin: 0;
-      padding-bottom: 90px;
+      padding-bottom: 100px; /* Extra space for bottom bar */
       color: var(--text);
     }
 
-    /* HEADER */
+    /* HEADER DINAMIS */
     header {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: white;
-      padding: 20px;
+      padding: 20px 20px 30px 20px;
       text-align: center;
-      border-bottom-left-radius: 25px;
-      border-bottom-right-radius: 25px;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       position: sticky;
       top: 0;
       z-index: 99;
     }
-    header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; }
-    header p { margin: 5px 0 0; font-size: 0.85rem; opacity: 0.9; }
+    header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; opacity: 0.9; }
+    .dynamic-title { font-size: 1.3rem; font-weight: 700; margin-top: 5px; animation: fadeIn 0.5s; }
 
-    /* STEP INDICATOR */
+    /* STEP INDICATOR WITH LABELS */
     .step-indicator {
       display: flex;
       justify-content: center;
-      margin: 15px 0;
-      gap: 10px;
+      margin-top: 15px;
+      gap: 25px;
+    }
+    .step-wrapper {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
     }
     .step-dot {
-      width: 10px; height: 10px;
-      background: #ccc;
+      width: 12px; height: 12px;
+      background: rgba(255,255,255,0.4);
       border-radius: 50%;
       transition: 0.3s;
     }
-    .step-dot.active { background: var(--primary); transform: scale(1.3); }
+    .step-label { font-size: 0.65rem; color: rgba(255,255,255,0.6); font-weight: 500; }
+    
+    .step-wrapper.active .step-dot { background: var(--white); transform: scale(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+    .step-wrapper.active .step-label { color: var(--white); font-weight: 700; }
+    .step-wrapper.completed .step-dot { background: var(--secondary); }
 
-    .container { max-width: 600px; margin: 0 auto; padding: 10px 15px; }
+    .container { max-width: 600px; margin: -20px auto 0; padding: 0 15px; position: relative; z-index: 100; }
 
     /* CARD STYLE */
     .card {
       background: var(--white);
-      border-radius: 15px;
+      border-radius: 20px;
       padding: 20px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
       margin-bottom: 20px;
-      animation: fadeIn 0.4s ease;
+      animation: slideUp 0.4s ease;
     }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    .section-title {
-      font-size: 1.1rem;
-      color: var(--primary-dark);
-      margin-bottom: 20px;
-      font-weight: 600;
-      display: flex; align-items: center; gap: 10px;
-      border-bottom: 2px solid #f0f0f0;
-      padding-bottom: 10px;
-    }
-    .section-title i { color: var(--accent); }
-
-    /* --- STEP WIZARD CONTROL --- */
-    .step-section { display: none; }
-    .step-section.active { display: block; }
-
-    /* --- CUSTOM INPUTS --- */
-    .input-group-custom {
-      position: relative;
-      margin-bottom: 15px;
-    }
-    .input-visual {
-      display: flex;
-      align-items: center;
-      padding: 15px;
-      background: #fff;
-      border: 2px solid #eee;
-      border-radius: 12px;
-      transition: 0.3s;
-      cursor: pointer;
-    }
-    .input-visual:focus-within {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.1);
-    }
-    .input-visual i {
-      font-size: 1.5rem;
-      color: var(--primary);
-      margin-right: 15px;
-      width: 30px; text-align: center;
-    }
-    .input-visual .label-text {
-      flex-grow: 1;
-    }
-    .input-visual .label-text span {
-      display: block; font-size: 0.75rem; color: #888; margin-bottom: 2px;
-    }
-    .input-visual .label-text strong {
-      font-size: 1.1rem; color: var(--dark);
-    }
-    .hidden-input {
-      position: absolute; top:0; left:0; width:100%; height:100%;
-      opacity: 0; cursor: pointer; z-index: 10;
-    }
-
-    /* --- LOCATION CARDS --- */
-    .location-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .location-option {
-      border: 1px solid #ddd; border-radius: 12px; overflow: hidden;
-      background: white; display: flex; flex-direction: column;
-      transition: 0.2s;
-    }
-    .loc-thumb-wrapper { width: 100%; height: 110px; background: #eee; position: relative; }
-    .loc-thumb-img { width: 100%; height: 100%; object-fit: cover; }
-    .loc-content { padding: 10px; flex-grow: 1; display: flex; flex-direction: column; }
+    /* CUSTOM INPUTS & VISUAL ERROR */
+    .input-group-custom { position: relative; margin-bottom: 15px; }
     
-    .location-option.selected { border: 2px solid var(--primary); transform: translateY(-3px); }
-    .location-option.disabled { opacity: 0.5; background: #f9f9f9; filter: grayscale(100%); pointer-events: none; }
-
-    .loc-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; color: var(--primary-dark); }
-    .loc-cap { font-size: 0.75rem; color: #666; margin-bottom: 5px; }
-
-    .loc-actions { display: flex; gap: 5px; margin-top: auto; }
-    .btn-loc-view, .btn-loc-select {
-      border: none; padding: 8px 0; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 600;
+    .input-visual {
+      display: flex; align-items: center; padding: 15px;
+      background: #fff; border: 2px solid #eee; border-radius: 15px;
+      transition: 0.3s; cursor: pointer;
     }
-    .btn-loc-view { background: #eee; color: #555; flex: 1; }
-    .btn-loc-select { background: var(--primary); color: white; flex: 2; }
-    .location-option.selected .btn-loc-select { background: var(--primary-dark); }
+    .input-visual:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.1); }
+    
+    /* Error State */
+    .input-group-custom.error .input-visual { border-color: var(--danger); background: #fff5f5; }
+    .error-msg { color: var(--danger); font-size: 0.75rem; margin-top: 5px; display: none; }
+    .input-group-custom.error .error-msg { display: block; }
 
-    /* --- MENU ACCORDION --- */
-    .menu-category { margin-bottom: 15px; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+    .input-visual i { font-size: 1.4rem; color: var(--primary); margin-right: 15px; width: 30px; text-align: center; }
+    .input-visual .label-text { flex-grow: 1; }
+    .input-visual .label-text span { display: block; font-size: 0.75rem; color: #888; margin-bottom: 2px; }
+    .input-visual .label-text strong { font-size: 1.05rem; color: var(--dark); }
+    
+    .hidden-input { position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0; cursor: pointer; z-index: 10; }
+
+    /* STEPPER QUANTITY (PAX & MENU) */
+    .stepper-control {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #f8f9fa; border-radius: 12px; padding: 5px;
+    }
+    .stepper-btn {
+      width: 35px; height: 35px; border-radius: 10px; border: none;
+      background: var(--white); color: var(--primary); 
+      font-size: 1.2rem; font-weight: bold; cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stepper-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
+    .stepper-val { font-weight: 700; font-size: 1.1rem; color: var(--dark); width: 40px; text-align: center; }
+
+    /* LOCATION CARDS */
+    .location-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .location-option {
+      border: 1px solid #eee; border-radius: 15px; overflow: hidden;
+      background: white; display: flex; flex-direction: column;
+      transition: 0.2s; position: relative;
+    }
+    .location-option.selected { border: 2px solid var(--primary); box-shadow: 0 10px 20px rgba(42, 157, 143, 0.2); transform: translateY(-3px); }
+    .location-option.selected::after {
+        content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+        position: absolute; top: 10px; right: 10px; background: var(--primary);
+        color: white; width: 25px; height: 25px; border-radius: 50%;
+        display: flex; justify-content: center; align-items: center; font-size: 0.8rem;
+    }
+    .location-option.disabled { opacity: 0.6; filter: grayscale(100%); pointer-events: none; }
+
+    .loc-thumb-wrapper { width: 100%; height: 100px; background: #eee; position: relative; }
+    .loc-thumb-img { width: 100%; height: 100%; object-fit: cover; }
+    .loc-content { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
+    .loc-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 5px; color: var(--dark); line-height: 1.3; }
+    
+    /* Capacity Badge */
+    .cap-badge { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-align: center; margin-bottom: 10px; align-self: start; }
+    .cap-safe { background: #e8f5e9; color: #27ae60; }
+    .cap-warn { background: #fff3e0; color: #e67e22; }
+    .cap-full { background: #ffebee; color: #c0392b; }
+
+    .btn-loc-view { 
+      background: #f0f2f5; color: #666; border: none; width: 100%; padding: 8px; 
+      border-radius: 8px; font-size: 0.8rem; font-weight: 600; margin-top: auto; cursor: pointer;
+    }
+
+    /* MENU ACCORDION */
+    .menu-category { margin-bottom: 15px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
     .cat-header {
-      background: #f8f9fa; padding: 15px; cursor: pointer;
+      background: #fff; padding: 15px; cursor: pointer;
       display: flex; justify-content: space-between; align-items: center;
-      font-weight: 600; color: var(--primary-dark);
+      font-weight: 600; color: var(--dark); transition: 0.2s;
     }
-    .cat-header:hover { background: #f1f1f1; }
-    .cat-content { display: none; padding: 0 15px; background: white; }
+    .cat-header:hover { background: #f9f9f9; }
+    .cat-badge { background: var(--primary); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; display: none; margin-left: 8px; }
+    .cat-content { display: none; padding: 0 15px; background: white; border-top: 1px solid #f0f0f0; }
     .cat-content.show { display: block; }
     
-    .menu-item {
-      padding: 15px 0; border-bottom: 1px solid #f0f0f0;
-      display: flex; justify-content: space-between; align-items: start;
-    }
-    .menu-info { padding-right: 10px; }
+    .menu-item { padding: 15px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; align-items: center; }
+    .menu-item:last-child { border-bottom: none; }
+    .menu-info { padding-right: 15px; flex: 1; }
     .menu-info h4 { margin: 0 0 5px; font-size: 0.95rem; color: var(--dark); }
-    .menu-info p { margin: 0; font-size: 0.8rem; color: #777; line-height: 1.4; }
-    
-    .qty-control {
-      display: flex; align-items: center; gap: 10px;
-      background: #fff; border: 1px solid #ddd; padding: 4px 8px; border-radius: 20px;
-    }
-    .qty-btn {
-      width: 25px; height: 25px; border-radius: 50%; border: none;
-      background: var(--primary); color: white; cursor: pointer; font-weight: bold;
-    }
+    .menu-info p { margin: 0; font-size: 0.8rem; color: #888; line-height: 1.4; }
 
-    /* --- BOTTOM BAR --- */
+    /* BOTTOM BAR (SAFE AREA) */
     .bottom-bar {
       position: fixed; bottom: 0; left: 0; width: 100%;
       background: white; padding: 15px 20px;
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+      padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* iOS Safe Area */
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
       display: flex; justify-content: space-between; align-items: center;
-      z-index: 100; border-top-left-radius: 20px; border-top-right-radius: 20px;
+      z-index: 900; border-top-left-radius: 20px; border-top-right-radius: 20px;
     }
     .btn-action {
       background: var(--primary); color: white; border: none;
-      padding: 12px 30px; border-radius: 30px; font-weight: 600;
-      box-shadow: 0 4px 15px rgba(42, 157, 143, 0.4); cursor: pointer;
+      padding: 14px 25px; border-radius: 50px; font-weight: 600;
+      box-shadow: 0 5px 15px rgba(42, 157, 143, 0.4); cursor: pointer;
       display: flex; align-items: center; gap: 10px; font-size: 1rem;
+      transition: 0.3s;
     }
+    .btn-action:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
     .btn-back {
-      background: #fff; color: #666; border: 1px solid #ddd;
-      padding: 10px 15px; border-radius: 50%; cursor: pointer; font-size: 1.1rem;
+      background: #f5f5f5; color: #555; border: none;
+      width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;
+      display: flex; justify-content: center; align-items: center;
     }
 
-    /* --- IMAGE MODAL --- */
+    /* IMAGE MODAL */
     .image-modal {
         display: none; position: fixed; z-index: 2000; left: 0; top: 0;
-        width: 100%; height: 100%; background: rgba(0,0,0,0.9);
+        width: 100%; height: 100%; background: rgba(0,0,0,0.95);
         justify-content: center; align-items: center; flex-direction: column;
     }
-    .modal-content { max-width: 90%; max-height: 80vh; border-radius: 8px; }
-    .close-modal { position: absolute; top: 20px; right: 20px; color: white; font-size: 2rem; cursor: pointer; }
+    .modal-content { max-width: 90%; max-height: 70vh; border-radius: 10px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+    .close-modal { position: absolute; top: 30px; right: 30px; color: white; font-size: 2.5rem; cursor: pointer; background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
 
     /* Loader */
     .loader-overlay {
@@ -221,54 +215,70 @@
     .spinner {
       width: 40px; height: 40px; border: 4px solid #f3f3f3;
       border-top: 4px solid var(--primary); border-radius: 50%;
-      animation: spin 1s linear infinite; margin-bottom: 10px;
+      animation: spin 0.8s linear infinite; margin-bottom: 15px;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+    /* Hide step sections */
+    .step-section { display: none; }
+    .step-section.active { display: block; }
   </style>
 </head>
 <body>
 
   <header>
     <h1><i class="fas fa-leaf"></i> Dolan Sawah</h1>
-    <p>Reservasi Online</p>
+    <div class="dynamic-title" id="headerTitle">Halo, Mau Kapan?</div>
+    
     <div class="step-indicator">
-      <div class="step-dot active" id="dot1"></div>
-      <div class="step-dot" id="dot2"></div>
-      <div class="step-dot" id="dot3"></div>
-      <div class="step-dot" id="dot4"></div>
+      <div class="step-wrapper active" id="dot1">
+        <div class="step-dot"></div>
+        <span class="step-label">Waktu</span>
+      </div>
+      <div class="step-wrapper" id="dot2">
+        <div class="step-dot"></div>
+        <span class="step-label">Tempat</span>
+      </div>
+      <div class="step-wrapper" id="dot3">
+        <div class="step-dot"></div>
+        <span class="step-label">Menu</span>
+      </div>
+      <div class="step-wrapper" id="dot4">
+        <div class="step-dot"></div>
+        <span class="step-label">Data</span>
+      </div>
     </div>
   </header>
 
   <div class="loader-overlay" id="loader">
     <div class="spinner"></div>
-    <p>Memuat Data...</p>
+    <p style="color:#666; font-size:0.9rem;">Menyiapkan Data...</p>
   </div>
 
   <div id="imgModal" class="image-modal" onclick="closeImage()">
     <span class="close-modal">&times;</span>
     <img class="modal-content" id="modalImg">
-    <p style="color:white; margin-top:10px;" id="modalCaption"></p>
+    <p style="color:white; margin-top:15px; font-weight:600;" id="modalCaption"></p>
   </div>
 
   <div class="container">
     
     <div id="step1" class="step-section active">
       <div class="card">
-        <div class="section-title"><i class="far fa-calendar-alt"></i> Kapan Rencana Datang?</div>
         
-        <div class="input-group-custom">
+        <div class="input-group-custom" id="groupDate">
           <div class="input-visual">
-            <i class="far fa-calendar-check"></i>
+            <i class="far fa-calendar-alt"></i>
             <div class="label-text">
               <span>Tanggal Kunjungan</span>
               <strong id="displayDate">Pilih Tanggal</strong>
             </div>
           </div>
           <input type="date" id="inputDate" class="hidden-input" onchange="updateDateUI()">
+          <div class="error-msg">Mohon pilih tanggal kunjungan.</div>
         </div>
 
-        <div class="input-group-custom">
+        <div class="input-group-custom" id="groupTime">
           <div class="input-visual">
             <i class="far fa-clock"></i>
             <div class="label-text">
@@ -277,50 +287,70 @@
             </div>
           </div>
           <input type="time" id="inputTime" class="hidden-input" onchange="updateTimeUI()">
+          <div class="error-msg">Mohon tentukan jam kedatangan.</div>
         </div>
 
         <div class="input-group-custom">
-           <div class="input-visual">
-            <i class="fas fa-users"></i>
-            <div class="label-text">
-              <span>Jumlah Orang</span>
-              <input type="number" id="inputPax" value="2" min="1" style="border:none; font-size:1.1rem; font-weight:bold; width:100%; color:var(--dark); background:transparent; padding:0;">
+            <label style="font-size:0.85rem; color:#666; margin-bottom:8px; display:block;">Jumlah Orang</label>
+            <div class="stepper-control" style="padding:10px 15px; border:2px solid #eee;">
+                <button class="stepper-btn" onclick="updatePax(-1)">-</button>
+                <span class="stepper-val" id="paxDisplay">2</span>
+                <button class="stepper-btn" onclick="updatePax(1)">+</button>
             </div>
-           </div>
+            <input type="hidden" id="inputPax" value="2">
         </div>
+
       </div>
     </div>
 
     <div id="step2" class="step-section">
-      <div class="card">
-        <div class="section-title"><i class="fas fa-map-marker-alt"></i> Pilih Tempat</div>
-        <div class="location-grid" id="locationList"></div>
+      <div class="card" style="background:#e3f2fd; border-left:4px solid #2196f3; padding:15px;">
+        <p style="font-size:0.85rem; color:#0d47a1; margin:0;">
+          <i class="fas fa-info-circle"></i> Klik tempat untuk memilih. Kapasitas disesuaikan dengan tanggal yang Anda pilih.
+        </p>
       </div>
+      <div class="location-grid" id="locationList"></div>
     </div>
 
     <div id="step3" class="step-section">
-      <div class="card">
-        <div class="section-title"><i class="fas fa-utensils"></i> Pilih Menu</div>
-        <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">Klik kategori untuk melihat menu.</p>
+      <div class="card" style="padding:15px;">
+        <p style="font-size:0.85rem; color:#666; margin-bottom:15px; text-align:center;">
+          Silakan pilih kategori di bawah ini
+        </p>
         <div id="menuContainer"></div>
       </div>
     </div>
 
     <div id="step4" class="step-section">
       <div class="card">
-        <div class="section-title"><i class="fas fa-user-edit"></i> Data Anda</div>
-        <label>Nama Lengkap</label>
-        <input type="text" id="inputName" placeholder="Nama Pemesan" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:10px;">
-        <label>WhatsApp (Aktif)</label>
-        <input type="tel" id="inputPhone" placeholder="08xxxxxxx" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:10px;">
-        <label>Catatan</label>
-        <textarea id="inputNote" rows="3" placeholder="Contoh: Request kursi bayi" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px;"></textarea>
+        
+        <div class="input-group-custom" id="groupName">
+            <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Nama Lengkap</label>
+            <input type="text" id="inputName" placeholder="Contoh: Budi Santoso" style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
+            <div class="error-msg">Nama wajib diisi.</div>
+        </div>
+        
+        <div class="input-group-custom" id="groupPhone">
+            <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">WhatsApp (Aktif)</label>
+            <input type="tel" id="inputPhone" placeholder="Contoh: 081234..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
+            <div class="error-msg">Nomor WhatsApp wajib diisi.</div>
+            <small style="color:#888; font-size:0.75rem;">Konfirmasi akan dikirim ke nomor ini.</small>
+        </div>
+        
+        <div style="margin-bottom:15px;">
+            <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Catatan (Opsional)</label>
+            <textarea id="inputNote" rows="2" placeholder="Contoh: Kursi bayi, alergi, dll..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-family:inherit;"></textarea>
+        </div>
 
-        <div style="background:#e8f5e9; padding:15px; border-radius:10px; margin-top:20px; font-size:0.85rem; color:#2e7d32;">
-            <i class="fas fa-info-circle"></i> Ringkasan:<br>
-            <b id="summaryDate"></b> jam <b id="summaryTime"></b><br>
-            Tempat: <b id="summaryLoc"></b><br>
-            Total Menu: <b id="summaryMenu">0</b> item
+        <div style="background:#f1f8e9; padding:15px; border-radius:12px; border:1px solid #c5e1a5;">
+            <h5 style="margin:0 0 10px; color:#33691e;"><i class="fas fa-check-circle"></i> Ringkasan Reservasi</h5>
+            <div style="font-size:0.85rem; color:#558b2f; line-height:1.6;">
+                <div style="display:flex; justify-content:space-between;"><span>Waktu:</span> <strong id="summaryDate"></strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Jam:</span> <strong id="summaryTime"></strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Orang:</span> <strong id="summaryPax"></strong></div>
+                <div style="display:flex; justify-content:space-between;"><span>Tempat:</span> <strong id="summaryLoc"></strong></div>
+                <div style="display:flex; justify-content:space-between; margin-top:5px; border-top:1px dashed #c5e1a5; padding-top:5px;"><span>Total Menu:</span> <strong id="summaryMenu">0 Item</strong></div>
+            </div>
         </div>
       </div>
     </div>
@@ -330,11 +360,11 @@
   <div class="bottom-bar">
     <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;"><i class="fas fa-arrow-left"></i></button>
     <div id="priceInfo" style="display:none; flex-grow:1; margin-left:15px;">
-        <span style="display:block; font-size:0.75rem; color:#888;" id="totalItemText">0 Item</span>
-        <strong style="color:var(--primary);">Booking</strong>
+        <span style="display:block; font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Keranjang</span>
+        <strong style="color:var(--primary); font-size:1.1rem;" id="totalItemText">0 Menu</strong>
     </div>
     <button class="btn-action" id="btnNext" onclick="nextStep()">
-      Cari Tempat <i class="fas fa-arrow-right"></i>
+      Cari Tempat <i class="fas fa-search"></i>
     </button>
   </div>
 
@@ -352,8 +382,7 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- MAPPING FOTO LENGKAP & AMAN (Anti-Bug) ---
-    // Saya pastikan semua variasi nama (Huruf besar/kecil) ada di sini.
+    // --- MAPPING FOTO ---
     const locationImages = {
         "Lantai 1 belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
         "Gubug 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7477_bxsmc6.jpg",
@@ -364,27 +393,29 @@
         "Pondok 1": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/ae454394-906a-43d6-a3e7-7453e5ef91b7_fdzogh.jpg",
         "Lantai 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7479_dlgxmv.jpg",
         "Lantai 1 tengah": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985452/IMG_7494_wyskxg.jpg",
-        
-        // [FIX PENTING] VARIASI MEETING ROOM (Agar pasti muncul)
         "Meeting room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg",
         "Meeting Room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg",
-        
-        // [FIX PENTING] VARIASI FULL BLOK (Nama panjang & pendek)
         "Lantai 1 Full Blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
         "Lantai 1 full blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
         "Lantai 1 Full Blok (peserta wajib di atas 200 orang)": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg"
     };
     const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
 
+    // --- VARIABLES ---
     let currentStep = 1;
     let locationsData = [];
     let menusData = {};
     let selectedMenus = {}; 
     let selectedLocationName = "";
 
+    // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', async () => {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('inputDate').setAttribute('min', today);
+      
+      // Default time (Misal 1 jam dari sekarang jika dalam jam operasional) - Optional logic
+      // Untuk simple, kita biarkan user memilih.
+      
       await loadData();
       document.getElementById('loader').style.display = 'none';
       updateUIState();
@@ -393,31 +424,64 @@
     // --- UI HELPERS ---
     function updateDateUI() {
         const val = document.getElementById('inputDate').value;
+        const display = document.getElementById('displayDate');
+        const group = document.getElementById('groupDate');
+        
         if(val) {
             const d = new Date(val);
-            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-            document.getElementById('displayDate').textContent = d.toLocaleDateString('id-ID', options);
+            const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+            display.textContent = d.toLocaleDateString('id-ID', options);
+            display.style.color = 'var(--primary-dark)';
+            group.classList.remove('error'); // Hapus error visual
         } else {
-            document.getElementById('displayDate').textContent = "Pilih Tanggal";
+            display.textContent = "Pilih Tanggal";
         }
-    }
-    function updateTimeUI() {
-        const val = document.getElementById('inputTime').value;
-        document.getElementById('displayTime').textContent = val ? val : "--:--";
+        checkStep1Valid();
     }
 
-    // --- LOAD DATA (Locations & Menu) ---
+    function updateTimeUI() {
+        const val = document.getElementById('inputTime').value;
+        const display = document.getElementById('displayTime');
+        const group = document.getElementById('groupTime');
+        
+        if(val) {
+            display.textContent = val;
+            display.style.color = 'var(--primary-dark)';
+            group.classList.remove('error');
+        } else {
+            display.textContent = "--:--";
+        }
+        checkStep1Valid();
+    }
+
+    function updatePax(change) {
+        const input = document.getElementById('inputPax');
+        const display = document.getElementById('paxDisplay');
+        let val = parseInt(input.value);
+        val += change;
+        if(val < 1) val = 1; // Min 1
+        
+        input.value = val;
+        display.textContent = val;
+    }
+    
+    // Cek validasi Step 1 untuk mengaktifkan/mematikan tombol Next secara visual (Optional UX)
+    function checkStep1Valid() {
+        // Logic ini bisa dikembangkan untuk mendisable tombol next
+    }
+
+    // --- DATA LOADING ---
     async function loadData() {
       try {
-        // Load Locations (Coba huruf kecil & besar)
+        // Locations
         try {
             let snap = await db.collection('locations').get();
             if(snap.empty) snap = await db.collection('Locations').get();
             locationsData = [];
             snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
-        } catch(e) { console.warn("Loc load fail", e); }
+        } catch(e) { console.warn("Loc fail", e); }
 
-        // Load Menus
+        // Menus
         try {
             let snap = await db.collection('menus').get();
             menusData = {};
@@ -427,31 +491,23 @@
                menusData[doc.id] = {
                    name: doc.id,
                    desc: desc,
-                   category: categorizeMenu(doc.id) // Panggil fungsi kategori pintar
+                   category: categorizeMenu(doc.id)
                };
             });
-        } catch(e) { console.warn("Menu load fail", e); }
+        } catch(e) { console.warn("Menu fail", e); }
+        
         renderMenuAccordions();
       } catch (err) { console.error(err); }
     }
 
-    // --- [LOGIKA CANGGIH] PENGELOMPOKAN MENU ---
     function categorizeMenu(name) {
         const n = name.toLowerCase();
-
-        // 1. WISATA JEEP (Prioritas Paling Tinggi)
         if(n.includes("jeep") || n.includes("jip")) return "Wisata Jeep";
-
-        // 2. PRASMANAN (Mendeteksi Paket A-J secara otomatis)
-        // Regex ini membaca "paket" diikuti spasi dan huruf a sampai j
         if(n.includes("prasmanan") || n.includes("buffet") || n.match(/paket [a-j](?!\w)/)) return "Prasmanan";
-
-        // 3. KATEGORI LAINNYA
         if(n.includes("tumpeng") || n.includes("kembulan") || n.includes("bancakan")) return "Kembulan";
         if(n.includes("rantang") || n.includes("besek") || n.includes("box")) return "Paket Rantang";
         if(n.includes("grill") || n.includes("bbq") || n.includes("steak")) return "Grill & BBQ";
         if(n.includes("minum") || n.includes("wedang") || n.includes("jus") || n.includes("teh") || n.includes("kopi")) return "Minuman";
-        
         return "Menu Lainnya";
     }
 
@@ -464,15 +520,15 @@
             groups[item.category].push(item);
         });
 
-        // Urutan Tampilan Kategori
         const order = ["Wisata Jeep", "Prasmanan", "Kembulan", "Paket Rantang", "Grill & BBQ", "Minuman", "Menu Lainnya"];
         
         order.forEach(cat => {
             if(groups[cat]) {
+                const safeCat = cat.replace(/\s+/g, '-');
                 const section = document.createElement('div');
                 section.className = 'menu-category';
                 let htmlItems = "";
-                // Urutkan menu abjad A-Z
+                
                 groups[cat].sort((a,b)=>a.name.localeCompare(b.name)).forEach(menu => {
                     htmlItems += `
                         <div class="menu-item">
@@ -480,17 +536,22 @@
                                 <h4>${menu.name}</h4>
                                 <p>${menu.desc}</p>
                             </div>
-                            <div class="qty-control">
-                                <button class="qty-btn" onclick="updateQty('${menu.name}', -1)">-</button>
-                                <span style="width:20px; text-align:center; font-weight:bold;" id="qty-${cleanId(menu.name)}">0</span>
-                                <button class="qty-btn" onclick="updateQty('${menu.name}', 1)">+</button>
+                            <div class="stepper-control" style="padding:5px 8px;">
+                                <button class="stepper-btn" style="width:28px; height:28px; font-size:1rem;" onclick="updateQty('${menu.name}', -1, '${safeCat}')">-</button>
+                                <span class="stepper-val" style="font-size:0.95rem; width:25px;" id="qty-${cleanId(menu.name)}">0</span>
+                                <button class="stepper-btn" style="width:28px; height:28px; font-size:1rem;" onclick="updateQty('${menu.name}', 1, '${safeCat}')">+</button>
                             </div>
                         </div>
                     `;
                 });
+                
                 section.innerHTML = `
                     <div class="cat-header" onclick="toggleAccordion(this)">
-                        <span>${cat}</span> <i class="fas fa-chevron-down"></i>
+                        <div style="display:flex; align-items:center;">
+                            <span>${cat}</span> 
+                            <span class="cat-badge" id="badge-${safeCat}">0</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="cat-content">
                         ${htmlItems}
@@ -504,39 +565,83 @@
     function toggleAccordion(header) {
         const content = header.nextElementSibling;
         const icon = header.querySelector('i');
+        // Close others
         document.querySelectorAll('.cat-content').forEach(el => {
             if(el !== content) el.classList.remove('show');
         });
+        document.querySelectorAll('.cat-header i').forEach(el => {
+            if(el !== icon) el.className = 'fas fa-chevron-down';
+        });
+
         content.classList.toggle('show');
         icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     }
 
-    // --- NAVIGASI STEP WIZARD ---
+    // --- NAVIGATION LOGIC ---
     async function nextStep() {
+        const btnNext = document.getElementById('btnNext');
+        
         if(currentStep === 1) {
             const date = document.getElementById('inputDate').value;
             const time = document.getElementById('inputTime').value;
-            if(!date || !time) return Swal.fire('Lengkapi Data','Pilih tanggal dan jam kedatangan','warning');
+            let isValid = true;
+            
+            if(!date) {
+                document.getElementById('groupDate').classList.add('error');
+                isValid = false;
+            }
+            if(!time) {
+                document.getElementById('groupTime').classList.add('error');
+                isValid = false;
+            }
+            
+            if(!isValid) return; // Stop if invalid
+
             await checkAvailability();
             currentStep = 2;
         } 
         else if(currentStep === 2) {
-            if(!selectedLocationName) return Swal.fire('Pilih Tempat','Silakan pilih salah satu tempat duduk','warning');
+            if(!selectedLocationName) return Swal.fire({
+                icon: 'warning',
+                title: 'Belum Ada Tempat',
+                text: 'Silakan klik salah satu foto tempat untuk memilih.',
+                confirmButtonColor: 'var(--primary)'
+            });
             currentStep = 3;
         }
         else if(currentStep === 3) {
-            if(Object.keys(selectedMenus).length === 0) return Swal.fire('Pilih Menu','Minimal pesan 1 menu','warning');
-            // Update Ringkasan
+            if(Object.keys(selectedMenus).length === 0) return Swal.fire({
+                icon: 'warning',
+                title: 'Keranjang Kosong',
+                text: 'Silakan pilih minimal 1 menu makanan atau minuman.',
+                confirmButtonColor: 'var(--primary)'
+            });
+            
+            // Populate Summary
             document.getElementById('summaryDate').textContent = document.getElementById('displayDate').textContent;
             document.getElementById('summaryTime').textContent = document.getElementById('inputTime').value;
+            document.getElementById('summaryPax').textContent = document.getElementById('inputPax').value + " Orang";
             document.getElementById('summaryLoc').textContent = selectedLocationName;
-            document.getElementById('summaryMenu').textContent = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
+            document.getElementById('summaryMenu').textContent = Object.values(selectedMenus).reduce((a,b)=>a+b,0) + " Item";
+            
             currentStep = 4;
         }
         else if(currentStep === 4) {
-            submitReservation();
+            // Validation Step 4
+            const name = document.getElementById('inputName').value.trim();
+            const phone = document.getElementById('inputPhone').value.trim();
+            let isValid = true;
+
+            if(!name) { document.getElementById('groupName').classList.add('error'); isValid = false; }
+            else document.getElementById('groupName').classList.remove('error');
+
+            if(!phone) { document.getElementById('groupPhone').classList.add('error'); isValid = false; }
+            else document.getElementById('groupPhone').classList.remove('error');
+
+            if(isValid) submitReservation();
             return;
         }
+        
         updateUIState();
         window.scrollTo(0,0);
     }
@@ -547,13 +652,27 @@
     }
 
     function updateUIState() {
+        // Sections
         document.querySelectorAll('.step-section').forEach((el, idx) => {
             el.classList.toggle('active', (idx + 1) === currentStep);
         });
-        document.querySelectorAll('.step-dot').forEach((el, idx) => {
-            el.classList.toggle('active', (idx + 1) <= currentStep);
+        
+        // Dots
+        document.querySelectorAll('.step-wrapper').forEach((el, idx) => {
+            el.classList.toggle('active', (idx + 1) === currentStep);
+            el.classList.toggle('completed', (idx + 1) < currentStep);
         });
 
+        // Dynamic Header
+        const titles = [
+            "Halo, Mau Kapan?",
+            "Pilih Tempat Duduk",
+            "Pilih Menu Favorit",
+            "Isi Data Diri"
+        ];
+        document.getElementById('headerTitle').textContent = titles[currentStep-1];
+
+        // Buttons & Bottom Bar
         const btnNext = document.getElementById('btnNext');
         const btnBack = document.getElementById('btnBack');
         const priceInfo = document.getElementById('priceInfo');
@@ -563,25 +682,26 @@
             btnNext.innerHTML = 'Cari Tempat <i class="fas fa-search"></i>';
             priceInfo.style.display = 'none';
         } else if(currentStep === 2) {
-            btnBack.style.display = 'block';
+            btnBack.style.display = 'flex';
             btnNext.innerHTML = 'Lanjut Menu <i class="fas fa-arrow-right"></i>';
             priceInfo.style.display = 'none';
         } else if(currentStep === 3) {
-            btnBack.style.display = 'block';
+            btnBack.style.display = 'flex';
             btnNext.innerHTML = 'Lanjut Data <i class="fas fa-arrow-right"></i>';
             priceInfo.style.display = 'flex';
         } else if(currentStep === 4) {
-            btnBack.style.display = 'block';
+            btnBack.style.display = 'flex';
             btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>';
             priceInfo.style.display = 'none';
         }
     }
 
-    // --- CEK KETERSEDIAAN TEMPAT ---
+    // --- LOGIC AVAILABILITY ---
     async function checkAvailability() {
         const dateVal = document.getElementById('inputDate').value;
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
         const container = document.getElementById('locationList');
+        
         container.innerHTML = '<div class="spinner" style="margin:20px auto;"></div>';
 
         try {
@@ -599,14 +719,19 @@
                 const remaining = capacity - used;
                 let isFull = remaining < paxVal;
                 
-                // [LOGIKA KHUSUS] Full Blok Minimal 200 Pax
+                // Logic Full Blok
                 let customError = "";
                 if(loc.name.toLowerCase().includes("full blok") && paxVal < 200) {
                     isFull = true;
                     customError = "Min. 200 Orang";
                 }
 
-                // Ambil gambar dari mapping (Aman dari case sensitive)
+                // Capacity Badge Color
+                let capClass = "cap-safe";
+                let capText = `Sisa ${remaining} kursi`;
+                if(remaining <= 0) { capClass = "cap-full"; capText = "PENUH"; }
+                else if(remaining < 10) { capClass = "cap-warn"; capText = `Sisa ${remaining} kursi`; }
+
                 const imageUrl = locationImages[loc.name] || defaultImage;
 
                 const div = document.createElement('div');
@@ -616,42 +741,33 @@
                 div.innerHTML = `
                     <div class="loc-thumb-wrapper">
                         <img src="${imageUrl}" class="loc-thumb-img" loading="lazy">
-                        ${customError ? `<span style="position:absolute; bottom:0; width:100%; background:rgba(214,48,49,0.9); color:white; font-size:0.7rem; text-align:center; padding:2px;">${customError}</span>` : ''}
+                        ${customError ? `<span style="position:absolute; bottom:0; width:100%; background:rgba(231,76,60,0.9); color:white; font-size:0.7rem; text-align:center; padding:3px;">${customError}</span>` : ''}
                     </div>
                     <div class="loc-content">
                         <span class="loc-name">${loc.name}</span>
-                        <span class="loc-cap">Sisa: ${remaining} / Kap: ${capacity}</span>
-                        <div class="loc-actions">
-                            <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')"><i class="fas fa-eye"></i></button>
-                            ${!isFull ? 
-                                `<button class="btn-loc-select" onclick="selectLocation('${loc.name}', this)">${selectedLocationName === loc.name ? 'Dipilih' : 'Pilih'}</button>` 
-                                : `<button class="btn-loc-select" disabled style="background:#ccc;">Penuh</button>`
-                            }
-                        </div>
+                        <span class="cap-badge ${capClass}">${capText}</span>
+                        <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')"><i class="fas fa-images"></i> Lihat Foto</button>
                     </div>
+                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer;" onclick="selectLocation('${loc.name}', this)"></div>
                 `;
                 container.appendChild(div);
             });
         } catch(e) { console.error(e); }
     }
 
-    function selectLocation(name, btn) {
+    function selectLocation(name, element) {
         selectedLocationName = name;
         document.querySelectorAll('.location-option').forEach(el => el.classList.remove('selected'));
-        document.querySelectorAll('.btn-loc-select').forEach(b => {
-             if(!b.disabled) { b.innerHTML = "Pilih"; b.style.background = "var(--primary)"; }
-        });
-        
-        btn.closest('.location-option').classList.add('selected');
-        btn.innerHTML = "<i class='fas fa-check'></i>";
-        btn.style.background = "var(--primary-dark)";
+        // Find parent .location-option
+        element.closest('.location-option').classList.add('selected');
     }
 
-    // --- LOGIKA KERANJANG MENU ---
-    function updateQty(name, change) {
+    // --- MENU LOGIC WITH BADGES ---
+    function updateQty(name, change, safeCat) {
         const id = cleanId(name);
         const current = selectedMenus[name] || 0;
         const next = current + change;
+        
         if(next < 0) return;
         
         if(next === 0) delete selectedMenus[name];
@@ -659,18 +775,40 @@
 
         const el = document.getElementById(`qty-${id}`);
         if(el) el.textContent = next;
-        const count = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
-        document.getElementById('totalItemText').textContent = `${count} Menu Dipilih`;
+
+        // Update Total
+        const total = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
+        document.getElementById('totalItemText').textContent = `${total} Menu`;
+
+        // Update Category Badge
+        updateCategoryBadge(safeCat);
+    }
+    
+    function updateCategoryBadge(safeCat) {
+        // Find all menus in this category (re-loop simple way or checking current selection)
+        // Optimization: Just check selectedMenus keys
+        let catCount = 0;
+        // Kita butuh tau menu mana saja yg masuk kategori ini.
+        // Karena struktur data terpisah, kita filter selectedMenus
+        for(let key in selectedMenus) {
+             // Cek jika key ini masuk kategori safeCat
+             // Ini agak tricky tanpa akses langsung ke menu object, tapi kita bisa pakai categorizeMenu
+             // Reformat category name from function to match safeCat
+             let c = categorizeMenu(key).replace(/\s+/g, '-');
+             if(c === safeCat) catCount += selectedMenus[key];
+        }
+        
+        const badge = document.getElementById(`badge-${safeCat}`);
+        if(badge) {
+            badge.textContent = catCount;
+            badge.style.display = catCount > 0 ? 'inline-block' : 'none';
+        }
     }
 
     function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
 
-    // --- KIRIM KE FIREBASE ---
+    // --- SUBMIT ---
     async function submitReservation() {
-        const name = document.getElementById('inputName').value.trim();
-        const phone = document.getElementById('inputPhone').value.trim();
-        const note = document.getElementById('inputNote').value.trim();
-        if(!name || !phone) return Swal.fire('Data Kurang', 'Isi nama dan nomor WhatsApp', 'warning');
         Swal.showLoading();
         try {
             const data = {
@@ -678,28 +816,32 @@
                 jam: document.getElementById('inputTime').value,
                 jumlah: parseInt(document.getElementById('inputPax').value),
                 tempat: selectedLocationName,
-                nama: name,
-                nomorHp: phone.replace(/[^0-9]/g,'').replace(/^0/,'62'),
-                tambahan: note,
+                nama: document.getElementById('inputName').value,
+                nomorHp: document.getElementById('inputPhone').value.replace(/[^0-9]/g,'').replace(/^0/,'62'),
+                tambahan: document.getElementById('inputNote').value,
                 menus: Object.entries(selectedMenus).map(([k,v]) => ({name:k, quantity:v})),
                 status: 'pending',
-                via: 'Website Wizard',
+                via: 'Web App V4',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
+            
             await db.collection('reservation_requests').add(data);
+            
             Swal.fire({
                 icon: 'success',
-                title: 'Terkirim!',
-                text: 'Admin akan segera menghubungi Anda via WhatsApp.',
+                title: 'Permintaan Terkirim!',
+                html: 'Mohon tunggu, admin kami akan menghubungi <b>WhatsApp Anda</b> untuk konfirmasi ketersediaan.',
                 confirmButtonColor: 'var(--primary)'
             }).then(() => window.location.reload());
+
         } catch(e) {
-            Swal.fire('Error', 'Gagal mengirim data.', 'error');
+            Swal.fire('Ups, Error', 'Terjadi kesalahan jaringan. Silakan coba lagi.', 'error');
         }
     }
 
-    // --- FUNGSI POPUP GAMBAR ---
     function openImage(url, caption) {
+        // Stop bubbling
+        event.stopPropagation();
         document.getElementById('imgModal').style.display = 'flex';
         document.getElementById('modalImg').src = url;
         document.getElementById('modalCaption').textContent = caption;
