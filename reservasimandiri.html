@@ -130,7 +130,7 @@
     /* Hide actual input but keep functionality */
     .hidden-input {
       position: absolute; top:0; left:0; width:100%; height:100%;
-      opacity: 0; cursor: pointer;
+      opacity: 0; cursor: pointer; z-index: 10;
     }
 
     /* --- LOCATION CARDS --- */
@@ -361,19 +361,42 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- DATA IMAGE MAPPING (UPDATED) ---
+    // --- DATA IMAGE MAPPING (UPDATED & ROBUST) ---
+    // Saya menambahkan variasi penulisan huruf besar/kecil agar foto tetap muncul
     const locationImages = {
+        // Lantai 1 belakang
         "Lantai 1 belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
+        "Lantai 1 Belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
+
+        // Gubug 3
         "Gubug 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7477_bxsmc6.jpg",
+
+        // Lantai 2
         "Lantai 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7475_s9rtpo.jpg",
+
+        // Lantai 1 depan
         "Lantai 1 depan": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935935/IMG_7472_gd2zsf.jpg",
+        "Lantai 1 Depan": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935935/IMG_7472_gd2zsf.jpg",
+
+        // Full Blok (Variasi penulisan)
         "Lantai 1 Full Blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
+        "Lantai 1 full blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
+
+        // Pondok
         "Pondok 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936109/3ac34945-6aef-4921-8c08-f9cbf8ab4892_mfdft0.jpg",
         "Pondok 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/49d5f9c2-da86-461e-bdca-ad04398bfd99_yturyb.jpg",
         "Pondok 1": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/ae454394-906a-43d6-a3e7-7453e5ef91b7_fdzogh.jpg",
+
+        // Lantai 3
         "Lantai 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7479_dlgxmv.jpg",
+
+        // Lantai 1 tengah
         "Lantai 1 tengah": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985452/IMG_7494_wyskxg.jpg",
-        "Meeting room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg"
+        "Lantai 1 Tengah": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985452/IMG_7494_wyskxg.jpg",
+
+        // Meeting room
+        "Meeting room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg",
+        "Meeting Room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg"
     };
     const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
 
@@ -507,7 +530,7 @@
         const content = header.nextElementSibling;
         const icon = header.querySelector('i');
         
-        // Tutup yang lain (optional, hilangkan jika ingin bisa buka banyak)
+        // Tutup yang lain (optional)
         document.querySelectorAll('.cat-content').forEach(el => {
             if(el !== content) el.classList.remove('show');
         });
@@ -620,6 +643,7 @@
                     customError = "Min. 200 Orang";
                 }
 
+                // Cek gambar (dengan fallback)
                 const imageUrl = locationImages[loc.name] || defaultImage;
 
                 const div = document.createElement('div');
