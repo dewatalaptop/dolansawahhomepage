@@ -92,7 +92,7 @@
     .step-section { display: none; }
     .step-section.active { display: block; }
 
-    /* --- CUSTOM DATE & TIME INPUTS --- */
+    /* --- CUSTOM INPUTS --- */
     .input-group-custom {
       position: relative;
       margin-bottom: 15px;
@@ -126,8 +126,6 @@
     .input-visual .label-text strong {
       font-size: 1.1rem; color: var(--dark);
     }
-    
-    /* Hide actual input but keep functionality */
     .hidden-input {
       position: absolute; top:0; left:0; width:100%; height:100%;
       opacity: 0; cursor: pointer; z-index: 10;
@@ -149,7 +147,6 @@
 
     .loc-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; color: var(--primary-dark); }
     .loc-cap { font-size: 0.75rem; color: #666; margin-bottom: 5px; }
-    .loc-req { font-size: 0.7rem; color: #d63031; font-weight: bold; font-style: italic; display:block; margin-bottom:5px;}
 
     .loc-actions { display: flex; gap: 5px; margin-top: auto; }
     .btn-loc-view, .btn-loc-select {
@@ -291,15 +288,13 @@
             </div>
            </div>
         </div>
-
       </div>
     </div>
 
     <div id="step2" class="step-section">
       <div class="card">
         <div class="section-title"><i class="fas fa-map-marker-alt"></i> Pilih Tempat</div>
-        <div class="location-grid" id="locationList">
-           </div>
+        <div class="location-grid" id="locationList"></div>
       </div>
     </div>
 
@@ -307,21 +302,17 @@
       <div class="card">
         <div class="section-title"><i class="fas fa-utensils"></i> Pilih Menu</div>
         <p style="font-size:0.8rem; color:#666; margin-bottom:15px;">Klik kategori untuk melihat menu.</p>
-        <div id="menuContainer">
-          </div>
+        <div id="menuContainer"></div>
       </div>
     </div>
 
     <div id="step4" class="step-section">
       <div class="card">
         <div class="section-title"><i class="fas fa-user-edit"></i> Data Anda</div>
-        
         <label>Nama Lengkap</label>
         <input type="text" id="inputName" placeholder="Nama Pemesan" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:10px;">
-        
         <label>WhatsApp (Aktif)</label>
         <input type="tel" id="inputPhone" placeholder="08xxxxxxx" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:10px;">
-        
         <label>Catatan</label>
         <textarea id="inputNote" rows="3" placeholder="Contoh: Request kursi bayi" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px;"></textarea>
 
@@ -361,58 +352,36 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- DATA IMAGE MAPPING (UPDATED & ROBUST) ---
-    // Saya menambahkan variasi penulisan huruf besar/kecil agar foto tetap muncul
+    // --- MAPPING FOTO YANG DIPERBAIKI ---
+    // Saya menambahkan nama panjang sesuai screenshot Anda
     const locationImages = {
-        // Lantai 1 belakang
         "Lantai 1 belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
-        "Lantai 1 Belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
-
-        // Gubug 3
         "Gubug 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7477_bxsmc6.jpg",
-
-        // Lantai 2
         "Lantai 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7475_s9rtpo.jpg",
-
-        // Lantai 1 depan
         "Lantai 1 depan": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935935/IMG_7472_gd2zsf.jpg",
-        "Lantai 1 Depan": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935935/IMG_7472_gd2zsf.jpg",
-
-        // Full Blok (Variasi penulisan)
-        "Lantai 1 Full Blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
-        "Lantai 1 full blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
-
-        // Pondok
         "Pondok 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936109/3ac34945-6aef-4921-8c08-f9cbf8ab4892_mfdft0.jpg",
         "Pondok 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/49d5f9c2-da86-461e-bdca-ad04398bfd99_yturyb.jpg",
         "Pondok 1": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/ae454394-906a-43d6-a3e7-7453e5ef91b7_fdzogh.jpg",
-
-        // Lantai 3
         "Lantai 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7479_dlgxmv.jpg",
-
-        // Lantai 1 tengah
         "Lantai 1 tengah": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985452/IMG_7494_wyskxg.jpg",
-        "Lantai 1 Tengah": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985452/IMG_7494_wyskxg.jpg",
-
-        // Meeting room
         "Meeting room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg",
-        "Meeting Room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg"
+        
+        // UPDATE BARU: Menambahkan nama lengkap sesuai tampilan database
+        "Lantai 1 Full Blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
+        "Lantai 1 full blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
+        "Lantai 1 Full Blok (peserta wajib di atas 200 orang)": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg"
     };
     const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
 
-    // --- VARIABLES ---
     let currentStep = 1;
     let locationsData = [];
     let menusData = {};
     let selectedMenus = {}; 
     let selectedLocationName = "";
 
-    // --- INIT ---
     document.addEventListener('DOMContentLoaded', async () => {
-      // Set min date
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('inputDate').setAttribute('min', today);
-      
       await loadData();
       document.getElementById('loader').style.display = 'none';
       updateUIState();
@@ -428,16 +397,13 @@
             document.getElementById('displayDate').textContent = "Pilih Tanggal";
         }
     }
-
     function updateTimeUI() {
         const val = document.getElementById('inputTime').value;
         document.getElementById('displayTime').textContent = val ? val : "--:--";
     }
 
-    // --- LOAD DATA ---
     async function loadData() {
       try {
-        // Load Location
         try {
             let snap = await db.collection('locations').get();
             if(snap.empty) snap = await db.collection('Locations').get();
@@ -445,58 +411,62 @@
             snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
         } catch(e) { console.warn("Loc load fail", e); }
 
-        // Load Menus
         try {
             let snap = await db.collection('menus').get();
             menusData = {};
             snap.forEach(doc => {
-               // Normalisasi data menu agar punya deskripsi
                let data = doc.data();
                let desc = Array.isArray(data.details) ? data.details.join(", ") : (data.deskripsi || "");
                menusData[doc.id] = {
                    name: doc.id,
                    desc: desc,
-                   category: categorizeMenu(doc.id) // Auto categorize
+                   category: categorizeMenu(doc.id)
                };
             });
         } catch(e) { console.warn("Menu load fail", e); }
-
         renderMenuAccordions();
       } catch (err) { console.error(err); }
     }
 
-    // --- LOGIC KATEGORI MENU OTOMATIS ---
+    // --- LOGIKA KATEGORI MENU (DIPERBARUI) ---
     function categorizeMenu(name) {
         const n = name.toLowerCase();
-        if(n.includes("prasmanan") || n.includes("paket a") || n.includes("paket b") || n.includes("buffet")) return "Prasmanan";
+
+        // 1. WISATA JEEP (Prioritas Tinggi)
+        if(n.includes("jeep") || n.includes("jip")) return "Wisata Jeep";
+
+        // 2. PRASMANAN (Paket A sampai J)
+        // Logika: Jika mengandung kata 'prasmanan' ATAU ('paket' + salah satu huruf a-j)
+        // regex: /paket [a-j]/ mendeteksi "paket a", "paket c", dll.
+        if(n.includes("prasmanan") || n.includes("buffet") || n.match(/paket [a-j](?!\w)/)) return "Prasmanan";
+
+        // 3. KATEGORI LAIN
         if(n.includes("tumpeng") || n.includes("kembulan") || n.includes("bancakan")) return "Kembulan";
         if(n.includes("rantang") || n.includes("besek") || n.includes("box")) return "Paket Rantang";
         if(n.includes("grill") || n.includes("bbq") || n.includes("steak")) return "Grill & BBQ";
-        if(n.includes("minum") || n.includes("wedang") || n.includes("jus")) return "Minuman";
+        if(n.includes("minum") || n.includes("wedang") || n.includes("jus") || n.includes("teh") || n.includes("kopi")) return "Minuman";
+        
         return "Menu Lainnya";
     }
 
-    // --- RENDER MENU DENGAN ACCORDION ---
     function renderMenuAccordions() {
         const container = document.getElementById('menuContainer');
         container.innerHTML = "";
-
-        // Grouping
         const groups = {};
         Object.values(menusData).forEach(item => {
             if(!groups[item.category]) groups[item.category] = [];
             groups[item.category].push(item);
         });
 
-        // Urutan Kategori
-        const order = ["Prasmanan", "Kembulan", "Paket Rantang", "Grill & BBQ", "Menu Lainnya", "Minuman"];
+        // Urutan Kategori (Jeep ditambahkan)
+        const order = ["Wisata Jeep", "Prasmanan", "Kembulan", "Paket Rantang", "Grill & BBQ", "Minuman", "Menu Lainnya"];
         
         order.forEach(cat => {
             if(groups[cat]) {
                 const section = document.createElement('div');
                 section.className = 'menu-category';
-                
                 let htmlItems = "";
+                // Sort menu a-z
                 groups[cat].sort((a,b)=>a.name.localeCompare(b.name)).forEach(menu => {
                     htmlItems += `
                         <div class="menu-item">
@@ -512,7 +482,6 @@
                         </div>
                     `;
                 });
-
                 section.innerHTML = `
                     <div class="cat-header" onclick="toggleAccordion(this)">
                         <span>${cat}</span> <i class="fas fa-chevron-down"></i>
@@ -529,24 +498,19 @@
     function toggleAccordion(header) {
         const content = header.nextElementSibling;
         const icon = header.querySelector('i');
-        
-        // Tutup yang lain (optional)
         document.querySelectorAll('.cat-content').forEach(el => {
             if(el !== content) el.classList.remove('show');
         });
-
         content.classList.toggle('show');
         icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     }
 
-    // --- NAVIGATION LOGIC ---
     async function nextStep() {
         if(currentStep === 1) {
             const date = document.getElementById('inputDate').value;
             const time = document.getElementById('inputTime').value;
             if(!date || !time) return Swal.fire('Lengkapi Data','Pilih tanggal dan jam kedatangan','warning');
-            
-            await checkAvailability(); // Cek tempat dulu
+            await checkAvailability();
             currentStep = 2;
         } 
         else if(currentStep === 2) {
@@ -555,13 +519,11 @@
         }
         else if(currentStep === 3) {
             if(Object.keys(selectedMenus).length === 0) return Swal.fire('Pilih Menu','Minimal pesan 1 menu','warning');
-            
-            // Update Summary
+            // Summary Update
             document.getElementById('summaryDate').textContent = document.getElementById('displayDate').textContent;
             document.getElementById('summaryTime').textContent = document.getElementById('inputTime').value;
             document.getElementById('summaryLoc').textContent = selectedLocationName;
             document.getElementById('summaryMenu').textContent = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
-            
             currentStep = 4;
         }
         else if(currentStep === 4) {
@@ -578,17 +540,13 @@
     }
 
     function updateUIState() {
-        // Sections
         document.querySelectorAll('.step-section').forEach((el, idx) => {
             el.classList.toggle('active', (idx + 1) === currentStep);
         });
-        
-        // Dots
         document.querySelectorAll('.step-dot').forEach((el, idx) => {
             el.classList.toggle('active', (idx + 1) <= currentStep);
         });
 
-        // Buttons
         const btnNext = document.getElementById('btnNext');
         const btnBack = document.getElementById('btnBack');
         const priceInfo = document.getElementById('priceInfo');
@@ -612,16 +570,13 @@
         }
     }
 
-    // --- CHECK AVAILABILITY ---
     async function checkAvailability() {
         const dateVal = document.getElementById('inputDate').value;
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
         const container = document.getElementById('locationList');
-        
         container.innerHTML = '<div class="spinner" style="margin:20px auto;"></div>';
 
         try {
-            // Get reservations
             const snapshot = await db.collection('reservations').where('date', '==', dateVal).get();
             const usageMap = {};
             snapshot.forEach(doc => {
@@ -636,14 +591,13 @@
                 const remaining = capacity - used;
                 let isFull = remaining < paxVal;
                 
-                // --- CUSTOM LOGIC: FULL BLOK MIN 200 PAX ---
                 let customError = "";
                 if(loc.name.toLowerCase().includes("full blok") && paxVal < 200) {
                     isFull = true;
                     customError = "Min. 200 Orang";
                 }
 
-                // Cek gambar (dengan fallback)
+                // Logic Image Fallback
                 const imageUrl = locationImages[loc.name] || defaultImage;
 
                 const div = document.createElement('div');
@@ -669,7 +623,6 @@
                 `;
                 container.appendChild(div);
             });
-
         } catch(e) { console.error(e); }
     }
 
@@ -685,12 +638,10 @@
         btn.style.background = "var(--primary-dark)";
     }
 
-    // --- MENU LOGIC ---
     function updateQty(name, change) {
         const id = cleanId(name);
         const current = selectedMenus[name] || 0;
         const next = current + change;
-        
         if(next < 0) return;
         
         if(next === 0) delete selectedMenus[name];
@@ -698,23 +649,18 @@
 
         const el = document.getElementById(`qty-${id}`);
         if(el) el.textContent = next;
-
         const count = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
         document.getElementById('totalItemText').textContent = `${count} Menu Dipilih`;
     }
 
     function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
 
-    // --- SUBMIT ---
     async function submitReservation() {
         const name = document.getElementById('inputName').value.trim();
         const phone = document.getElementById('inputPhone').value.trim();
         const note = document.getElementById('inputNote').value.trim();
-
         if(!name || !phone) return Swal.fire('Data Kurang', 'Isi nama dan nomor WhatsApp', 'warning');
-
         Swal.showLoading();
-
         try {
             const data = {
                 date: document.getElementById('inputDate').value,
@@ -729,22 +675,18 @@
                 via: 'Website Wizard',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
-
             await db.collection('reservation_requests').add(data);
-            
             Swal.fire({
                 icon: 'success',
                 title: 'Terkirim!',
                 text: 'Admin akan segera menghubungi Anda via WhatsApp.',
                 confirmButtonColor: 'var(--primary)'
             }).then(() => window.location.reload());
-
         } catch(e) {
             Swal.fire('Error', 'Gagal mengirim data.', 'error');
         }
     }
 
-    // --- UTILS ---
     function openImage(url, caption) {
         document.getElementById('imgModal').style.display = 'flex';
         document.getElementById('modalImg').src = url;
@@ -753,7 +695,6 @@
     function closeImage() {
         document.getElementById('imgModal').style.display = 'none';
     }
-
   </script>
 </body>
 </html>
