@@ -17,7 +17,6 @@
       --primary: #2a9d8f;
       --primary-dark: #264653;
       --secondary: #e9c46a;
-      --accent: #f4a261;
       --bg: #f0f2f5;
       --white: #ffffff;
       --text: #333333;
@@ -32,11 +31,11 @@
       font-family: 'Poppins', sans-serif;
       background-color: var(--bg);
       margin: 0;
-      padding-bottom: 100px; /* Extra space for bottom bar */
+      padding-bottom: 100px;
       color: var(--text);
     }
 
-    /* HEADER DINAMIS */
+    /* HEADER */
     header {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: white;
@@ -45,31 +44,15 @@
       border-bottom-left-radius: 30px;
       border-bottom-right-radius: 30px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 99;
+      position: sticky; top: 0; z-index: 99;
     }
-    header h1 { margin: 0; font-size: 1.2rem; font-weight: 700; opacity: 0.9; }
     .dynamic-title { font-size: 1.3rem; font-weight: 700; margin-top: 5px; animation: fadeIn 0.5s; }
 
-    /* STEP INDICATOR WITH LABELS */
-    .step-indicator {
-      display: flex;
-      justify-content: center;
-      margin-top: 15px;
-      gap: 25px;
-    }
-    .step-wrapper {
-      display: flex; flex-direction: column; align-items: center; gap: 5px;
-    }
-    .step-dot {
-      width: 12px; height: 12px;
-      background: rgba(255,255,255,0.4);
-      border-radius: 50%;
-      transition: 0.3s;
-    }
+    /* STEP INDICATOR */
+    .step-indicator { display: flex; justify-content: center; margin-top: 15px; gap: 25px; }
+    .step-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .step-dot { width: 12px; height: 12px; background: rgba(255,255,255,0.4); border-radius: 50%; transition: 0.3s; }
     .step-label { font-size: 0.65rem; color: rgba(255,255,255,0.6); font-weight: 500; }
-    
     .step-wrapper.active .step-dot { background: var(--white); transform: scale(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
     .step-wrapper.active .step-label { color: var(--white); font-weight: 700; }
     .step-wrapper.completed .step-dot { background: var(--secondary); }
@@ -78,51 +61,51 @@
 
     /* CARD STYLE */
     .card {
-      background: var(--white);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-      margin-bottom: 20px;
+      background: var(--white); border-radius: 20px; padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px;
       animation: slideUp 0.4s ease;
     }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* CUSTOM INPUTS & VISUAL ERROR */
+    /* INPUTS */
     .input-group-custom { position: relative; margin-bottom: 15px; }
-    
     .input-visual {
       display: flex; align-items: center; padding: 15px;
       background: #fff; border: 2px solid #eee; border-radius: 15px;
       transition: 0.3s; cursor: pointer;
     }
-    .input-visual:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(42, 157, 143, 0.1); }
-    
-    /* Error State */
+    .input-visual:focus-within { border-color: var(--primary); }
     .input-group-custom.error .input-visual { border-color: var(--danger); background: #fff5f5; }
     .error-msg { color: var(--danger); font-size: 0.75rem; margin-top: 5px; display: none; }
     .input-group-custom.error .error-msg { display: block; }
-
     .input-visual i { font-size: 1.4rem; color: var(--primary); margin-right: 15px; width: 30px; text-align: center; }
-    .input-visual .label-text { flex-grow: 1; }
-    .input-visual .label-text span { display: block; font-size: 0.75rem; color: #888; margin-bottom: 2px; }
-    .input-visual .label-text strong { font-size: 1.05rem; color: var(--dark); }
-    
+    .input-visual .label-text strong { font-size: 1.05rem; color: var(--dark); display:block;}
+    .input-visual .label-text span { font-size: 0.75rem; color: #888; }
     .hidden-input { position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0; cursor: pointer; z-index: 10; }
 
-    /* STEPPER QUANTITY (PAX & MENU) */
+    /* STEPPER QUANTITY (INPUT NUMBER) */
     .stepper-control {
       display: flex; align-items: center; justify-content: space-between;
       background: #f8f9fa; border-radius: 12px; padding: 5px;
+      border: 1px solid #eee;
     }
     .stepper-btn {
-      width: 35px; height: 35px; border-radius: 10px; border: none;
+      width: 35px; height: 35px; border-radius: 8px; border: none;
       background: var(--white); color: var(--primary); 
       font-size: 1.2rem; font-weight: bold; cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.1s;
       display: flex; align-items: center; justify-content: center;
     }
     .stepper-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
-    .stepper-val { font-weight: 700; font-size: 1.1rem; color: var(--dark); width: 40px; text-align: center; }
+    
+    /* Input angka di tengah */
+    .stepper-input {
+      width: 50px; text-align: center; border: none; background: transparent;
+      font-weight: 700; font-size: 1.1rem; color: var(--dark);
+      -moz-appearance: textfield; /* Firefox */
+    }
+    .stepper-input::-webkit-outer-spin-button,
+    .stepper-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
     /* LOCATION CARDS */
     .location-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -139,22 +122,14 @@
         display: flex; justify-content: center; align-items: center; font-size: 0.8rem;
     }
     .location-option.disabled { opacity: 0.6; filter: grayscale(100%); pointer-events: none; }
-
     .loc-thumb-wrapper { width: 100%; height: 100px; background: #eee; position: relative; }
     .loc-thumb-img { width: 100%; height: 100%; object-fit: cover; }
     .loc-content { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
     .loc-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 5px; color: var(--dark); line-height: 1.3; }
-    
-    /* Capacity Badge */
     .cap-badge { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-align: center; margin-bottom: 10px; align-self: start; }
     .cap-safe { background: #e8f5e9; color: #27ae60; }
-    .cap-warn { background: #fff3e0; color: #e67e22; }
     .cap-full { background: #ffebee; color: #c0392b; }
-
-    .btn-loc-view { 
-      background: #f0f2f5; color: #666; border: none; width: 100%; padding: 8px; 
-      border-radius: 8px; font-size: 0.8rem; font-weight: 600; margin-top: auto; cursor: pointer;
-    }
+    .btn-loc-view { background: #f0f2f5; color: #666; border: none; width: 100%; padding: 8px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; margin-top: auto; cursor: pointer; }
 
     /* MENU ACCORDION */
     .menu-category { margin-bottom: 15px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
@@ -163,22 +138,27 @@
       display: flex; justify-content: space-between; align-items: center;
       font-weight: 600; color: var(--dark); transition: 0.2s;
     }
-    .cat-header:hover { background: #f9f9f9; }
     .cat-badge { background: var(--primary); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; display: none; margin-left: 8px; }
     .cat-content { display: none; padding: 0 15px; background: white; border-top: 1px solid #f0f0f0; }
     .cat-content.show { display: block; }
     
-    .menu-item { padding: 15px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; align-items: center; }
-    .menu-item:last-child { border-bottom: none; }
+    .menu-item { padding: 15px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; align-items: flex-start; }
     .menu-info { padding-right: 15px; flex: 1; }
     .menu-info h4 { margin: 0 0 5px; font-size: 0.95rem; color: var(--dark); }
     .menu-info p { margin: 0; font-size: 0.8rem; color: #888; line-height: 1.4; }
+    
+    .menu-note-badge {
+      display: inline-block; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;
+      margin-top: 5px; font-weight: 600;
+    }
+    .note-warn { background: #ffebee; color: #c0392b; border: 1px solid #ffcdd2; } /* Prasmanan */
+    .note-info { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; } /* Kembulan */
 
-    /* BOTTOM BAR (SAFE AREA) */
+    /* BOTTOM BAR */
     .bottom-bar {
       position: fixed; bottom: 0; left: 0; width: 100%;
       background: white; padding: 15px 20px;
-      padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* iOS Safe Area */
+      padding-bottom: calc(15px + env(safe-area-inset-bottom));
       box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
       display: flex; justify-content: space-between; align-items: center;
       z-index: 900; border-top-left-radius: 20px; border-top-right-radius: 20px;
@@ -188,38 +168,21 @@
       padding: 14px 25px; border-radius: 50px; font-weight: 600;
       box-shadow: 0 5px 15px rgba(42, 157, 143, 0.4); cursor: pointer;
       display: flex; align-items: center; gap: 10px; font-size: 1rem;
-      transition: 0.3s;
     }
-    .btn-action:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; opacity: 0.7; }
     .btn-back {
       background: #f5f5f5; color: #555; border: none;
       width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;
       display: flex; justify-content: center; align-items: center;
     }
 
-    /* IMAGE MODAL */
-    .image-modal {
-        display: none; position: fixed; z-index: 2000; left: 0; top: 0;
-        width: 100%; height: 100%; background: rgba(0,0,0,0.95);
-        justify-content: center; align-items: center; flex-direction: column;
-    }
-    .modal-content { max-width: 90%; max-height: 70vh; border-radius: 10px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+    /* MODAL & LOADER */
+    .image-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; flex-direction: column; }
+    .modal-content { max-width: 90%; max-height: 70vh; border-radius: 10px; }
     .close-modal { position: absolute; top: 30px; right: 30px; color: white; font-size: 2.5rem; cursor: pointer; background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
-
-    /* Loader */
-    .loader-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: white; z-index: 3000; display: flex;
-      justify-content: center; align-items: center; flex-direction: column;
-    }
-    .spinner {
-      width: 40px; height: 40px; border: 4px solid #f3f3f3;
-      border-top: 4px solid var(--primary); border-radius: 50%;
-      animation: spin 0.8s linear infinite; margin-bottom: 15px;
-    }
+    .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Hide step sections */
     .step-section { display: none; }
     .step-section.active { display: block; }
   </style>
@@ -232,27 +195,22 @@
     
     <div class="step-indicator">
       <div class="step-wrapper active" id="dot1">
-        <div class="step-dot"></div>
-        <span class="step-label">Waktu</span>
+        <div class="step-dot"></div><span class="step-label">Waktu</span>
       </div>
       <div class="step-wrapper" id="dot2">
-        <div class="step-dot"></div>
-        <span class="step-label">Tempat</span>
+        <div class="step-dot"></div><span class="step-label">Tempat</span>
       </div>
       <div class="step-wrapper" id="dot3">
-        <div class="step-dot"></div>
-        <span class="step-label">Menu</span>
+        <div class="step-dot"></div><span class="step-label">Menu</span>
       </div>
       <div class="step-wrapper" id="dot4">
-        <div class="step-dot"></div>
-        <span class="step-label">Data</span>
+        <div class="step-dot"></div><span class="step-label">Data</span>
       </div>
     </div>
   </header>
 
   <div class="loader-overlay" id="loader">
-    <div class="spinner"></div>
-    <p style="color:#666; font-size:0.9rem;">Menyiapkan Data...</p>
+    <div class="spinner"></div><p style="color:#666; font-size:0.9rem;">Menyiapkan Data...</p>
   </div>
 
   <div id="imgModal" class="image-modal" onclick="closeImage()">
@@ -270,34 +228,32 @@
           <div class="input-visual">
             <i class="far fa-calendar-alt"></i>
             <div class="label-text">
-              <span>Tanggal Kunjungan</span>
-              <strong id="displayDate">Pilih Tanggal</strong>
+              <span>Tanggal Kunjungan</span><strong id="displayDate">Pilih Tanggal</strong>
             </div>
           </div>
           <input type="date" id="inputDate" class="hidden-input" onchange="updateDateUI()">
-          <div class="error-msg">Mohon pilih tanggal kunjungan.</div>
+          <div class="error-msg">Mohon pilih tanggal.</div>
         </div>
 
         <div class="input-group-custom" id="groupTime">
           <div class="input-visual">
             <i class="far fa-clock"></i>
             <div class="label-text">
-              <span>Jam Kedatangan</span>
-              <strong id="displayTime">--:--</strong>
+              <span>Jam Kedatangan</span><strong id="displayTime">--:--</strong>
             </div>
           </div>
           <input type="time" id="inputTime" class="hidden-input" onchange="updateTimeUI()">
-          <div class="error-msg">Mohon tentukan jam kedatangan.</div>
+          <div class="error-msg">Mohon tentukan jam.</div>
         </div>
 
         <div class="input-group-custom">
             <label style="font-size:0.85rem; color:#666; margin-bottom:8px; display:block;">Jumlah Orang</label>
-            <div class="stepper-control" style="padding:10px 15px; border:2px solid #eee;">
-                <button class="stepper-btn" onclick="updatePax(-1)">-</button>
-                <span class="stepper-val" id="paxDisplay">2</span>
-                <button class="stepper-btn" onclick="updatePax(1)">+</button>
+            <div class="stepper-control">
+                <button class="stepper-btn" onclick="updatePaxStep(-1)">-</button>
+                <input type="number" id="inputPax" class="stepper-input" value="2" min="1" onchange="validatePax()">
+                <button class="stepper-btn" onclick="updatePaxStep(1)">+</button>
             </div>
-            <input type="hidden" id="inputPax" value="2">
+            <small style="color:#888; font-size:0.75rem; margin-top:4px; display:block;">Bisa diketik manual atau tekan +/-</small>
         </div>
 
       </div>
@@ -305,45 +261,36 @@
 
     <div id="step2" class="step-section">
       <div class="card" style="background:#e3f2fd; border-left:4px solid #2196f3; padding:15px;">
-        <p style="font-size:0.85rem; color:#0d47a1; margin:0;">
-          <i class="fas fa-info-circle"></i> Klik tempat untuk memilih. Kapasitas disesuaikan dengan tanggal yang Anda pilih.
-        </p>
+        <p style="font-size:0.85rem; color:#0d47a1; margin:0;"><i class="fas fa-info-circle"></i> Klik tempat untuk memilih.</p>
       </div>
       <div class="location-grid" id="locationList"></div>
     </div>
 
     <div id="step3" class="step-section">
       <div class="card" style="padding:15px;">
-        <p style="font-size:0.85rem; color:#666; margin-bottom:15px; text-align:center;">
-          Silakan pilih kategori di bawah ini
-        </p>
+        <p style="font-size:0.85rem; color:#666; margin-bottom:15px; text-align:center;">Pilih kategori menu di bawah ini</p>
         <div id="menuContainer"></div>
       </div>
     </div>
 
     <div id="step4" class="step-section">
       <div class="card">
-        
         <div class="input-group-custom" id="groupName">
             <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Nama Lengkap</label>
             <input type="text" id="inputName" placeholder="Contoh: Budi Santoso" style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
             <div class="error-msg">Nama wajib diisi.</div>
         </div>
-        
         <div class="input-group-custom" id="groupPhone">
             <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">WhatsApp (Aktif)</label>
             <input type="tel" id="inputPhone" placeholder="Contoh: 081234..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
-            <div class="error-msg">Nomor WhatsApp wajib diisi.</div>
-            <small style="color:#888; font-size:0.75rem;">Konfirmasi akan dikirim ke nomor ini.</small>
+            <div class="error-msg">Nomor wajib diisi.</div>
         </div>
-        
         <div style="margin-bottom:15px;">
             <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Catatan (Opsional)</label>
-            <textarea id="inputNote" rows="2" placeholder="Contoh: Kursi bayi, alergi, dll..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-family:inherit;"></textarea>
+            <textarea id="inputNote" rows="2" placeholder="Contoh: Kursi bayi, dll..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-family:inherit;"></textarea>
         </div>
-
         <div style="background:#f1f8e9; padding:15px; border-radius:12px; border:1px solid #c5e1a5;">
-            <h5 style="margin:0 0 10px; color:#33691e;"><i class="fas fa-check-circle"></i> Ringkasan Reservasi</h5>
+            <h5 style="margin:0 0 10px; color:#33691e;"><i class="fas fa-check-circle"></i> Ringkasan</h5>
             <div style="font-size:0.85rem; color:#558b2f; line-height:1.6;">
                 <div style="display:flex; justify-content:space-between;"><span>Waktu:</span> <strong id="summaryDate"></strong></div>
                 <div style="display:flex; justify-content:space-between;"><span>Jam:</span> <strong id="summaryTime"></strong></div>
@@ -360,16 +307,14 @@
   <div class="bottom-bar">
     <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;"><i class="fas fa-arrow-left"></i></button>
     <div id="priceInfo" style="display:none; flex-grow:1; margin-left:15px;">
-        <span style="display:block; font-size:0.7rem; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Keranjang</span>
+        <span style="display:block; font-size:0.7rem; color:#888; text-transform:uppercase;">Keranjang</span>
         <strong style="color:var(--primary); font-size:1.1rem;" id="totalItemText">0 Menu</strong>
     </div>
-    <button class="btn-action" id="btnNext" onclick="nextStep()">
-      Cari Tempat <i class="fas fa-search"></i>
-    </button>
+    <button class="btn-action" id="btnNext" onclick="nextStep()">Cari Tempat <i class="fas fa-search"></i></button>
   </div>
 
   <script>
-    // --- FIREBASE CONFIG ---
+    // --- FIREBASE SETUP ---
     const firebaseConfig = {
       apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
       authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -378,11 +323,10 @@
       messagingSenderId: "213151400721",
       appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
     };
-
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- MAPPING FOTO ---
+    // --- PHOTO MAPPING ---
     const locationImages = {
         "Lantai 1 belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
         "Gubug 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7477_bxsmc6.jpg",
@@ -401,114 +345,100 @@
     };
     const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
 
-    // --- VARIABLES ---
     let currentStep = 1;
     let locationsData = [];
     let menusData = {};
     let selectedMenus = {}; 
     let selectedLocationName = "";
 
-    // --- INITIALIZATION ---
     document.addEventListener('DOMContentLoaded', async () => {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('inputDate').setAttribute('min', today);
-      
-      // Default time (Misal 1 jam dari sekarang jika dalam jam operasional) - Optional logic
-      // Untuk simple, kita biarkan user memilih.
-      
+      document.getElementById('inputDate').setAttribute('min', new Date().toISOString().split('T')[0]);
       await loadData();
       document.getElementById('loader').style.display = 'none';
       updateUIState();
     });
 
-    // --- UI HELPERS ---
+    // --- PAX INPUT LOGIC ---
+    function updatePaxStep(amount) {
+        const input = document.getElementById('inputPax');
+        let val = parseInt(input.value) || 0;
+        val += amount;
+        if(val < 1) val = 1;
+        input.value = val;
+    }
+    function validatePax() {
+        const input = document.getElementById('inputPax');
+        if(parseInt(input.value) < 1) input.value = 1;
+    }
+
+    // --- DATE/TIME UI ---
     function updateDateUI() {
         const val = document.getElementById('inputDate').value;
         const display = document.getElementById('displayDate');
-        const group = document.getElementById('groupDate');
-        
         if(val) {
-            const d = new Date(val);
-            const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
-            display.textContent = d.toLocaleDateString('id-ID', options);
+            display.textContent = new Date(val).toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
             display.style.color = 'var(--primary-dark)';
-            group.classList.remove('error'); // Hapus error visual
-        } else {
-            display.textContent = "Pilih Tanggal";
-        }
-        checkStep1Valid();
+            document.getElementById('groupDate').classList.remove('error');
+        } else display.textContent = "Pilih Tanggal";
     }
-
     function updateTimeUI() {
         const val = document.getElementById('inputTime').value;
         const display = document.getElementById('displayTime');
-        const group = document.getElementById('groupTime');
-        
         if(val) {
             display.textContent = val;
             display.style.color = 'var(--primary-dark)';
-            group.classList.remove('error');
-        } else {
-            display.textContent = "--:--";
-        }
-        checkStep1Valid();
-    }
-
-    function updatePax(change) {
-        const input = document.getElementById('inputPax');
-        const display = document.getElementById('paxDisplay');
-        let val = parseInt(input.value);
-        val += change;
-        if(val < 1) val = 1; // Min 1
-        
-        input.value = val;
-        display.textContent = val;
-    }
-    
-    // Cek validasi Step 1 untuk mengaktifkan/mematikan tombol Next secara visual (Optional UX)
-    function checkStep1Valid() {
-        // Logic ini bisa dikembangkan untuk mendisable tombol next
+            document.getElementById('groupTime').classList.remove('error');
+        } else display.textContent = "--:--";
     }
 
     // --- DATA LOADING ---
     async function loadData() {
       try {
-        // Locations
         try {
             let snap = await db.collection('locations').get();
             if(snap.empty) snap = await db.collection('Locations').get();
             locationsData = [];
             snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
-        } catch(e) { console.warn("Loc fail", e); }
+        } catch(e) {}
 
-        // Menus
         try {
             let snap = await db.collection('menus').get();
             menusData = {};
             snap.forEach(doc => {
-               let data = doc.data();
-               let desc = Array.isArray(data.details) ? data.details.join(", ") : (data.deskripsi || "");
-               menusData[doc.id] = {
-                   name: doc.id,
-                   desc: desc,
-                   category: categorizeMenu(doc.id)
-               };
+               let d = doc.data();
+               let desc = Array.isArray(d.details) ? d.details.join(", ") : (d.deskripsi || "");
+               menusData[doc.id] = { name: doc.id, desc: desc, category: categorizeMenu(doc.id) };
             });
-        } catch(e) { console.warn("Menu fail", e); }
-        
+        } catch(e) {}
         renderMenuAccordions();
-      } catch (err) { console.error(err); }
+      } catch (err) {}
     }
 
+    // --- MENU LOGIC & INFO ---
     function categorizeMenu(name) {
         const n = name.toLowerCase();
         if(n.includes("jeep") || n.includes("jip")) return "Wisata Jeep";
         if(n.includes("prasmanan") || n.includes("buffet") || n.match(/paket [a-j](?!\w)/)) return "Prasmanan";
         if(n.includes("tumpeng") || n.includes("kembulan") || n.includes("bancakan")) return "Kembulan";
         if(n.includes("rantang") || n.includes("besek") || n.includes("box")) return "Paket Rantang";
-        if(n.includes("grill") || n.includes("bbq") || n.includes("steak")) return "Grill & BBQ";
-        if(n.includes("minum") || n.includes("wedang") || n.includes("jus") || n.includes("teh") || n.includes("kopi")) return "Minuman";
+        if(n.includes("grill") || n.includes("bbq")) return "Grill & BBQ";
+        if(n.includes("minum") || n.includes("wedang") || n.includes("jus")) return "Minuman";
         return "Menu Lainnya";
+    }
+
+    // FUNGSI BARU UNTUK KETERANGAN MENU
+    function getMenuNote(name, category) {
+        const n = name.toLowerCase();
+        if(category === "Prasmanan") return `<span class="menu-note-badge note-warn">Min. order 20 porsi</span>`;
+        
+        // Logika Kembulan
+        if(n.includes("kembulan 1") || n.includes("kembulan 2")) return `<span class="menu-note-badge note-info">Porsi untuk 5 Orang</span>`;
+        if(n.includes("kembulan 3") || n.includes("kembulan 4") || n.includes("kembulan 5") || n.includes("kembulan 6")) return `<span class="menu-note-badge note-info">Porsi untuk 10 Orang</span>`;
+        
+        // Logika Tumpeng
+        if(n.includes("tumpeng")) return `<span class="menu-note-badge note-info">Porsi untuk 5 Orang</span>`;
+        
+        return "";
     }
 
     function renderMenuAccordions() {
@@ -530,16 +460,18 @@
                 let htmlItems = "";
                 
                 groups[cat].sort((a,b)=>a.name.localeCompare(b.name)).forEach(menu => {
+                    const note = getMenuNote(menu.name, cat);
                     htmlItems += `
                         <div class="menu-item">
                             <div class="menu-info">
                                 <h4>${menu.name}</h4>
                                 <p>${menu.desc}</p>
+                                ${note}
                             </div>
-                            <div class="stepper-control" style="padding:5px 8px;">
-                                <button class="stepper-btn" style="width:28px; height:28px; font-size:1rem;" onclick="updateQty('${menu.name}', -1, '${safeCat}')">-</button>
-                                <span class="stepper-val" style="font-size:0.95rem; width:25px;" id="qty-${cleanId(menu.name)}">0</span>
-                                <button class="stepper-btn" style="width:28px; height:28px; font-size:1rem;" onclick="updateQty('${menu.name}', 1, '${safeCat}')">+</button>
+                            <div class="stepper-control" style="width:110px;">
+                                <button class="stepper-btn" onclick="updateMenuQty('${menu.name}', -1, '${safeCat}')">-</button>
+                                <input type="number" id="qty-${cleanId(menu.name)}" class="stepper-input" value="0" min="0" onchange="manualMenuQty('${menu.name}', '${safeCat}')">
+                                <button class="stepper-btn" onclick="updateMenuQty('${menu.name}', 1, '${safeCat}')">+</button>
                             </div>
                         </div>
                     `;
@@ -548,14 +480,11 @@
                 section.innerHTML = `
                     <div class="cat-header" onclick="toggleAccordion(this)">
                         <div style="display:flex; align-items:center;">
-                            <span>${cat}</span> 
-                            <span class="cat-badge" id="badge-${safeCat}">0</span>
+                            <span>${cat}</span> <span class="cat-badge" id="badge-${safeCat}">0</span>
                         </div>
                         <i class="fas fa-chevron-down"></i>
                     </div>
-                    <div class="cat-content">
-                        ${htmlItems}
-                    </div>
+                    <div class="cat-content">${htmlItems}</div>
                 `;
                 container.appendChild(section);
             }
@@ -565,143 +494,116 @@
     function toggleAccordion(header) {
         const content = header.nextElementSibling;
         const icon = header.querySelector('i');
-        // Close others
-        document.querySelectorAll('.cat-content').forEach(el => {
-            if(el !== content) el.classList.remove('show');
-        });
-        document.querySelectorAll('.cat-header i').forEach(el => {
-            if(el !== icon) el.className = 'fas fa-chevron-down';
-        });
-
+        document.querySelectorAll('.cat-content').forEach(el => { if(el !== content) el.classList.remove('show'); });
         content.classList.toggle('show');
         icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     }
 
-    // --- NAVIGATION LOGIC ---
-    async function nextStep() {
-        const btnNext = document.getElementById('btnNext');
+    // --- MENU QTY LOGIC (Hybrid Type/Click) ---
+    function updateMenuQty(name, change, safeCat) {
+        const id = cleanId(name);
+        const input = document.getElementById(`qty-${id}`);
+        let val = parseInt(input.value) || 0;
+        val += change;
+        if(val < 0) val = 0;
+        input.value = val;
         
+        syncMenuData(name, val, safeCat);
+    }
+
+    function manualMenuQty(name, safeCat) {
+        const id = cleanId(name);
+        const input = document.getElementById(`qty-${id}`);
+        let val = parseInt(input.value) || 0;
+        if(val < 0) val = 0;
+        input.value = val;
+        
+        syncMenuData(name, val, safeCat);
+    }
+
+    function syncMenuData(name, val, safeCat) {
+        if(val === 0) delete selectedMenus[name];
+        else selectedMenus[name] = val;
+
+        const total = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
+        document.getElementById('totalItemText').textContent = `${total} Menu`;
+        
+        // Update Category Badge
+        let catCount = 0;
+        for(let key in selectedMenus) {
+             let c = categorizeMenu(key).replace(/\s+/g, '-');
+             if(c === safeCat) catCount += selectedMenus[key];
+        }
+        const badge = document.getElementById(`badge-${safeCat}`);
+        if(badge) {
+            badge.textContent = catCount;
+            badge.style.display = catCount > 0 ? 'inline-block' : 'none';
+        }
+    }
+
+    function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
+
+    // --- NAVIGATION ---
+    async function nextStep() {
         if(currentStep === 1) {
             const date = document.getElementById('inputDate').value;
             const time = document.getElementById('inputTime').value;
             let isValid = true;
-            
-            if(!date) {
-                document.getElementById('groupDate').classList.add('error');
-                isValid = false;
-            }
-            if(!time) {
-                document.getElementById('groupTime').classList.add('error');
-                isValid = false;
-            }
-            
-            if(!isValid) return; // Stop if invalid
-
+            if(!date) { document.getElementById('groupDate').classList.add('error'); isValid = false; }
+            if(!time) { document.getElementById('groupTime').classList.add('error'); isValid = false; }
+            if(!isValid) return;
             await checkAvailability();
             currentStep = 2;
         } 
         else if(currentStep === 2) {
-            if(!selectedLocationName) return Swal.fire({
-                icon: 'warning',
-                title: 'Belum Ada Tempat',
-                text: 'Silakan klik salah satu foto tempat untuk memilih.',
-                confirmButtonColor: 'var(--primary)'
-            });
+            if(!selectedLocationName) return Swal.fire('Belum Ada Tempat', 'Pilih tempat dulu.', 'warning');
             currentStep = 3;
         }
         else if(currentStep === 3) {
-            if(Object.keys(selectedMenus).length === 0) return Swal.fire({
-                icon: 'warning',
-                title: 'Keranjang Kosong',
-                text: 'Silakan pilih minimal 1 menu makanan atau minuman.',
-                confirmButtonColor: 'var(--primary)'
-            });
-            
-            // Populate Summary
+            if(Object.keys(selectedMenus).length === 0) return Swal.fire('Menu Kosong', 'Pilih minimal 1 menu.', 'warning');
             document.getElementById('summaryDate').textContent = document.getElementById('displayDate').textContent;
             document.getElementById('summaryTime').textContent = document.getElementById('inputTime').value;
             document.getElementById('summaryPax').textContent = document.getElementById('inputPax').value + " Orang";
             document.getElementById('summaryLoc').textContent = selectedLocationName;
             document.getElementById('summaryMenu').textContent = Object.values(selectedMenus).reduce((a,b)=>a+b,0) + " Item";
-            
             currentStep = 4;
         }
         else if(currentStep === 4) {
-            // Validation Step 4
             const name = document.getElementById('inputName').value.trim();
             const phone = document.getElementById('inputPhone').value.trim();
-            let isValid = true;
-
-            if(!name) { document.getElementById('groupName').classList.add('error'); isValid = false; }
-            else document.getElementById('groupName').classList.remove('error');
-
-            if(!phone) { document.getElementById('groupPhone').classList.add('error'); isValid = false; }
-            else document.getElementById('groupPhone').classList.remove('error');
-
-            if(isValid) submitReservation();
+            if(!name) return document.getElementById('groupName').classList.add('error');
+            if(!phone) return document.getElementById('groupPhone').classList.add('error');
+            submitReservation();
             return;
         }
-        
         updateUIState();
         window.scrollTo(0,0);
     }
-
-    function prevStep() {
-        if(currentStep > 1) currentStep--;
-        updateUIState();
-    }
+    
+    function prevStep() { if(currentStep > 1) currentStep--; updateUIState(); }
 
     function updateUIState() {
-        // Sections
-        document.querySelectorAll('.step-section').forEach((el, idx) => {
-            el.classList.toggle('active', (idx + 1) === currentStep);
-        });
-        
-        // Dots
+        document.querySelectorAll('.step-section').forEach((el, idx) => el.classList.toggle('active', (idx + 1) === currentStep));
         document.querySelectorAll('.step-wrapper').forEach((el, idx) => {
             el.classList.toggle('active', (idx + 1) === currentStep);
             el.classList.toggle('completed', (idx + 1) < currentStep);
         });
-
-        // Dynamic Header
-        const titles = [
-            "Halo, Mau Kapan?",
-            "Pilih Tempat Duduk",
-            "Pilih Menu Favorit",
-            "Isi Data Diri"
-        ];
-        document.getElementById('headerTitle').textContent = titles[currentStep-1];
-
-        // Buttons & Bottom Bar
+        document.getElementById('headerTitle').textContent = ["Halo, Mau Kapan?", "Pilih Tempat Duduk", "Pilih Menu Favorit", "Isi Data Diri"][currentStep-1];
+        
         const btnNext = document.getElementById('btnNext');
         const btnBack = document.getElementById('btnBack');
         const priceInfo = document.getElementById('priceInfo');
-
-        if(currentStep === 1) {
-            btnBack.style.display = 'none';
-            btnNext.innerHTML = 'Cari Tempat <i class="fas fa-search"></i>';
-            priceInfo.style.display = 'none';
-        } else if(currentStep === 2) {
-            btnBack.style.display = 'flex';
-            btnNext.innerHTML = 'Lanjut Menu <i class="fas fa-arrow-right"></i>';
-            priceInfo.style.display = 'none';
-        } else if(currentStep === 3) {
-            btnBack.style.display = 'flex';
-            btnNext.innerHTML = 'Lanjut Data <i class="fas fa-arrow-right"></i>';
-            priceInfo.style.display = 'flex';
-        } else if(currentStep === 4) {
-            btnBack.style.display = 'flex';
-            btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>';
-            priceInfo.style.display = 'none';
-        }
+        
+        if(currentStep === 1) { btnBack.style.display = 'none'; btnNext.innerHTML = 'Cari Tempat <i class="fas fa-search"></i>'; priceInfo.style.display = 'none'; }
+        else if(currentStep === 2) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Lanjut Menu <i class="fas fa-arrow-right"></i>'; priceInfo.style.display = 'none'; }
+        else if(currentStep === 3) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Lanjut Data <i class="fas fa-arrow-right"></i>'; priceInfo.style.display = 'flex'; }
+        else if(currentStep === 4) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>'; priceInfo.style.display = 'none'; }
     }
 
-    // --- LOGIC AVAILABILITY ---
     async function checkAvailability() {
         const dateVal = document.getElementById('inputDate').value;
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
         const container = document.getElementById('locationList');
-        
         container.innerHTML = '<div class="spinner" style="margin:20px auto;"></div>';
 
         try {
@@ -718,100 +620,43 @@
                 const capacity = loc.capacity;
                 const remaining = capacity - used;
                 let isFull = remaining < paxVal;
-                
-                // Logic Full Blok
                 let customError = "";
-                if(loc.name.toLowerCase().includes("full blok") && paxVal < 200) {
-                    isFull = true;
-                    customError = "Min. 200 Orang";
-                }
-
-                // Capacity Badge Color
+                if(loc.name.toLowerCase().includes("full blok") && paxVal < 200) { isFull = true; customError = "Min. 200 Orang"; }
+                
                 let capClass = "cap-safe";
-                let capText = `Sisa ${remaining} kursi`;
-                if(remaining <= 0) { capClass = "cap-full"; capText = "PENUH"; }
-                else if(remaining < 10) { capClass = "cap-warn"; capText = `Sisa ${remaining} kursi`; }
-
+                if(remaining <= 0) capClass = "cap-full";
+                
                 const imageUrl = locationImages[loc.name] || defaultImage;
-
                 const div = document.createElement('div');
                 div.className = `location-option ${isFull ? 'disabled' : ''}`;
                 if(selectedLocationName === loc.name && !isFull) div.classList.add('selected');
-
                 div.innerHTML = `
                     <div class="loc-thumb-wrapper">
                         <img src="${imageUrl}" class="loc-thumb-img" loading="lazy">
-                        ${customError ? `<span style="position:absolute; bottom:0; width:100%; background:rgba(231,76,60,0.9); color:white; font-size:0.7rem; text-align:center; padding:3px;">${customError}</span>` : ''}
+                        ${customError ? `<span style="position:absolute; bottom:0; width:100%; background:rgba(231,76,60,0.9); color:white; font-size:0.7rem; text-align:center;">${customError}</span>` : ''}
                     </div>
                     <div class="loc-content">
                         <span class="loc-name">${loc.name}</span>
-                        <span class="cap-badge ${capClass}">${capText}</span>
-                        <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')"><i class="fas fa-images"></i> Lihat Foto</button>
+                        <span class="cap-badge ${capClass}">${remaining<=0?'PENUH':`Sisa ${remaining}`}</span>
+                        <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')"><i class="fas fa-images"></i> Foto</button>
                     </div>
                     <div style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer;" onclick="selectLocation('${loc.name}', this)"></div>
                 `;
                 container.appendChild(div);
             });
-        } catch(e) { console.error(e); }
+        } catch(e) {}
     }
 
-    function selectLocation(name, element) {
+    function selectLocation(name, el) {
         selectedLocationName = name;
-        document.querySelectorAll('.location-option').forEach(el => el.classList.remove('selected'));
-        // Find parent .location-option
-        element.closest('.location-option').classList.add('selected');
+        document.querySelectorAll('.location-option').forEach(e => e.classList.remove('selected'));
+        el.closest('.location-option').classList.add('selected');
     }
 
-    // --- MENU LOGIC WITH BADGES ---
-    function updateQty(name, change, safeCat) {
-        const id = cleanId(name);
-        const current = selectedMenus[name] || 0;
-        const next = current + change;
-        
-        if(next < 0) return;
-        
-        if(next === 0) delete selectedMenus[name];
-        else selectedMenus[name] = next;
-
-        const el = document.getElementById(`qty-${id}`);
-        if(el) el.textContent = next;
-
-        // Update Total
-        const total = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
-        document.getElementById('totalItemText').textContent = `${total} Menu`;
-
-        // Update Category Badge
-        updateCategoryBadge(safeCat);
-    }
-    
-    function updateCategoryBadge(safeCat) {
-        // Find all menus in this category (re-loop simple way or checking current selection)
-        // Optimization: Just check selectedMenus keys
-        let catCount = 0;
-        // Kita butuh tau menu mana saja yg masuk kategori ini.
-        // Karena struktur data terpisah, kita filter selectedMenus
-        for(let key in selectedMenus) {
-             // Cek jika key ini masuk kategori safeCat
-             // Ini agak tricky tanpa akses langsung ke menu object, tapi kita bisa pakai categorizeMenu
-             // Reformat category name from function to match safeCat
-             let c = categorizeMenu(key).replace(/\s+/g, '-');
-             if(c === safeCat) catCount += selectedMenus[key];
-        }
-        
-        const badge = document.getElementById(`badge-${safeCat}`);
-        if(badge) {
-            badge.textContent = catCount;
-            badge.style.display = catCount > 0 ? 'inline-block' : 'none';
-        }
-    }
-
-    function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
-
-    // --- SUBMIT ---
     async function submitReservation() {
         Swal.showLoading();
         try {
-            const data = {
+            await db.collection('reservation_requests').add({
                 date: document.getElementById('inputDate').value,
                 jam: document.getElementById('inputTime').value,
                 jumlah: parseInt(document.getElementById('inputPax').value),
@@ -821,34 +666,15 @@
                 tambahan: document.getElementById('inputNote').value,
                 menus: Object.entries(selectedMenus).map(([k,v]) => ({name:k, quantity:v})),
                 status: 'pending',
-                via: 'Web App V4',
+                via: 'Web App V5',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            
-            await db.collection('reservation_requests').add(data);
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Permintaan Terkirim!',
-                html: 'Mohon tunggu, admin kami akan menghubungi <b>WhatsApp Anda</b> untuk konfirmasi ketersediaan.',
-                confirmButtonColor: 'var(--primary)'
-            }).then(() => window.location.reload());
-
-        } catch(e) {
-            Swal.fire('Ups, Error', 'Terjadi kesalahan jaringan. Silakan coba lagi.', 'error');
-        }
+            });
+            Swal.fire({ icon: 'success', title: 'Terkirim!', text: 'Admin akan menghubungi WhatsApp Anda.', confirmButtonColor: 'var(--primary)' }).then(() => window.location.reload());
+        } catch(e) { Swal.fire('Error', 'Gagal koneksi.', 'error'); }
     }
 
-    function openImage(url, caption) {
-        // Stop bubbling
-        event.stopPropagation();
-        document.getElementById('imgModal').style.display = 'flex';
-        document.getElementById('modalImg').src = url;
-        document.getElementById('modalCaption').textContent = caption;
-    }
-    function closeImage() {
-        document.getElementById('imgModal').style.display = 'none';
-    }
+    function openImage(url, caption) { event.stopPropagation(); document.getElementById('imgModal').style.display = 'flex'; document.getElementById('modalImg').src = url; document.getElementById('modalCaption').textContent = caption; }
+    function closeImage() { document.getElementById('imgModal').style.display = 'none'; }
   </script>
 </body>
 </html>
