@@ -571,7 +571,7 @@
             el.classList.toggle('active', (idx + 1) === currentStep);
             el.classList.toggle('completed', (idx + 1) < currentStep);
         });
-        document.getElementById('headerTitle').textContent = ["Halo, Halo, Silahkan pilih waktu reservasi Anda", "Pilih Tempat Duduk", "Pilih Menu Favorit", "Isi Data Diri"][currentStep-1];
+        document.getElementById('headerTitle').textContent = ["Halo, Silahkan pilih waktu reservasi Anda", "Pilih Tempat Duduk", "Pilih Menu Favorit", "Isi Data Diri"][currentStep-1];
         
         const btnNext = document.getElementById('btnNext');
         const btnBack = document.getElementById('btnBack');
