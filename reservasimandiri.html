@@ -128,17 +128,15 @@
     .cap-safe { background: #e8f5e9; color: #27ae60; }
     .cap-full { background: #ffebee; color: #c0392b; }
     
-    /* --- UPDATE: GAYA TOMBOL LIHAT FOTO --- */
     .btn-loc-view { 
-        background: var(--primary); /* Warna Tema Utama */
-        color: white;               /* Teks Putih */
+        background: var(--primary); color: white;
         border: none; width: 100%; padding: 10px; 
         border-radius: 10px; font-size: 0.85rem; font-weight: 600; margin-top: auto; cursor: pointer;
         position: relative; z-index: 10; transition: 0.2s;
         display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-loc-view:hover { 
-        background: var(--primary-dark); /* Lebih gelap saat hover */
+        background: var(--primary-dark);
         transform: translateY(-2px);
         box-shadow: 0 4px 10px rgba(42, 157, 143, 0.3);
     }
@@ -583,6 +581,7 @@
         else if(currentStep === 4) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>'; priceInfo.style.display = 'none'; }
     }
 
+    // --- CHECK AVAILABILITY LOGIC (UPDATED) ---
     async function checkAvailability() {
         const dateVal = document.getElementById('inputDate').value;
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
@@ -592,19 +591,50 @@
         try {
             const snapshot = await db.collection('reservations').where('date', '==', dateVal).get();
             const usageMap = {};
+            
+            // --- LOGIKA BARU: Cek Status Full Blok ---
+            let isLantai1FullBooked = false;
+
             snapshot.forEach(doc => {
                 const d = doc.data();
-                if(d.tempat) usageMap[d.tempat] = (usageMap[d.tempat] || 0) + (parseInt(d.jumlah) || 0);
+                if(d.tempat) {
+                    usageMap[d.tempat] = (usageMap[d.tempat] || 0) + (parseInt(d.jumlah) || 0);
+                    
+                    // Cek apakah ada reservasi untuk Full Blok lantai 1
+                    if (d.tempat.toLowerCase().includes("lantai 1 full blok")) {
+                        isLantai1FullBooked = true;
+                    }
+                }
             });
+            // ------------------------------------------
 
             container.innerHTML = '';
             locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
+                const locNameLower = loc.name.toLowerCase();
                 const used = usageMap[loc.name] || 0;
-                const capacity = loc.capacity;
-                const remaining = capacity - used;
+                let capacity = loc.capacity;
+                let remaining = capacity - used;
                 let isFull = remaining < paxVal;
                 let customError = "";
-                if(loc.name.toLowerCase().includes("full blok") && paxVal < 200) { isFull = true; customError = "Min. 200 Orang"; }
+
+                // --- LOGIKA BARU: Override jika Full Blok dipesan ---
+                // Jika Lantai 1 Full Blok sudah dipesan, maka bagian Depan, Tengah, dan Belakang dianggap PENUH
+                if (isLantai1FullBooked) {
+                    if (locNameLower.includes("lantai 1 depan") || 
+                        locNameLower.includes("lantai 1 tengah") || 
+                        locNameLower.includes("lantai 1 belakang")) {
+                        
+                        isFull = true;
+                        remaining = 0; // Set sisa 0 agar label menjadi "PENUH"
+                    }
+                }
+                // ----------------------------------------------------
+
+                // Logika existing untuk validasi Full Blok (min 200 orang)
+                if(locNameLower.includes("full blok") && paxVal < 200) { 
+                    isFull = true; 
+                    customError = "Min. 200 Orang"; 
+                }
                 
                 let capClass = "cap-safe";
                 if(remaining <= 0) capClass = "cap-full";
@@ -612,7 +642,9 @@
                 const imageUrl = locationImages[loc.name] || defaultImage;
                 const div = document.createElement('div');
                 div.className = `location-option ${isFull ? 'disabled' : ''}`;
+                // Hapus seleksi jika lokasi tiba-tiba jadi full
                 if(selectedLocationName === loc.name && !isFull) div.classList.add('selected');
+                
                 div.innerHTML = `
                     <div class="loc-thumb-wrapper">
                         <img src="${imageUrl}" class="loc-thumb-img" loading="lazy">
@@ -629,7 +661,10 @@
                 `;
                 container.appendChild(div);
             });
-        } catch(e) {}
+        } catch(e) {
+            console.error(e);
+            container.innerHTML = '<p style="text-align:center; color:red;">Gagal memuat data.</p>';
+        }
     }
 
     function selectLocation(name, el) {
