@@ -108,7 +108,23 @@
             opacity: 1;
         }
 
-        /* --- CSS MENU GRID DASHBOARD (BARU) --- */
+        /* --- FRAME OVERLAY (BARU) --- */
+        .frame-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30%; /* Ukuran default frame */
+            height: auto;
+            z-index: 20; /* Lebih tinggi dari slide-image */
+            pointer-events: none; /* Klik tembus ke bawah */
+        }
+        @media screen and (max-width: 480px) {
+            .frame-overlay {
+                width: 40%; /* Ukuran lebih besar di HP agar terlihat */
+            }
+        }
+
+        /* --- CSS MENU GRID DASHBOARD --- */
         .menu-grid-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr); /* 2 Kolom */
@@ -129,7 +145,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: transform 0.2s, box-shadow 0.2s;
             height: 100%;
-            aspect-ratio: 1.3 / 1; /* Agar bentuknya agak kotak persegi panjang */
+            aspect-ratio: 1.3 / 1; 
         }
 
         .menu-card:active {
@@ -175,8 +191,6 @@
             from { box-shadow: 0px 0px 5px rgba(255, 152, 0, 0.5); }
             to { box-shadow: 0px 0px 15px rgba(255, 152, 0, 1); }
         }
-
-        /* --- END CSS GRID --- */
 
         /* FLOATING BUTTON WHATSAPP */
         #page-home .floating-button {
@@ -323,6 +337,8 @@
         <div class="header-gallery"><img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752467234/IMG_5184_qcsvrt.jpg" alt="Gallery Image" /></div>
         <div class="main-container">
             <div class="slideshow-container">
+                <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1765194271/IMG_7534_xbo5fc.png" class="frame-overlay" alt="Frame Decoration">
+                
                 <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5218_k3sgqn.jpg" class="slide-image" alt="Suasana Dolan Sawah 1">
                 <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5217_ui0bir.jpg" class="slide-image" alt="Suasana Dolan Sawah 2">
                 <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5223_gaiovo.jpg" class="slide-image" alt="Suasana Dolan Sawah 3">
@@ -524,18 +540,28 @@
                 document.querySelector('.floating-button').href = data.umum.linkWA; 
                 document.querySelector('#floating-member-button').href = data.umum.linkMember; 
                 
-                // Update link tombol Cek Ketersediaan (yang baru)
                 const cekButton = document.querySelector('.full-width-btn');
                 if(cekButton) cekButton.href = data.umum.linkKetersediaan;
             }
             
-            // 2. Homepage Slideshow
+            // 2. Homepage Slideshow (DIPERBAIKI UNTUK FRAME)
             if (data.slideshow && data.slideshow.length > 0) {
                 const slideshowContainer = document.querySelector('.slideshow-container');
-                slideshowContainer.innerHTML = '';
+                
+                // URL Frame Tetap
+                const frameUrl = "https://res.cloudinary.com/dn60ib3ur/image/upload/v1765194271/IMG_7534_xbo5fc.png";
+                
+                // Mulai string konten dengan gambar Frame
+                let newContent = `<img src="${frameUrl}" class="frame-overlay" alt="Frame Decoration">`;
+                
+                // Tambahkan gambar slide dari config
                 data.slideshow.forEach((url, index) => {
-                    slideshowContainer.innerHTML += `<img src="${url}" class="slide-image" alt="Suasana Dolan Sawah ${index + 1}">`;
+                    newContent += `<img src="${url}" class="slide-image" alt="Suasana Dolan Sawah ${index + 1}">`;
                 });
+                
+                // Masukkan semua ke container
+                slideshowContainer.innerHTML = newContent;
+
                 if (slideshowContainer.querySelector('.slide-image')) {
                     slideshowContainer.querySelector('.slide-image').classList.add('active');
                 }
