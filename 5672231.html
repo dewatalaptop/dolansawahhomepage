@@ -415,42 +415,78 @@
         }).join('');
     }
 
-        async function approveRequest(id) {
+            async function approveRequest(id) {
         const req = requestsCache.find(r => r.id === id);
         if(!req) return;
 
-        const confirm = await Swal.fire({
-            title: 'Terima Reservasi?',
-            text: `Setujui reservasi atas nama ${req.nama}? Admin akan otomatis terbuka untuk edit data.`,
-            icon: 'question',
+        // 1. MUNCULKAN POPUP INPUT DP & TIPE BAYAR
+        const { value: formValues } = await Swal.fire({
+            title: `Approve: ${req.nama}`,
+            text: 'Masukkan detail DP sebelum menyimpan:',
+            html: `
+                <div style="text-align:left; font-size:0.9rem; margin-bottom:5px; font-weight:600;">Nominal DP (Rp)</div>
+                <input id="swal-input-dp" type="number" class="swal2-input" placeholder="Contoh: 100000" style="margin: 0 0 15px 0;">
+                
+                <div style="text-align:left; font-size:0.9rem; margin-bottom:5px; font-weight:600;">Metode Pembayaran</div>
+                <select id="swal-input-type" class="swal2-select" style="display:block; width:100%; margin: 0; padding: .625em 2em .625em 1em;">
+                    <option value="">- Pilih Metode -</option>
+                    <option value="Transfer BCA">Transfer BCA</option>
+                    <option value="Transfer Mandiri">Transfer Mandiri</option>
+                    <option value="Transfer BRI">Transfer BRI</option>
+                    <option value="QRIS">QRIS</option>
+                    <option value="Cash">Cash</option>
+                </select>
+            `,
             showCancelButton: true,
-            confirmButtonText: 'Ya, Terima',
-            confirmButtonColor: 'var(--success)'
+            confirmButtonText: 'Simpan & Buka Admin',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: 'var(--success)',
+            focusConfirm: false,
+            preConfirm: () => {
+                // Ambil nilai dari input form popup
+                return {
+                    dp: document.getElementById('swal-input-dp').value,
+                    tipeDp: document.getElementById('swal-input-type').value
+                }
+            }
         });
 
-        if (confirm.isConfirmed) {
+        // 2. PROSES JIKA TOMBOL SIMPAN DIKLIK
+        if (formValues) {
             try {
-                // 1. Pindahkan ke koleksi utama
-                const newData = { ...req, status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp() };
+                // Gabungkan data request lama dengan data DP baru
+                const newData = { 
+                    ...req, 
+                    status: 'approved', 
+                    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    dp: parseInt(formValues.dp) || 0, // Masukkan nilai DP
+                    tipeDp: formValues.tipeDp         // Masukkan Tipe DP
+                };
                 delete newData.id; // Hapus ID lama
 
+                // Simpan ke database utama (Data sudah lengkap dengan DP!)
                 await db.collection('reservations').add(newData);
+                
+                // Hapus dari daftar request
                 await db.collection('reservation_requests').doc(id).delete();
 
-                // 2. LOGIKA BARU: Buka Website Admin di Tab Baru
-                // Membawa data tanggal dan nama tamu di link
+                // 3. BUKA WEBSITE ADMIN OTOMATIS
+                // Karena data sudah lengkap, saat admin terbuka, info DP sudah ada.
                 const targetUrl = `https://dewatalaptop.github.io/reservasids?autoOpen=true&date=${req.date}&search=${encodeURIComponent(req.nama)}`;
                 window.open(targetUrl, '_blank');
 
-                // 3. Pesan Sukses
+                // Notifikasi Sukses
                 const Toast = Swal.mixin({
                     toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true
                 });
-                Toast.fire({ icon: 'success', title: 'Berhasil! Membuka Admin...' });
+                Toast.fire({ icon: 'success', title: 'Data tersimpan! Membuka Admin...' });
 
-            } catch (e) { Swal.fire('Error', e.message, 'error'); }
+            } catch (e) { 
+                Swal.fire('Error', e.message, 'error'); 
+            }
         }
     }
+
 
 
     async function rejectRequest(id) {
