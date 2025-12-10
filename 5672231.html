@@ -415,13 +415,13 @@
         }).join('');
     }
 
-    async function approveRequest(id) {
+        async function approveRequest(id) {
         const req = requestsCache.find(r => r.id === id);
         if(!req) return;
 
         const confirm = await Swal.fire({
             title: 'Terima Reservasi?',
-            text: `Setujui reservasi atas nama ${req.nama}?`,
+            text: `Setujui reservasi atas nama ${req.nama}? Admin akan otomatis terbuka untuk edit data.`,
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Ya, Terima',
@@ -430,20 +430,28 @@
 
         if (confirm.isConfirmed) {
             try {
-                // Pindahkan ke koleksi utama
+                // 1. Pindahkan ke koleksi utama
                 const newData = { ...req, status: 'approved', approvedAt: firebase.firestore.FieldValue.serverTimestamp() };
                 delete newData.id; // Hapus ID lama
 
                 await db.collection('reservations').add(newData);
                 await db.collection('reservation_requests').doc(id).delete();
 
-                Swal.fire('Berhasil', 'Reservasi disetujui dan masuk jadwal.', 'success');
-                // Otomatis buka WA untuk konfirmasi (Opsional)
-                // wa(req.nomorHp, req.nama, `Halo Kak ${req.nama}, reservasi Anda di Dolan Sawah pada tgl ${req.date} jam ${req.jam} sudah kami *SETUJUI*. Kami tunggu kedatangannya ya! 🙏`);
+                // 2. LOGIKA BARU: Buka Website Admin di Tab Baru
+                // Membawa data tanggal dan nama tamu di link
+                const targetUrl = `https://dewatalaptop.github.io/reservasids?autoOpen=true&date=${req.date}&search=${encodeURIComponent(req.nama)}`;
+                window.open(targetUrl, '_blank');
+
+                // 3. Pesan Sukses
+                const Toast = Swal.mixin({
+                    toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true
+                });
+                Toast.fire({ icon: 'success', title: 'Berhasil! Membuka Admin...' });
 
             } catch (e) { Swal.fire('Error', e.message, 'error'); }
         }
     }
+
 
     async function rejectRequest(id) {
         const confirm = await Swal.fire({
