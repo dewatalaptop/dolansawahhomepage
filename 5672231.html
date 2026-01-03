@@ -331,6 +331,7 @@
         });
     }
 
+    // --- FUNGSI RENDER INBOX (DIPERBARUI) ---
     function renderInbox() {
         const badge = document.getElementById('sidebar-badge');
         const container = document.getElementById('inbox-container');
@@ -340,20 +341,64 @@
             badge.textContent = requestsCache.length; badge.style.display = 'inline-block';
         } else badge.style.display = 'none';
 
-        container.innerHTML = requestsCache.map(r => `
+        container.innerHTML = requestsCache.map(r => {
+            // 1. Tampilan Menu
+            let menuDisplay = '<div style="color:#999; font-style:italic;">Tidak ada menu tambahan</div>';
+            if (r.menus && Array.isArray(r.menus) && r.menus.length > 0) {
+                menuDisplay = r.menus.map(m => `
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #eee; padding:2px 0;">
+                        <span>${m.name}</span>
+                        <b>x${m.quantity}</b>
+                    </div>
+                `).join('');
+            }
+
+            // 2. Tampilan Note
+            const userNote = r.note || r.catatan || r.pesan || '-';
+
+            return `
             <div class="request-card">
-                <div style="display:flex; justify-content:space-between"><b>${r.nama}</b><small>${r.via || 'Web'}</small></div>
-                <div style="font-size:0.85rem; margin:10px 0; color:#555;">
-                    <i class="fas fa-calendar"></i> ${r.date} | <i class="fas fa-clock"></i> ${r.jam}<br>
-                    <i class="fas fa-users"></i> ${r.jumlah} Orang | <i class="fas fa-map-marker-alt"></i> ${r.tempat}
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                    <div>
+                        <b style="font-size:1.1rem; color:var(--secondary);">${r.nama}</b>
+                        <div style="font-size:0.85rem; color:var(--primary); margin-top:2px;">
+                            <i class="fab fa-whatsapp"></i> ${r.nomorHp || '-'}
+                        </div>
+                    </div>
+                    <span style="background:#f3f4f6; padding:2px 8px; border-radius:4px; font-size:0.75rem; color:#666;">${r.via || 'Web'}</span>
                 </div>
+                
+                <div style="font-size:0.85rem; color:#555; display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                    <div><i class="fas fa-calendar" style="width:16px;"></i> ${r.date}</div>
+                    <div><i class="fas fa-clock" style="width:16px;"></i> ${r.jam}</div>
+                    <div><i class="fas fa-users" style="width:16px;"></i> ${r.jumlah} Org</div>
+                    <div><i class="fas fa-map-marker-alt" style="width:16px;"></i> ${r.tempat}</div>
+                </div>
+
+                <div style="background: #f9fafb; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 15px; font-size: 0.85rem;">
+                    <div style="margin-bottom: 10px;">
+                        <strong style="color:var(--primary-dark); display:block; margin-bottom:5px; font-size:0.8rem; text-transform:uppercase;">
+                            <i class="fas fa-sticky-note"></i> Note:
+                        </strong>
+                        <div style="background:#fff; padding:6px; border-radius:4px; border:1px solid #eee; color:#333;">
+                            "${userNote}"
+                        </div>
+                    </div>
+                    <div>
+                        <strong style="color:var(--primary-dark); display:block; margin-bottom:5px; font-size:0.8rem; text-transform:uppercase;">
+                            <i class="fas fa-utensils"></i> Menu:
+                        </strong>
+                        <div style="padding:0 5px;">${menuDisplay}</div>
+                    </div>
+                </div>
+
                 <div class="req-actions">
                     <button class="btn-chat" onclick="prepareChat('${r.id}')"><i class="fab fa-whatsapp"></i> Chat</button>
                     <button class="btn-reject" onclick="deleteDoc('reservation_requests', '${r.id}')">Tolak</button>
                     <button class="btn-accept" onclick="approveRequest('${r.id}')">Terima</button>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     // --- WHATSAPP MESSAGE FORMAT ---
@@ -374,6 +419,7 @@
         const ppn = Math.round(totalFood * 0.1);
         const total = totalFood + ppn;
         const dp = Math.round(total * 0.5);
+        const userNote = r.note || r.catatan || r.pesan || '';
 
         const msg = `Halo Kak *${r.nama}* 👋,\n` +
             `Terima kasih telah melakukan reservasi di *Dolan Sawah*.\n\n` +
@@ -381,8 +427,9 @@
             `🗓 Tanggal: ${r.date}\n` +
             `⏰ Jam: ${r.jam}\n` +
             `👥 Jumlah: ${r.jumlah} Orang\n` +
-            `📍 Tempat: ${r.tempat}\n\n` +
-            `*Rincian Pesanan:*\n${menuDetails || "- Belum ada menu -\n"}\n` +
+            `📍 Tempat: ${r.tempat}\n` +
+            (userNote ? `📝 Note: ${userNote}\n` : '') +
+            `\n*Rincian Pesanan:*\n${menuDetails || "- Belum ada menu -\n"}\n` +
             `----------------------------------\n` +
             `Subtotal: Rp ${formatIDR(totalFood)}\n` +
             `PPN (10%): Rp ${formatIDR(ppn)}\n` +
