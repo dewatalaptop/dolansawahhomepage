@@ -354,7 +354,8 @@
             }
 
             // 2. Tampilan Note
-            const userNote = r.note || r.catatan || r.pesan || '-';
+            // DIPERBARUI: Menambahkan r.tambahan agar sinkron dengan website user
+            const userNote = r.note || r.catatan || r.pesan || r.tambahan || '-';
 
             return `
             <div class="request-card">
@@ -419,7 +420,9 @@
         const ppn = Math.round(totalFood * 0.1);
         const total = totalFood + ppn;
         const dp = Math.round(total * 0.5);
-        const userNote = r.note || r.catatan || r.pesan || '';
+        
+        // DIPERBARUI: Menambahkan r.tambahan juga di pesan WA
+        const userNote = r.note || r.catatan || r.pesan || r.tambahan || '';
 
         const msg = `Halo Kak *${r.nama}* 👋,\n` +
             `Terima kasih telah melakukan reservasi di *Dolan Sawah*.\n\n` +
