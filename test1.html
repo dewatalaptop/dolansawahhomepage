@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <title>Mini Site Dolan Sawah - Firebase Connected</title>
+    <title>Mini Site Dolan Sawah - Full Dynamic Admin</title>
     <style>
         /* =========================================
            1. CSS ORIGINAL WEBSITE
@@ -35,7 +35,7 @@
         .loading-text { font-size: 18px; margin-top: 10px; font-weight: bold; color: #ff9800; }
 
         /* HEADER & CONTAINER */
-        #page-home .header-gallery { width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; background: white; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); cursor: pointer; /* Cursor pointer untuk indikasi klik admin */ }
+        #page-home .header-gallery { width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; background: white; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); cursor: pointer; }
         #page-home .header-gallery img { width: 100%; height: auto; max-height: 200px; object-fit: cover; }
         #page-home .main-container { max-width: 800px; margin: 0 auto; padding: 220px 20px 80px; background: white; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15); position: relative; }
         
@@ -125,7 +125,7 @@
         @media screen and (max-width: 480px) { #page-home .main-container { padding-top: 160px; padding-left: 15px; padding-right: 15px; } #page-reguler .item-dots { display: none; } }
 
         /* =========================================
-           2. CSS ADMIN DASHBOARD (BARU)
+           2. CSS ADMIN DASHBOARD (IMPROVED)
            ========================================= */
         .admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
         .admin-box { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 0 20px rgba(255,152,0, 0.5); }
@@ -138,10 +138,15 @@
         .admin-dashboard { display: none; position: fixed; top: 0; right: 0; width: 100%; max-width: 400px; height: 100%; background: white; z-index: 9000; overflow-y: auto; padding: 20px; box-shadow: -5px 0 15px rgba(0,0,0,0.2); }
         .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ff9800; padding-bottom: 10px; }
         .upload-group { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; text-align: left; background: #f9f9f9; }
-        .upload-group h3 { font-size: 16px; margin-bottom: 10px; color: #e65100; }
-        .preview-img { width: 80px; height: 80px; object-fit: cover; margin: 5px; border: 1px solid #ccc; border-radius: 5px; }
+        .upload-group h3 { font-size: 16px; margin-bottom: 10px; color: #e65100; border-bottom: 1px solid #eee; padding-bottom:5px;}
+        .preview-img { width: 80px; height: 80px; object-fit: cover; margin: 5px; border: 1px solid #ccc; border-radius: 5px; display: inline-block;}
         .btn-save { background: #4caf50; color: white; padding: 15px; font-size: 16px; border: none; border-radius: 8px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; margin-bottom: 30px; }
         .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .admin-item-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .admin-item-info { flex-grow: 1; }
+        .btn-danger { background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn-add { background: #2196f3; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -161,10 +166,10 @@
 
     <div id="admin-dashboard" class="admin-dashboard">
         <div class="dashboard-header">
-            <h2>Dashboard</h2>
+            <h2>Dashboard Admin</h2>
             <button onclick="closeDashboard()" style="background:red; color:white; border:none; padding:5px 10px; width:auto; margin:0;">X</button>
         </div>
-        <p style="font-size:12px; color:#666; margin-bottom:15px;">Klik "Choose File" untuk mengganti gambar, tunggu upload selesai, lalu klik tombol SIMPAN di paling bawah.</p>
+        <p style="font-size:12px; color:#666; margin-bottom:15px;">Kelola Header, Menu Jeep, dan Galeri secara fleksibel.</p>
         <div id="admin-content-area">
             <p>Memuat konfigurasi...</p>
         </div>
@@ -173,12 +178,12 @@
 
     <div id="page-home" class="page-content">
         <div class="header-gallery">
-            <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1752467234/IMG_5184_qcsvrt.jpg" alt="Header Image" />
+            <img src="" alt="Header Image" />
         </div>
         <div class="main-container">
             <div class="slideshow-container">
                 <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/v1765194271/IMG_7534_xbo5fc.png" class="frame-overlay" alt="Frame Decoration">
-                </div>
+            </div>
 
             <div class="menu-grid-container">
                 <a onclick="showPage('page-reguler')" class="menu-card bg-orange">
@@ -251,23 +256,7 @@
             <h1>Paket Jeep Adventure</h1>
             <p class="subtitle">Jelajahi keindahan alam dengan paket wisata Jeep kami. Klik paket untuk melihat brosur.</p>
             <div class="jeep-packages-grid">
-                 <div class="jeep-package-card" onclick="openFullscreenImage('https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066030/IMG_6559_bvqd6w.jpg')">
-                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066030/IMG_6559_bvqd6w.jpg">
-                    <div class="card-content"><h3>Paket Jeep Short Trip</h3><span>Lihat Brosur</span></div>
                 </div>
-                 <div class="jeep-package-card" onclick="openFullscreenImage('https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066034/IMG_6560_laiobh.jpg')">
-                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066034/IMG_6560_laiobh.jpg">
-                    <div class="card-content"><h3>Paket Jeep Medium Trip</h3><span>Lihat Brosur</span></div>
-                </div>
-                <div class="jeep-package-card" onclick="openFullscreenImage('https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066034/IMG_6561_ljijy0.jpg')">
-                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066034/IMG_6561_ljijy0.jpg">
-                    <div class="card-content"><h3>Paket Jeep Off-road Kering</h3><span>Lihat Brosur</span></div>
-                </div>
-                <div class="jeep-package-card" onclick="openFullscreenImage('https://res.cloudinary.com/dn60ib3ur/image/upload/v1760066035/IMG_6563_xg0oov.jpg')">
-                    <img src="https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066035/IMG_6563_xg0oov.jpg">
-                    <div class="card-content"><h3>Paket Jeep Long Trip</h3><span>Lihat Brosur</span></div>
-                </div>
-            </div>
         </div>
     </div>
     
@@ -318,14 +307,20 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // DEFAULT DATA (Jika Firebase Kosong)
+        // DEFAULT DATA (Struktur Baru yang Lebih Fleksibel)
         const defaultData = {
             umum: { headerImage: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752467234/IMG_5184_qcsvrt.jpg" },
             slideshow: [
                 "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5218_k3sgqn.jpg",
                 "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5217_ui0bir.jpg",
-                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5223_gaiovo.jpg",
-                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5225_zfzmsi.jpg"
+                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5223_gaiovo.jpg"
+            ],
+            // Data Jeep sekarang Array of Objects
+            jeepPackages: [
+                { title: "Paket Jeep Short Trip", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066030/IMG_6559_bvqd6w.jpg" },
+                { title: "Paket Jeep Medium Trip", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066034/IMG_6560_laiobh.jpg" },
+                { title: "Paket Jeep Off-road Kering", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066034/IMG_6561_ljijy0.jpg" },
+                { title: "Paket Jeep Long Trip", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066035/IMG_6563_xg0oov.jpg" }
             ],
             menuReservasiImg: {
                 prasmanan: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1754808317/E983BD8B-5D43-448A-9E32-DB52316FA7E8_ls3xed.jpg",
@@ -382,19 +377,21 @@
         // 3. LOAD DATA
         async function loadDataFromFirestore() {
             try {
-                const docRef = doc(db, "website_data", "main_config");
+                const docRef = doc(db, "website_data", "main_config_v2"); // Gunakan ID baru untuk struktur baru
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     globalConfigData = docSnap.data();
+                    // Merge jika ada field baru yang belum ada di database lama
+                    if(!globalConfigData.jeepPackages) globalConfigData.jeepPackages = defaultData.jeepPackages;
                 } else {
                     console.log("Menggunakan data default...");
-                    globalConfigData = defaultData; // Fallback ke data default
+                    globalConfigData = defaultData;
                 }
                 populatePage(globalConfigData);
             } catch (e) {
                 console.error("Error loading data:", e);
-                globalConfigData = defaultData; // Fallback jika error
+                globalConfigData = defaultData; 
                 populatePage(globalConfigData);
             }
             
@@ -425,7 +422,7 @@
                 startSlideshow();
             }
 
-            // Menu Images
+            // Menu Images (Static)
             if (data.menuReservasiImg) {
                 const map = {
                     'prasmanan': 'img-prasmanan', 'kembulan': 'img-kembulan', 'tumpeng': 'img-tumpeng',
@@ -436,12 +433,25 @@
                 }
             }
 
-            // Gallery
+            // Gallery (Dynamic)
             if (data.gallery) {
                 const galContainer = document.querySelector('.gallery');
                 galContainer.innerHTML = '';
                 data.gallery.forEach(url => {
                     galContainer.innerHTML += `<img src="${url}" onclick="openFullscreen(this)">`;
+                });
+            }
+
+            // Jeep Packages (Dynamic)
+            if (data.jeepPackages) {
+                const jeepContainer = document.querySelector('.jeep-packages-grid');
+                jeepContainer.innerHTML = '';
+                data.jeepPackages.forEach(pkg => {
+                    jeepContainer.innerHTML += `
+                        <div class="jeep-package-card" onclick="openFullscreenImage('${pkg.image}')">
+                            <img src="${pkg.image}">
+                            <div class="card-content"><h3>${pkg.title}</h3><span>Lihat Detail</span></div>
+                        </div>`;
                 });
             }
         }
@@ -459,7 +469,7 @@
             }, 4000);
         }
 
-        // 5. ADMIN DASHBOARD LOGIC
+        // 5. ADMIN DASHBOARD LOGIC (UPDATED)
         window.openDashboard = () => {
             document.getElementById('admin-dashboard').style.display = 'block';
             renderAdminForm();
@@ -470,32 +480,61 @@
             const area = document.getElementById('admin-content-area');
             let html = '';
             
-            // Header Edit
+            // A. Header
             html += `<div class="upload-group"><h3>Header Utama</h3>
                 <img src="${globalConfigData.umum?.headerImage}" class="preview-img" id="prev-header">
                 <input type="file" onchange="uploadFile(this, 'header')"></div>`;
             
-            // Slideshow Edit
-            html += `<div class="upload-group"><h3>Slideshow</h3>`;
+            // B. Slideshow
+            html += `<div class="upload-group"><h3>Slideshow (Carousel)</h3>`;
             globalConfigData.slideshow.forEach((url, i) => {
-                html += `<div style="margin-bottom:10px;"><img src="${url}" class="preview-img" id="prev-slide-${i}">
-                <input type="file" onchange="uploadFile(this, 'slide', ${i})">
-                <button onclick="deleteSlide(${i})" style="background:#f44336; padding:5px; color:white; border:none;">Hapus</button></div>`;
+                html += `<div class="admin-item-row"><img src="${url}" class="preview-img" id="prev-slide-${i}">
+                <div class="admin-item-info"><input type="file" onchange="uploadFile(this, 'slide', ${i})"></div>
+                <button class="btn-danger" onclick="deleteArrayItem('slideshow', ${i})">Hapus</button></div>`;
             });
-            html += `<button onclick="addSlideSlot()" style="background:#2196f3; color:white; padding:5px;">+ Tambah Slide</button></div>`;
+            html += `<button class="btn-add" onclick="addArrayItem('slideshow')">+ Tambah Slide Baru</button></div>`;
 
-            // Menu Edit
-            html += `<div class="upload-group"><h3>Gambar Menu</h3>`;
+            // C. Menu Static
+            html += `<div class="upload-group"><h3>Gambar Menu Reservasi</h3>`;
             const menus = ['prasmanan','kembulan','tumpeng','rantang','rantangKuning','grill1','grill2'];
             menus.forEach(k => {
-                html += `<div><label>${k}</label><br><img src="${globalConfigData.menuReservasiImg[k]}" class="preview-img" id="prev-menu-${k}">
-                <input type="file" onchange="uploadFile(this, 'menu', '${k}')"></div>`;
+                html += `<div><label style="font-size:12px; font-weight:bold;">${k.toUpperCase()}</label><br>
+                <img src="${globalConfigData.menuReservasiImg[k]}" class="preview-img" id="prev-menu-${k}">
+                <input type="file" onchange="uploadFile(this, 'menu', '${k}')"></div><hr style="margin:10px 0; border:0; border-top:1px dashed #ddd;">`;
             });
             html += `</div>`;
+
+            // D. JEEP PACKAGES (DYNAMIC)
+            html += `<div class="upload-group"><h3>Paket Jeep Adventure</h3>`;
+            if(!globalConfigData.jeepPackages) globalConfigData.jeepPackages = [];
+            globalConfigData.jeepPackages.forEach((pkg, i) => {
+                html += `
+                <div class="admin-item-row" style="background:white; padding:10px; border:1px solid #eee;">
+                    <img src="${pkg.image}" class="preview-img" id="prev-jeep-${i}">
+                    <div class="admin-item-info">
+                        <input type="text" placeholder="Nama Paket" value="${pkg.title}" oninput="updateJeepTitle(${i}, this.value)">
+                        <input type="file" onchange="uploadFile(this, 'jeep_img', ${i})">
+                    </div>
+                    <button class="btn-danger" onclick="deleteArrayItem('jeepPackages', ${i})">Hapus</button>
+                </div>`;
+            });
+            html += `<button class="btn-add" onclick="addArrayItem('jeepPackages')">+ Tambah Paket Jeep Baru</button></div>`;
+
+            // E. GALERI LOKASI (DYNAMIC)
+            html += `<div class="upload-group"><h3>Galeri Lokasi</h3><div style="display:flex; flex-wrap:wrap; gap:5px;">`;
+            if(!globalConfigData.gallery) globalConfigData.gallery = [];
+            globalConfigData.gallery.forEach((url, i) => {
+                html += `<div style="position:relative; width:80px; height:80px;">
+                    <img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:5px;">
+                    <button onclick="deleteArrayItem('gallery', ${i})" style="position:absolute; top:0; right:0; background:red; color:white; border:none; width:20px; height:20px; font-size:10px; cursor:pointer;">X</button>
+                </div>`;
+            });
+            html += `</div><br><label>Upload Foto Baru:</label><input type="file" onchange="uploadFile(this, 'gallery_add')"></div>`;
             
             area.innerHTML = html;
         }
 
+        // FUNGSI UPLOAD
         window.uploadFile = async (input, type, key) => {
             const file = input.files[0];
             if(!file) return;
@@ -504,7 +543,7 @@
             btn.innerText = "UPLOADING..."; btn.disabled = true;
 
             try {
-                const storageRef = ref(storage, `images/${type}_${Date.now()}_${file.name}`);
+                const storageRef = ref(storage, `uploads/${type}_${Date.now()}_${file.name}`);
                 const snap = await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(snap.ref);
                 
@@ -513,31 +552,50 @@
                     document.getElementById('prev-header').src = url;
                 } else if (type === 'slide') {
                     globalConfigData.slideshow[key] = url;
-                    document.getElementById(`prev-slide-${key}`).src = url;
+                    renderAdminForm(); 
                 } else if (type === 'menu') {
                     globalConfigData.menuReservasiImg[key] = url;
                     document.getElementById(`prev-menu-${key}`).src = url;
+                } else if (type === 'jeep_img') {
+                    globalConfigData.jeepPackages[key].image = url;
+                    renderAdminForm();
+                } else if (type === 'gallery_add') {
+                    globalConfigData.gallery.push(url);
+                    renderAdminForm();
                 }
-                alert("Upload OK. Jangan lupa simpan.");
+                alert("Upload selesai! Klik SIMPAN di bawah untuk menerapkan.");
             } catch(e) { alert("Error: " + e.message); }
             finally { btn.innerText = "💾 SIMPAN PERUBAHAN KE WEBSITE"; btn.disabled = false; }
         };
 
-        window.addSlideSlot = () => {
-            globalConfigData.slideshow.push("https://via.placeholder.com/800");
+        // MANAJEMEN ARRAY (ADD/DELETE)
+        window.addArrayItem = (arrayName) => {
+            if(arrayName === 'slideshow') {
+                globalConfigData.slideshow.push("https://via.placeholder.com/800x400?text=Slide+Baru");
+            } else if (arrayName === 'jeepPackages') {
+                globalConfigData.jeepPackages.push({ title: "Paket Baru", image: "https://via.placeholder.com/400?text=Foto+Jeep" });
+            }
             renderAdminForm();
         };
-        window.deleteSlide = (i) => {
-            if(confirm("Hapus slide ini?")) {
-                globalConfigData.slideshow.splice(i, 1);
+
+        window.deleteArrayItem = (arrayName, index) => {
+            if(confirm("Yakin ingin menghapus item ini?")) {
+                if(arrayName === 'slideshow') globalConfigData.slideshow.splice(index, 1);
+                else if (arrayName === 'jeepPackages') globalConfigData.jeepPackages.splice(index, 1);
+                else if (arrayName === 'gallery') globalConfigData.gallery.splice(index, 1);
                 renderAdminForm();
             }
         };
 
+        window.updateJeepTitle = (index, val) => {
+            globalConfigData.jeepPackages[index].title = val;
+        };
+
+        // SAVE DATA
         window.saveConfigToFirestore = async () => {
             try {
-                await setDoc(doc(db, "website_data", "main_config"), globalConfigData);
-                alert("Berhasil disimpan!");
+                await setDoc(doc(db, "website_data", "main_config_v2"), globalConfigData);
+                alert("Berhasil disimpan! Halaman akan dimuat ulang.");
                 closeDashboard();
                 populatePage(globalConfigData);
             } catch(e) { alert("Gagal simpan: " + e.message); }
