@@ -98,10 +98,44 @@
         #page-reguler .menu-item:last-child { border-bottom: none; }
         #page-reguler .item-price { font-weight: bold; background-color: #f1c40f; padding: 3px 8px; border-radius: 5px; }
 
-        .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: none; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s; z-index: 5000; }
+        /* PERBAIKAN CSS UNTUK FULLSCREEN MODAL & TOMBOL CLOSE */
+        .fullscreen-modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.95); display: none; 
+            justify-content: center; align-items: center; 
+            opacity: 0; visibility: hidden; transition: opacity 0.3s; 
+            z-index: 5000; 
+        }
         .fullscreen-modal.show { display: flex; opacity: 1; visibility: visible; }
-        .fullscreen-modal img { max-width: 95%; max-height: 90%; border-radius: 5px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
-        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 24px; color: white; background: rgba(255,0,0,0.8); border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .fullscreen-modal img { 
+            max-width: 95%; max-height: 85%; 
+            border-radius: 5px; box-shadow: 0 0 20px rgba(255,255,255,0.2); 
+            z-index: 5001; /* Pastikan gambar di bawah tombol close */
+        }
+        .close-btn { 
+            position: absolute; 
+            top: 30px; 
+            right: 30px; 
+            font-size: 24px; 
+            color: white; 
+            background: rgba(255, 0, 0, 0.8); /* Warna Merah Transparan */
+            border: 2px solid white; /* Garis tepi putih */
+            border-radius: 50%; 
+            width: 45px; 
+            height: 45px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            z-index: 6000; /* LEBIH TINGGI DARI MODAL DAN GAMBAR */
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            transition: transform 0.2s;
+        }
+        .close-btn:hover {
+            transform: scale(1.1);
+            background: rgb(255, 0, 0);
+        }
         
         .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 4000; padding: 20px; animation: fadeInPopup 0.3s ease-out; }
         .popup-overlay.show { display: flex; }
@@ -268,7 +302,11 @@
         </div>
     </div>
     
-    <div class="fullscreen-modal" id="fullscreen-modal"><button class="close-btn" onclick="closeFullscreen()">X</button><img id="fullscreen-img" src="" alt="Gambar besar" referrerpolicy="no-referrer"></div>
+    <div class="fullscreen-modal" id="fullscreen-modal" onclick="closeFullscreen()">
+        <img id="fullscreen-img" src="" alt="Gambar besar" referrerpolicy="no-referrer" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="closeFullscreen()">✕</button>
+    </div>
+
     <div id="generic-popup" class="popup-overlay" onclick="closePopup()"><div class="popup-content" onclick="event.stopPropagation()"><h2 id="popup-title"></h2><div id="popup-body"></div><button id="popup-button" class="popup-button" onclick="closePopup()">Tutup</button></div></div>
     
     <div id="scroll-indicator">Scroll ke Bawah <span>↓</span></div>
@@ -376,36 +414,54 @@
             document.getElementById('open-dashboard-btn').style.display = user ? 'block' : 'none';
         });
 
-        // LOAD DATA
-        async function loadData() {
-            try {
-                const docRef = doc(db, "website_data", "master_config_v4");
-                const docSnap = await getDoc(docRef);
+        // GANTI FUNGSI loadData() YANG LAMA DENGAN INI:
 
-                if (docSnap.exists()) {
-                    globalConfig = docSnap.data();
-                    if(!globalConfig.general) globalConfig.general = defaultData.general;
-                    if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
-                    if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
-                } else {
-                    globalConfig = defaultData;
-                }
-                renderWebsite(globalConfig);
-            } catch (e) {
-                console.error("Error load data:", e);
-                globalConfig = defaultData; 
-                renderWebsite(globalConfig);
-            }
+async function loadData() {
+    try {
+        const docRef = doc(db, "website_data", "master_config_v4");
+        
+        // Tambahkan opsi 'source: default' agar mencoba ambil dari server dulu
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            console.log("Data ditemukan di Firebase!");
+            globalConfig = docSnap.data();
             
-            document.querySelector(".loading-fill").style.width = "100%";
-            document.querySelector(".loading-text").textContent = "100%";
-            setTimeout(() => {
-                document.querySelector(".loading-screen").style.display = "none";
-                const hash = window.location.hash.substring(1);
-                if(hash && document.getElementById(hash)) showPage(hash);
-                else showPage("page-home");
-            }, 500);
+            // Pengecekan data kosong untuk menjaga struktur
+            if(!globalConfig.general) globalConfig.general = defaultData.general;
+            if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
+            if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
+            if(!globalConfig.slideshow) globalConfig.slideshow = defaultData.slideshow;
+            if(!globalConfig.jeepPackages) globalConfig.jeepPackages = defaultData.jeepPackages;
+            if(!globalConfig.gallery) globalConfig.gallery = defaultData.gallery;
+
+            renderWebsite(globalConfig);
+        } else {
+            console.warn("Dokumen tidak ditemukan, menggunakan default.");
+            // Jika dokumen benar-benar tidak ada (belum pernah disimpan), baru pakai default
+            globalConfig = defaultData;
+            renderWebsite(globalConfig);
         }
+    } catch (e) {
+        // JANGAN SILENT! Tampilkan error di console dan alert jika perlu
+        console.error("GAGAL MEMUAT DATA:", e);
+        alert("Gagal mengambil data terbaru: " + e.message + "\nMenampilkan data default sementara.");
+        
+        globalConfig = defaultData; 
+        renderWebsite(globalConfig);
+    }
+    
+    // Hapus loading screen
+    document.querySelector(".loading-fill").style.width = "100%";
+    document.querySelector(".loading-text").textContent = "100%";
+    setTimeout(() => {
+        document.querySelector(".loading-screen").style.display = "none";
+        const hash = window.location.hash.substring(1);
+        if(hash && document.getElementById(hash)) showPage(hash);
+        else showPage("page-home");
+    }, 500);
+}
+
 
         // RENDER WEBSITE UTAMA
         function renderWebsite(data) {
