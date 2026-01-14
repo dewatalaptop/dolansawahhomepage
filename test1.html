@@ -324,14 +324,12 @@
                 "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465151/IMG_5179_gaqxnv.jpg",
                 "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465454/IMG_5180_ws8xwl.jpg"
             ],
-            // STRUKTUR BARU: MENU RESERVASI ARRAY
             reservationMenu: [
                 { title: "Paket Prasmanan", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1754808317/E983BD8B-5D43-448A-9E32-DB52316FA7E8_ls3xed.jpg", desc: "Minimal H-3 sebelum acara." },
                 { title: "Paket Kembulan", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461119/91d77689-1e31-4293-921e-3b52b6e61a2e_mb4ft3.jpg", desc: "Minimal pemesanan H-1." },
                 { title: "Tumpeng Nasi Kuning", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1757126294/IMG_6002_kmtqob.png", desc: "Minimal pemesanan H-1." },
                 { title: "Paket Rantang", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461212/ec438e76-f56a-417c-97f6-6b68cb62c85d_pw5uxi.jpg", desc: "Bisa dipesan dadakan." }
             ],
-            // STRUKTUR BARU: MENU REGULER BERKATEGORI
             regularMenu: [
                 {
                     category: "Daging, Ayam & Bebek",
@@ -381,13 +379,11 @@
         // LOAD DATA
         async function loadData() {
             try {
-                // Gunakan versi v4 untuk struktur data baru
                 const docRef = doc(db, "website_data", "master_config_v4");
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     globalConfig = docSnap.data();
-                    // Merge fallback
                     if(!globalConfig.general) globalConfig.general = defaultData.general;
                     if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
                     if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
@@ -435,7 +431,7 @@
                 startSlideshow();
             }
 
-            // C. Menu Reservasi (Dynamic Loop)
+            // C. Menu Reservasi
             const resList = document.getElementById('reservation-menu-list');
             resList.innerHTML = '';
             if(data.reservationMenu) {
@@ -471,7 +467,7 @@
                 });
             }
 
-            // F. Menu Reguler (Nested Loop)
+            // F. Menu Reguler
             const regList = document.getElementById('regular-menu-list');
             regList.innerHTML = '';
             if(data.regularMenu) {
@@ -519,7 +515,39 @@
             const area = document.getElementById('admin-content-area');
             let html = '';
 
-            // 1. SLIDESHOW (Delete Option)
+            // 0. GENERAL SETTINGS (HEADER, OVERLAY, MEMBER BTN) - ADDED
+            html += `<div class="upload-group"><h3>Pengaturan Umum (Gambar Utama)</h3>`;
+            
+            // Header Image
+            html += `<div class="admin-item-row">
+                <img src="${globalConfig.general.headerImage}" class="preview-img">
+                <div class="admin-item-info">
+                    <label>Gambar Header (Banner Atas)</label>
+                    <input type="file" onchange="uploadFile(this, 'general', 'headerImage')">
+                </div>
+            </div>`;
+
+            // Overlay Image
+            html += `<div class="admin-item-row">
+                <img src="${globalConfig.general.overlayImage}" class="preview-img">
+                <div class="admin-item-info">
+                    <label>Overlay/Frame Slideshow</label>
+                    <input type="file" onchange="uploadFile(this, 'general', 'overlayImage')">
+                </div>
+            </div>`;
+
+             // Member Button Image
+             html += `<div class="admin-item-row">
+                <img src="${globalConfig.general.memberBtnImage}" class="preview-img">
+                <div class="admin-item-info">
+                    <label>Tombol Member (Pojok Kanan Bawah)</label>
+                    <input type="file" onchange="uploadFile(this, 'general', 'memberBtnImage')">
+                </div>
+            </div>`;
+            html += `</div>`;
+
+
+            // 1. SLIDESHOW
             html += `<div class="upload-group"><h3>Slideshow (Carousel)</h3>`;
             globalConfig.slideshow.forEach((url, i) => {
                 html += `<div class="admin-item-row">
@@ -530,7 +558,7 @@
             });
             html += `<button class="btn-add" onclick="addArrayItem('slideshow')">+ Tambah Slide</button></div>`;
 
-            // 2. JEEP PACKAGES (Add/Delete)
+            // 2. JEEP PACKAGES
             html += `<div class="upload-group"><h3>Paket Jeep</h3>`;
             globalConfig.jeepPackages.forEach((pkg, i) => {
                 html += `<div class="admin-item-row" style="background:#f9f9f9; padding:10px; border-radius:8px;">
@@ -545,7 +573,7 @@
             });
             html += `<button class="btn-add" onclick="addArrayItem('jeepPackages')">+ Tambah Paket Jeep</button></div>`;
 
-            // 3. MENU RESERVASI (Add/Delete/Edit)
+            // 3. MENU RESERVASI
             html += `<div class="upload-group"><h3>Menu Reservasi (Gambar & Ketentuan)</h3>`;
             globalConfig.reservationMenu.forEach((item, i) => {
                 html += `<div class="admin-item-row" style="background:#f9f9f9; padding:10px; border-radius:8px;">
@@ -562,7 +590,7 @@
             });
             html += `<button class="btn-add" onclick="addArrayItem('reservationMenu')">+ Tambah Menu Reservasi</button></div>`;
 
-            // 4. MENU REGULER (Categories & Items)
+            // 4. MENU REGULER
             html += `<div class="upload-group"><h3>Menu Reguler (Kategori & Item)</h3>`;
             globalConfig.regularMenu.forEach((cat, catIdx) => {
                 html += `<div style="background:#f5f5f5; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #ddd;">
@@ -586,7 +614,7 @@
             });
             html += `<button class="btn-add" onclick="addRegularCategory()">+ Tambah Kategori Baru</button></div>`;
 
-            // 5. GALERI & UMUM (Sisanya sama)
+            // 5. GALERI & UMUM
             html += `<div class="upload-group"><h3>Galeri Foto</h3><div style="display:flex; flex-wrap:wrap; gap:8px;">`;
             globalConfig.gallery.forEach((url, i) => {
                 html += `<div style="position:relative; width:80px; height:80px;">
@@ -602,7 +630,6 @@
 
         // --- ADMIN ACTIONS LOGIC ---
         
-        // Generic Add/Delete
         window.addArrayItem = (key) => {
             if(key === 'slideshow') globalConfig.slideshow.push("https://via.placeholder.com/800x400?text=New+Slide");
             if(key === 'jeepPackages') globalConfig.jeepPackages.push({ title: "Paket Baru", image: "https://via.placeholder.com/400" });
@@ -657,7 +684,11 @@
                 const snapshot = await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(snapshot.ref);
 
-                if (type === 'slide') globalConfig.slideshow[key] = url;
+                if (type === 'general') {
+                    // Logic baru untuk Header, Overlay, Member Btn
+                    globalConfig.general[key] = url;
+                }
+                else if (type === 'slide') globalConfig.slideshow[key] = url;
                 else if (type === 'jeep') globalConfig.jeepPackages[key].image = url;
                 else if (type === 'resMenu') globalConfig.reservationMenu[key].image = url;
                 else if (type === 'gallery_add') globalConfig.gallery.push(url);
@@ -674,7 +705,6 @@
             const btn = document.querySelector('.btn-save');
             btn.disabled = true; btn.innerText = "MENYIMPAN...";
             try {
-                // Simpan ke collection v4
                 await setDoc(doc(db, "website_data", "master_config_v4"), globalConfig);
                 alert("BERHASIL! Website telah diperbarui.");
                 location.reload();
