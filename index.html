@@ -376,36 +376,54 @@
             document.getElementById('open-dashboard-btn').style.display = user ? 'block' : 'none';
         });
 
-        // LOAD DATA
-        async function loadData() {
-            try {
-                const docRef = doc(db, "website_data", "master_config_v4");
-                const docSnap = await getDoc(docRef);
+        // GANTI FUNGSI loadData() YANG LAMA DENGAN INI:
 
-                if (docSnap.exists()) {
-                    globalConfig = docSnap.data();
-                    if(!globalConfig.general) globalConfig.general = defaultData.general;
-                    if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
-                    if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
-                } else {
-                    globalConfig = defaultData;
-                }
-                renderWebsite(globalConfig);
-            } catch (e) {
-                console.error("Error load data:", e);
-                globalConfig = defaultData; 
-                renderWebsite(globalConfig);
-            }
+async function loadData() {
+    try {
+        const docRef = doc(db, "website_data", "master_config_v4");
+        
+        // Tambahkan opsi 'source: default' agar mencoba ambil dari server dulu
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            console.log("Data ditemukan di Firebase!");
+            globalConfig = docSnap.data();
             
-            document.querySelector(".loading-fill").style.width = "100%";
-            document.querySelector(".loading-text").textContent = "100%";
-            setTimeout(() => {
-                document.querySelector(".loading-screen").style.display = "none";
-                const hash = window.location.hash.substring(1);
-                if(hash && document.getElementById(hash)) showPage(hash);
-                else showPage("page-home");
-            }, 500);
+            // Pengecekan data kosong untuk menjaga struktur
+            if(!globalConfig.general) globalConfig.general = defaultData.general;
+            if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
+            if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
+            if(!globalConfig.slideshow) globalConfig.slideshow = defaultData.slideshow;
+            if(!globalConfig.jeepPackages) globalConfig.jeepPackages = defaultData.jeepPackages;
+            if(!globalConfig.gallery) globalConfig.gallery = defaultData.gallery;
+
+            renderWebsite(globalConfig);
+        } else {
+            console.warn("Dokumen tidak ditemukan, menggunakan default.");
+            // Jika dokumen benar-benar tidak ada (belum pernah disimpan), baru pakai default
+            globalConfig = defaultData;
+            renderWebsite(globalConfig);
         }
+    } catch (e) {
+        // JANGAN SILENT! Tampilkan error di console dan alert jika perlu
+        console.error("GAGAL MEMUAT DATA:", e);
+        alert("Gagal mengambil data terbaru: " + e.message + "\nMenampilkan data default sementara.");
+        
+        globalConfig = defaultData; 
+        renderWebsite(globalConfig);
+    }
+    
+    // Hapus loading screen
+    document.querySelector(".loading-fill").style.width = "100%";
+    document.querySelector(".loading-text").textContent = "100%";
+    setTimeout(() => {
+        document.querySelector(".loading-screen").style.display = "none";
+        const hash = window.location.hash.substring(1);
+        if(hash && document.getElementById(hash)) showPage(hash);
+        else showPage("page-home");
+    }, 500);
+}
+
 
         // RENDER WEBSITE UTAMA
         function renderWebsite(data) {
