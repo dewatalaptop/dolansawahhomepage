@@ -4,17 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <title>Mini Site Dolan Sawah - Advanced Admin</title>
+    <title>Mini Site Dolan Sawah - Pro Admin</title>
     <style>
         /* =========================================
-           1. CSS ORIGINAL WEBSITE (DIPERTAHANKAN)
+           1. CSS ORIGINAL WEBSITE
            ========================================= */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif; text-align: center; color: black;
             transition: background 0.5s ease; line-height: 1.6; background-color: #f0f0f0;
         }
-        /* Default Themes */
         body.theme-home { background: linear-gradient(135deg, #ff9800, #ffcc80); }
         body.theme-menu { background: linear-gradient(135deg, #ff9800, #e65100); }
         body.theme-gallery { background: linear-gradient(135deg, #f6d365, #fda085); }
@@ -25,7 +24,6 @@
         .page-content { display: none; padding: 20px 15px; animation: fadeIn 0.8s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* LOADING SCREEN */
         .loading-screen {
             position: fixed; width: 100%; height: 100%; background: white;
             display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 6000;
@@ -34,19 +32,16 @@
         .loading-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff9800, #ff5722); transition: width 0.2s; }
         .loading-text { font-size: 18px; margin-top: 10px; font-weight: bold; color: #ff9800; }
 
-        /* HEADER & CONTAINER */
         #page-home .header-gallery { width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; background: white; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); cursor: pointer; }
         #page-home .header-gallery img { width: 100%; height: auto; max-height: 200px; object-fit: cover; }
         #page-home .main-container { max-width: 800px; margin: 0 auto; padding: 220px 20px 80px; background: white; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15); position: relative; }
         
-        /* SLIDESHOW */
         .slideshow-container { width: 100%; aspect-ratio: 16 / 9; position: relative; overflow: hidden; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .slide-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out; }
         .slide-image.active { opacity: 1; }
         .frame-overlay { position: absolute; top: 0; left: 0; width: 30%; height: auto; z-index: 20; pointer-events: none; }
         @media screen and (max-width: 480px) { .frame-overlay { width: 40%; } }
 
-        /* MENU GRID */
         .menu-grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px 0; width: 100%; }
         .menu-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 10px; border-radius: 15px; text-decoration: none; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; height: 100%; aspect-ratio: 1.3 / 1; cursor: pointer; }
         .menu-card:active { transform: scale(0.95); }
@@ -61,7 +56,6 @@
         .full-width-btn svg { margin-bottom: 0; margin-right: 10px; }
         @keyframes blink-effect { from { box-shadow: 0px 0px 5px rgba(255, 152, 0, 0.5); } to { box-shadow: 0px 0px 15px rgba(255, 152, 0, 1); } }
 
-        /* FLOATING BUTTONS */
         #page-home .floating-button { display: flex; justify-content: center; align-items: center; gap: 10px; width: 90%; max-width: 320px; padding: 14px; margin: 30px auto 10px; font-size: clamp(1rem, 4vw, 1.1rem); font-weight: bold; text-decoration: none; color: black; background: linear-gradient(45deg, #ffeb3b, #fbc02d); border-radius: 10px; border: none; cursor: pointer; box-shadow: 0px 5px 15px rgba(255, 235, 59, 0.7); animation: blink-float 1.5s infinite alternate; }
         #page-home .floating-button svg { width: 24px; height: 24px; }
         @keyframes blink-float { from { opacity: 1; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.02); } to { opacity: 1; transform: scale(1); } }
@@ -74,7 +68,6 @@
         #floating-member-button { position: fixed; bottom: 20px; right: 20px; width: 140px; height: 140px; background: transparent; border: none; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 3500; text-decoration: none; animation: bounce-button 1.5s infinite ease-in-out; }
         #floating-member-button img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-        /* OTHER PAGES STYLES */
         #page-menu .container { max-width: 600px; margin: auto; background: #111; padding: 20px; border-radius: 12px; box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8); color: white; }
         #page-menu h1 { font-size: clamp(1.8rem, 5vw, 2.2rem); color: #ff9800; text-shadow: 0 0 10px rgba(255, 152, 0, 0.8); margin-bottom: 20px; }
         #page-menu h2 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: #fbc02d; margin-top: 30px; margin-bottom: 15px; }
@@ -87,7 +80,6 @@
         #page-gallery .gallery img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1 / 1; border-radius: 10px; cursor: pointer; transition: transform 0.3s; }
         #page-gallery .gallery img:hover { transform: scale(1.05); }
 
-        /* JEEP PAGE */
         #page-jeep .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
         #page-jeep h1 { font-size: clamp(2rem, 6vw, 2.8rem); color: #f39c12; text-transform: uppercase; margin-bottom: 10px; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); }
         #page-jeep p.subtitle { font-size: clamp(1rem, 3vw, 1.2rem); color: #ccc; margin-bottom: 40px; }
@@ -98,7 +90,6 @@
         .jeep-package-card .card-content { padding: 20px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .jeep-package-card h3 { color: #f39c12; margin-bottom: 10px; font-size: 1.3rem; }
 
-        /* REGULER MENU */
         #page-reguler .menu-container { max-width: 800px; margin: 0 auto; padding-bottom: 80px; }
         #page-reguler h1 { color: #2c3e50; margin-bottom: 25px; font-size: clamp(2rem, 6vw, 2.5rem); }
         #page-reguler .menu-category { background: white; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 20px; text-align: left; overflow: hidden; }
@@ -107,7 +98,6 @@
         #page-reguler .menu-item:last-child { border-bottom: none; }
         #page-reguler .item-price { font-weight: bold; background-color: #f1c40f; padding: 3px 8px; border-radius: 5px; }
 
-        /* MODALS & POPUPS */
         .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: none; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s; z-index: 5000; }
         .fullscreen-modal.show { display: flex; opacity: 1; visibility: visible; }
         .fullscreen-modal img { max-width: 95%; max-height: 90%; border-radius: 5px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
@@ -139,7 +129,7 @@
         
         .admin-dashboard { display: none; position: fixed; top: 0; right: 0; width: 100%; max-width: 450px; height: 100%; background: #f4f4f4; z-index: 9000; overflow-y: auto; padding: 0; box-shadow: -5px 0 15px rgba(0,0,0,0.2); }
         .dashboard-header { background: white; padding: 20px; border-bottom: 2px solid #ff9800; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10;}
-        .dashboard-content { padding: 20px; padding-bottom: 80px; }
+        .dashboard-content { padding: 20px; padding-bottom: 100px; }
         
         .upload-group { border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 20px; border-radius: 10px; text-align: left; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .upload-group h3 { font-size: 16px; margin-bottom: 15px; color: #e65100; border-bottom: 2px solid #fff3e0; padding-bottom:8px; display: flex; justify-content: space-between; align-items: center;}
@@ -149,14 +139,19 @@
         .admin-item-row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
         .admin-item-row:last-child { border-bottom: none; }
         .admin-item-info { flex-grow: 1; display: flex; flex-direction: column; gap: 5px; }
-        .admin-item-info input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; }
+        .admin-item-info input[type="text"], .admin-item-info input[type="number"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; }
+        .admin-item-info label { font-size: 12px; color: #666; font-weight: bold; }
         .admin-item-info input[type="file"] { font-size: 12px; }
         
-        .btn-danger { background: #ffcdd2; color: #c62828; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; height: fit-content; align-self: center;}
+        .admin-sub-section { margin-left: 10px; padding: 10px; background: #fafafa; border-left: 3px solid #ddd; margin-top: 5px; }
+        .admin-sub-item { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
+
+        .btn-danger { background: #ffcdd2; color: #c62828; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; height: fit-content; align-self: center; white-space: nowrap;}
         .btn-danger:hover { background: #ef9a9a; }
         
         .btn-add { background: #e3f2fd; color: #1565c0; border: 1px dashed #1565c0; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; transition: 0.2s; }
         .btn-add:hover { background: #bbdefb; }
+        .btn-add-small { background: #f1f8e9; color: #2e7d32; border: 1px dashed #2e7d32; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer; border-radius: 4px; }
         
         .btn-save-container { position: fixed; bottom: 0; right: 0; width: 100%; max-width: 450px; padding: 15px; background: white; border-top: 1px solid #ddd; z-index: 11; }
         .btn-save { background: linear-gradient(135deg, #4caf50, #2e7d32); color: white; padding: 15px; font-size: 16px; border: none; border-radius: 8px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; font-weight: bold; letter-spacing: 0.5px; }
@@ -202,7 +197,7 @@
         <div class="main-container">
             <div class="slideshow-container" id="slideshow-wrapper">
                 <img id="overlay-frame-img" src="" class="frame-overlay" alt="Frame Decoration">
-                </div>
+            </div>
 
             <div class="menu-grid-container">
                 <a onclick="showPage('page-reguler')" class="menu-card bg-orange">
@@ -236,36 +231,16 @@
     </div>
     
     <div id="page-menu" class="page-content">
-        <div class="container">
+        <div class="container" id="reservation-menu-container">
             <h1>Menu Reservasi</h1>
-            
-            <h2>Paket Prasmanan</h2>
-            <div class="image-container" onclick="showPrasmananTerms()"><img id="img-prasmanan" alt="Menu Prasmanan" /></div>
-            
-            <h2>Paket Kembulan</h2>
-            <div class="image-container" onclick="showKembulanTerms()"><img id="img-kembulan" alt="Paket Kembulan" /></div>
-            
-            <h2>Paket Tumpeng Nasi Kuning</h2>
-            <div class="image-container" onclick="showKembulanTerms()"><img id="img-tumpeng" alt="Paket Tumpeng" /></div>
-            
-            <h2>Paket Rantang</h2>
-            <div class="image-container" onclick="showRantangTerms()"><img id="img-rantang" alt="Paket Rantang" /></div>
-            
-            <h2>Paket Rantang Nasi Kuning</h2>
-            <div class="image-container" onclick="showRantangTerms()"><img id="img-rantangKuning" alt="Paket Rantang Nasi Kuning" /></div>
-            
-            <h2>Paket Grill</h2>
-            <p style="margin-bottom: 15px;">Klik gambar untuk melihat ketentuan.</p>
-            <div class="image-container" onclick="showGrillTerms()"><img id="img-grill1" alt="Paket Grill Hemat Berdua" /></div>
-            <div class="image-container" onclick="showGrillTerms()"><img id="img-grill2" alt="Paket Grill Hemat Berempat" /></div>
+            <div id="reservation-menu-list"></div>
         </div>
     </div>
     
     <div id="page-gallery" class="page-content">
         <div class="container">
             <h1>Galeri Dolan Sawah</h1><p>Klik gambar untuk memperbesar.</p>
-            <div class="gallery" id="gallery-grid">
-                </div>
+            <div class="gallery" id="gallery-grid"></div>
         </div>
     </div>
     
@@ -281,18 +256,14 @@
         <div class="container">
             <h1>Paket Jeep Adventure</h1>
             <p class="subtitle">Jelajahi keindahan alam dengan paket wisata Jeep kami. Klik paket untuk melihat detail.</p>
-            <div class="jeep-packages-grid" id="jeep-packages-list">
-                </div>
+            <div class="jeep-packages-grid" id="jeep-packages-list"></div>
         </div>
     </div>
     
     <div id="page-reguler" class="page-content">
         <div class="menu-container">
             <h1>Daftar Menu Reguler</h1>
-            <div class="menu-category"><h2 class="category-title">Daging, Ayam Dan Bebek</h2>
-                <div class="menu-item"><span class="item-name">Iga Bakar</span><span class="item-dots"></span><span class="item-price">Rp 55.000</span></div>
-                <div class="menu-item"><span class="item-name">Opor Bebek</span><span class="item-dots"></span><span class="item-price">Rp 38.000</span></div>
-            </div>
+            <div id="regular-menu-list"></div>
             <p style="text-align:center; margin-top:20px;">*Harga belum termasuk PPN</p>
         </div>
     </div>
@@ -311,13 +282,12 @@
     </a>
 
     <script type="module">
-        // IMPORT FIREBASE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-        // KONFIGURASI FIREBASE
+        // FIREBASE CONFIG
         const firebaseConfig = {
           apiKey: "AIzaSyAk0CnaeiRRBqo5O_DnFUDpGHSM017wNiU",
           authDomain: "slidemonitor.firebaseapp.com",
@@ -332,7 +302,7 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // DATA DEFAULT (JIKA DATABASE KOSONG)
+        // DATA STRUKTUR BARU (Advanced)
         const defaultData = {
             general: {
                 headerImage: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752467234/IMG_5184_qcsvrt.jpg",
@@ -352,25 +322,38 @@
             ],
             gallery: [
                 "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465151/IMG_5179_gaqxnv.jpg",
-                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465454/IMG_5180_ws8xwl.jpg",
-                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465530/IMG_5181_dpmb4o.jpg"
+                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465454/IMG_5180_ws8xwl.jpg"
             ],
-            menuImages: {
-                prasmanan: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1754808317/E983BD8B-5D43-448A-9E32-DB52316FA7E8_ls3xed.jpg",
-                kembulan: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461119/91d77689-1e31-4293-921e-3b52b6e61a2e_mb4ft3.jpg",
-                tumpeng: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1757126294/IMG_6002_kmtqob.png",
-                rantang: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461212/ec438e76-f56a-417c-97f6-6b68cb62c85d_pw5uxi.jpg",
-                rantangKuning: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1757126215/IMG_6001_ts5xcb.png",
-                grill1: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461305/560cbf7f-85b2-4ce9-81ce-8f5f9f0ed0ba_jx5cph.jpg",
-                grill2: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461385/3e5de018-b6b1-4da4-a0e3-2302aac49e78_gu8aai.jpg"
-            }
+            // STRUKTUR BARU: MENU RESERVASI ARRAY
+            reservationMenu: [
+                { title: "Paket Prasmanan", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1754808317/E983BD8B-5D43-448A-9E32-DB52316FA7E8_ls3xed.jpg", desc: "Minimal H-3 sebelum acara." },
+                { title: "Paket Kembulan", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461119/91d77689-1e31-4293-921e-3b52b6e61a2e_mb4ft3.jpg", desc: "Minimal pemesanan H-1." },
+                { title: "Tumpeng Nasi Kuning", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1757126294/IMG_6002_kmtqob.png", desc: "Minimal pemesanan H-1." },
+                { title: "Paket Rantang", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461212/ec438e76-f56a-417c-97f6-6b68cb62c85d_pw5uxi.jpg", desc: "Bisa dipesan dadakan." }
+            ],
+            // STRUKTUR BARU: MENU REGULER BERKATEGORI
+            regularMenu: [
+                {
+                    category: "Daging, Ayam & Bebek",
+                    items: [
+                        { name: "Iga Bakar", price: "55.000" },
+                        { name: "Opor Bebek", price: "38.000" }
+                    ]
+                },
+                {
+                    category: "Minuman Segar",
+                    items: [
+                        { name: "Es Teh Manis", price: "5.000" },
+                        { name: "Jus Jeruk", price: "12.000" }
+                    ]
+                }
+            ]
         };
 
-        // STATE GLOBAL
         let globalConfig = null;
         let headerClickCount = 0;
 
-        // 1. SISTEM LOGIN ADMIN (5x Klik Header)
+        // AUTH LOGIC
         document.querySelector('.header-gallery').addEventListener('click', () => {
             headerClickCount++;
             if(headerClickCount === 5) {
@@ -395,21 +378,20 @@
             document.getElementById('open-dashboard-btn').style.display = user ? 'block' : 'none';
         });
 
-        // 2. LOAD & RENDER DATA
+        // LOAD DATA
         async function loadData() {
             try {
-                // Menggunakan ID baru 'master_config_v3' agar struktur data bersih
-                const docRef = doc(db, "website_data", "master_config_v3");
+                // Gunakan versi v4 untuk struktur data baru
+                const docRef = doc(db, "website_data", "master_config_v4");
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     globalConfig = docSnap.data();
-                    // Merge jika ada key yang hilang (fallback ke default)
+                    // Merge fallback
                     if(!globalConfig.general) globalConfig.general = defaultData.general;
-                    if(!globalConfig.jeepPackages) globalConfig.jeepPackages = defaultData.jeepPackages;
-                    if(!globalConfig.gallery) globalConfig.gallery = defaultData.gallery;
+                    if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
+                    if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
                 } else {
-                    console.log("Data baru, menggunakan default...");
                     globalConfig = defaultData;
                 }
                 renderWebsite(globalConfig);
@@ -419,7 +401,6 @@
                 renderWebsite(globalConfig);
             }
             
-            // Hapus Loading Screen
             document.querySelector(".loading-fill").style.width = "100%";
             document.querySelector(".loading-text").textContent = "100%";
             setTimeout(() => {
@@ -430,8 +411,9 @@
             }, 500);
         }
 
+        // RENDER WEBSITE UTAMA
         function renderWebsite(data) {
-            // A. General Images
+            // A. General
             if (data.general) {
                 document.getElementById('header-main-img').src = data.general.headerImage;
                 document.getElementById('overlay-frame-img').src = data.general.overlayImage;
@@ -440,11 +422,9 @@
 
             // B. Slideshow
             const slideWrapper = document.getElementById('slideshow-wrapper');
-            // Keep the overlay image, remove old slides
             const overlay = slideWrapper.querySelector('.frame-overlay');
             slideWrapper.innerHTML = '';
             slideWrapper.appendChild(overlay);
-            
             if (data.slideshow && data.slideshow.length > 0) {
                 data.slideshow.forEach((url, i) => {
                     const img = document.createElement('img');
@@ -455,18 +435,21 @@
                 startSlideshow();
             }
 
-            // C. Menu Images
-            if (data.menuImages) {
-                const map = {
-                    'prasmanan': 'img-prasmanan', 'kembulan': 'img-kembulan', 'tumpeng': 'img-tumpeng',
-                    'rantang': 'img-rantang', 'rantangKuning': 'img-rantangKuning', 'grill1': 'img-grill1', 'grill2': 'img-grill2'
-                };
-                for(let key in map) {
-                    if(data.menuImages[key]) document.getElementById(map[key]).src = data.menuImages[key];
-                }
+            // C. Menu Reservasi (Dynamic Loop)
+            const resList = document.getElementById('reservation-menu-list');
+            resList.innerHTML = '';
+            if(data.reservationMenu) {
+                data.reservationMenu.forEach((item, idx) => {
+                    resList.innerHTML += `
+                        <h2>${item.title}</h2>
+                        <div class="image-container" onclick="openPopup('${item.title}', '${item.desc}')">
+                            <img src="${item.image}" alt="${item.title}" />
+                        </div>
+                    `;
+                });
             }
 
-            // D. Gallery (Dynamic)
+            // D. Gallery
             const galGrid = document.getElementById('gallery-grid');
             galGrid.innerHTML = '';
             if (data.gallery) {
@@ -475,7 +458,7 @@
                 });
             }
 
-            // E. Jeep Packages (Dynamic)
+            // E. Jeep Packages
             const jeepGrid = document.getElementById('jeep-packages-list');
             jeepGrid.innerHTML = '';
             if (data.jeepPackages) {
@@ -485,6 +468,29 @@
                             <img src="${pkg.image}">
                             <div class="card-content"><h3>${pkg.title}</h3><span>Lihat Detail</span></div>
                         </div>`;
+                });
+            }
+
+            // F. Menu Reguler (Nested Loop)
+            const regList = document.getElementById('regular-menu-list');
+            regList.innerHTML = '';
+            if(data.regularMenu) {
+                data.regularMenu.forEach(cat => {
+                    let itemsHtml = '';
+                    cat.items.forEach(itm => {
+                        itemsHtml += `
+                        <div class="menu-item">
+                            <span class="item-name">${itm.name}</span>
+                            <span class="item-dots"></span>
+                            <span class="item-price">Rp ${itm.price}</span>
+                        </div>`;
+                    });
+                    
+                    regList.innerHTML += `
+                    <div class="menu-category">
+                        <h2 class="category-title">${cat.category}</h2>
+                        ${itemsHtml}
+                    </div>`;
                 });
             }
         }
@@ -502,7 +508,7 @@
             }, 4000);
         }
 
-        // 3. LOGIKA ADMIN DASHBOARD LENGKAP
+        // --- ADMIN DASHBOARD GENERATOR ---
         window.openDashboard = () => {
             document.getElementById('admin-dashboard').style.display = 'block';
             generateAdminForm();
@@ -513,22 +519,8 @@
             const area = document.getElementById('admin-content-area');
             let html = '';
 
-            // 1. BAGIAN UMUM (Header, Overlay, Member Button)
-            html += `<div class="upload-group"><h3>Pengaturan Umum</h3>`;
-            
-            html += `<div class="admin-item-row"><img src="${globalConfig.general.headerImage}" class="preview-img" id="prev-gen-header">
-                <div class="admin-item-info"><label>Header Utama</label><input type="file" onchange="uploadFile(this, 'header')"></div></div>`;
-                
-            html += `<div class="admin-item-row"><img src="${globalConfig.general.overlayImage}" class="preview-img" id="prev-gen-overlay">
-                <div class="admin-item-info"><label>Hiasan Overlay Slide</label><input type="file" onchange="uploadFile(this, 'overlay')"></div></div>`;
-                
-            html += `<div class="admin-item-row"><img src="${globalConfig.general.memberBtnImage}" class="preview-img" id="prev-gen-member">
-                <div class="admin-item-info"><label>Logo Tombol Member</label><input type="file" onchange="uploadFile(this, 'memberBtn')"></div></div>`;
-            
-            html += `</div>`;
-
-            // 2. SLIDESHOW (Carousel)
-            html += `<div class="upload-group"><h3>Slideshow Banner</h3>`;
+            // 1. SLIDESHOW (Delete Option)
+            html += `<div class="upload-group"><h3>Slideshow (Carousel)</h3>`;
             globalConfig.slideshow.forEach((url, i) => {
                 html += `<div class="admin-item-row">
                     <img src="${url}" class="preview-img">
@@ -536,23 +528,65 @@
                     <button class="btn-danger" onclick="deleteArrayItem('slideshow', ${i})">Hapus</button>
                 </div>`;
             });
-            html += `<button class="btn-add" onclick="addArrayItem('slideshow')">+ Tambah Slide Baru</button></div>`;
+            html += `<button class="btn-add" onclick="addArrayItem('slideshow')">+ Tambah Slide</button></div>`;
 
-            // 3. PAKET JEEP (Dynamic)
-            html += `<div class="upload-group"><h3>Paket Jeep Adventure</h3>`;
+            // 2. JEEP PACKAGES (Add/Delete)
+            html += `<div class="upload-group"><h3>Paket Jeep</h3>`;
             globalConfig.jeepPackages.forEach((pkg, i) => {
                 html += `<div class="admin-item-row" style="background:#f9f9f9; padding:10px; border-radius:8px;">
                     <img src="${pkg.image}" class="preview-img">
                     <div class="admin-item-info">
-                        <input type="text" value="${pkg.title}" placeholder="Nama Paket Jeep" oninput="updateJeepTitle(${i}, this.value)">
+                        <label>Nama Paket:</label>
+                        <input type="text" value="${pkg.title}" oninput="updateDeepValue('jeepPackages', ${i}, 'title', this.value)">
                         <input type="file" onchange="uploadFile(this, 'jeep', ${i})">
                     </div>
-                    <button class="btn-danger" onclick="deleteArrayItem('jeep', ${i})">Hapus</button>
+                    <button class="btn-danger" onclick="deleteArrayItem('jeepPackages', ${i})">Hapus</button>
                 </div>`;
             });
-            html += `<button class="btn-add" onclick="addArrayItem('jeep')">+ Tambah Paket Jeep</button></div>`;
+            html += `<button class="btn-add" onclick="addArrayItem('jeepPackages')">+ Tambah Paket Jeep</button></div>`;
 
-            // 4. GALERI
+            // 3. MENU RESERVASI (Add/Delete/Edit)
+            html += `<div class="upload-group"><h3>Menu Reservasi (Gambar & Ketentuan)</h3>`;
+            globalConfig.reservationMenu.forEach((item, i) => {
+                html += `<div class="admin-item-row" style="background:#f9f9f9; padding:10px; border-radius:8px;">
+                    <img src="${item.image}" class="preview-img">
+                    <div class="admin-item-info">
+                        <label>Judul Menu:</label>
+                        <input type="text" value="${item.title}" oninput="updateDeepValue('reservationMenu', ${i}, 'title', this.value)">
+                        <label>Ketentuan (Popup):</label>
+                        <input type="text" value="${item.desc}" oninput="updateDeepValue('reservationMenu', ${i}, 'desc', this.value)">
+                        <input type="file" onchange="uploadFile(this, 'resMenu', ${i})">
+                    </div>
+                    <button class="btn-danger" onclick="deleteArrayItem('reservationMenu', ${i})">Hapus</button>
+                </div>`;
+            });
+            html += `<button class="btn-add" onclick="addArrayItem('reservationMenu')">+ Tambah Menu Reservasi</button></div>`;
+
+            // 4. MENU REGULER (Categories & Items)
+            html += `<div class="upload-group"><h3>Menu Reguler (Kategori & Item)</h3>`;
+            globalConfig.regularMenu.forEach((cat, catIdx) => {
+                html += `<div style="background:#f5f5f5; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #ddd;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <input type="text" value="${cat.category}" style="font-weight:bold; color:#e65100; width:70%;" oninput="updateCatTitle(${catIdx}, this.value)">
+                        <button class="btn-danger" onclick="deleteRegularCategory(${catIdx})">Hapus Kategori</button>
+                    </div>
+                    <div class="admin-sub-section">`;
+                
+                cat.items.forEach((item, itemIdx) => {
+                    html += `<div class="admin-sub-item">
+                        <input type="text" value="${item.name}" placeholder="Nama Menu" style="width:50%" oninput="updateRegItem(${catIdx}, ${itemIdx}, 'name', this.value)">
+                        <input type="text" value="${item.price}" placeholder="Harga" style="width:30%" oninput="updateRegItem(${catIdx}, ${itemIdx}, 'price', this.value)">
+                        <button class="btn-danger" style="padding:5px;" onclick="deleteRegItem(${catIdx}, ${itemIdx})">X</button>
+                    </div>`;
+                });
+                
+                html += `<button class="btn-add-small" onclick="addRegItem(${catIdx})">+ Tambah Menu di ${cat.category}</button>
+                    </div>
+                </div>`;
+            });
+            html += `<button class="btn-add" onclick="addRegularCategory()">+ Tambah Kategori Baru</button></div>`;
+
+            // 5. GALERI & UMUM (Sisanya sama)
             html += `<div class="upload-group"><h3>Galeri Foto</h3><div style="display:flex; flex-wrap:wrap; gap:8px;">`;
             globalConfig.gallery.forEach((url, i) => {
                 html += `<div style="position:relative; width:80px; height:80px;">
@@ -560,83 +594,75 @@
                     <button onclick="deleteArrayItem('gallery', ${i})" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:10px; cursor:pointer;">X</button>
                 </div>`;
             });
-            html += `</div><br><button class="btn-add" onclick="document.getElementById('input-gallery-add').click()">+ Upload Foto Galeri</button>
+            html += `</div><br><button class="btn-add" onclick="document.getElementById('input-gallery-add').click()">+ Upload Foto</button>
             <input type="file" id="input-gallery-add" style="display:none" onchange="uploadFile(this, 'gallery_add')"></div>`;
 
-            // 5. GAMBAR MENU (Static Slots)
-            html += `<div class="upload-group"><h3>Gambar Menu Reservasi</h3>`;
-            const menus = [
-                {k:'prasmanan', l:'Prasmanan'}, {k:'kembulan', l:'Kembulan'}, {k:'tumpeng', l:'Tumpeng'},
-                {k:'rantang', l:'Rantang'}, {k:'rantangKuning', l:'Rantang Kuning'}, {k:'grill1', l:'Grill 1'}, {k:'grill2', l:'Grill 2'}
-            ];
-            menus.forEach(m => {
-                html += `<div class="admin-item-row">
-                    <img src="${globalConfig.menuImages[m.k]}" class="preview-img" id="prev-menu-${m.k}">
-                    <div class="admin-item-info"><label>${m.l}</label><input type="file" onchange="uploadFile(this, 'menu', '${m.k}')"></div>
-                </div>`;
-            });
-            html += `</div>`;
-            
             area.innerHTML = html;
         }
 
-        // --- ADMIN ACTIONS ---
+        // --- ADMIN ACTIONS LOGIC ---
         
-        window.addArrayItem = (type) => {
-            if (type === 'slideshow') globalConfig.slideshow.push("https://via.placeholder.com/800x400?text=New+Slide");
-            if (type === 'jeep') globalConfig.jeepPackages.push({ title: "Nama Paket Baru", image: "https://via.placeholder.com/400?text=Jeep" });
-            generateAdminForm(); // Re-render form
-        };
-
-        window.deleteArrayItem = (type, index) => {
-            if(!confirm("Hapus item ini?")) return;
-            if (type === 'slideshow') globalConfig.slideshow.splice(index, 1);
-            if (type === 'jeep') globalConfig.jeepPackages.splice(index, 1);
-            if (type === 'gallery') globalConfig.gallery.splice(index, 1);
+        // Generic Add/Delete
+        window.addArrayItem = (key) => {
+            if(key === 'slideshow') globalConfig.slideshow.push("https://via.placeholder.com/800x400?text=New+Slide");
+            if(key === 'jeepPackages') globalConfig.jeepPackages.push({ title: "Paket Baru", image: "https://via.placeholder.com/400" });
+            if(key === 'reservationMenu') globalConfig.reservationMenu.push({ title: "Menu Baru", image: "https://via.placeholder.com/400", desc: "Keterangan disini" });
             generateAdminForm();
         };
 
-        window.updateJeepTitle = (index, val) => {
-            globalConfig.jeepPackages[index].title = val;
+        window.deleteArrayItem = (key, index) => {
+            if(!confirm("Yakin hapus?")) return;
+            globalConfig[key].splice(index, 1);
+            generateAdminForm();
         };
 
+        window.updateDeepValue = (key, index, field, value) => {
+            globalConfig[key][index][field] = value;
+        };
+
+        // Regular Menu Logic
+        window.addRegularCategory = () => {
+            globalConfig.regularMenu.push({ category: "Kategori Baru", items: [] });
+            generateAdminForm();
+        };
+        window.deleteRegularCategory = (idx) => {
+            if(!confirm("Hapus kategori dan semua isinya?")) return;
+            globalConfig.regularMenu.splice(idx, 1);
+            generateAdminForm();
+        };
+        window.updateCatTitle = (idx, val) => {
+            globalConfig.regularMenu[idx].category = val;
+        };
+        window.addRegItem = (catIdx) => {
+            globalConfig.regularMenu[catIdx].items.push({ name: "Menu Baru", price: "0" });
+            generateAdminForm();
+        };
+        window.deleteRegItem = (catIdx, itemIdx) => {
+            globalConfig.regularMenu[catIdx].items.splice(itemIdx, 1);
+            generateAdminForm();
+        };
+        window.updateRegItem = (catIdx, itemIdx, field, val) => {
+            globalConfig.regularMenu[catIdx].items[itemIdx][field] = val;
+        };
+
+        // Upload Logic
         window.uploadFile = async (input, type, key) => {
             const file = input.files[0];
             if(!file) return;
-
             const btnSave = document.querySelector('.btn-save');
-            btnSave.disabled = true; btnSave.innerText = "UPLOADING... (JANGAN TUTUP)";
+            btnSave.disabled = true; btnSave.innerText = "UPLOADING...";
 
             try {
-                const storageRef = ref(storage, `uploads_v2/${type}_${Date.now()}_${file.name}`);
+                const storageRef = ref(storage, `uploads_v4/${type}_${Date.now()}_${file.name}`);
                 const snapshot = await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(snapshot.ref);
 
-                // Update Local State
-                if (type === 'header') {
-                    globalConfig.general.headerImage = url;
-                    document.getElementById('prev-gen-header').src = url;
-                } else if (type === 'overlay') {
-                    globalConfig.general.overlayImage = url;
-                    document.getElementById('prev-gen-overlay').src = url;
-                } else if (type === 'memberBtn') {
-                    globalConfig.general.memberBtnImage = url;
-                    document.getElementById('prev-gen-member').src = url;
-                } else if (type === 'slide') {
-                    globalConfig.slideshow[key] = url;
-                    generateAdminForm();
-                } else if (type === 'jeep') {
-                    globalConfig.jeepPackages[key].image = url;
-                    generateAdminForm();
-                } else if (type === 'gallery_add') {
-                    globalConfig.gallery.push(url);
-                    generateAdminForm();
-                } else if (type === 'menu') {
-                    globalConfig.menuImages[key] = url;
-                    document.getElementById(`prev-menu-${key}`).src = url;
-                }
+                if (type === 'slide') globalConfig.slideshow[key] = url;
+                else if (type === 'jeep') globalConfig.jeepPackages[key].image = url;
+                else if (type === 'resMenu') globalConfig.reservationMenu[key].image = url;
+                else if (type === 'gallery_add') globalConfig.gallery.push(url);
                 
-                alert("Upload Sukses! Tekan tombol SIMPAN di bawah untuk menerapkan permanen.");
+                generateAdminForm();
             } catch (error) {
                 alert("Upload Gagal: " + error.message);
             } finally {
@@ -648,7 +674,8 @@
             const btn = document.querySelector('.btn-save');
             btn.disabled = true; btn.innerText = "MENYIMPAN...";
             try {
-                await setDoc(doc(db, "website_data", "master_config_v3"), globalConfig);
+                // Simpan ke collection v4
+                await setDoc(doc(db, "website_data", "master_config_v4"), globalConfig);
                 alert("BERHASIL! Website telah diperbarui.");
                 location.reload();
             } catch (e) {
@@ -657,14 +684,13 @@
             }
         };
 
-        // UI HELPERS
+        // UI Helpers
         window.showPage = (pageId) => {
             document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
             const target = document.getElementById(pageId);
             if(target) target.style.display = 'block';
             window.scrollTo(0,0);
             
-            // Set Theme
             document.body.className = '';
             if(pageId === 'page-home') document.body.classList.add('theme-home');
             else if(pageId === 'page-menu') document.body.classList.add('theme-menu');
@@ -690,21 +716,12 @@
         const popup = document.getElementById("generic-popup");
         window.openPopup = (t, b) => {
             document.getElementById("popup-title").innerText = t;
-            document.getElementById("popup-body").innerHTML = b;
+            document.getElementById("popup-body").innerHTML = `<p>${b}</p>`;
             popup.classList.add("show");
         };
         window.closePopup = () => popup.classList.remove("show");
-        
-        // Static terms text (bisa dibuat dinamis juga jika perlu, tapi saat ini statis di JS)
-        window.showPrasmananTerms = () => window.openPopup("Ketentuan Prasmanan", "<p>Minimal pemesanan H-3 sebelum acara.</p>");
-        window.showKembulanTerms = () => window.openPopup("Ketentuan Kembulan", "<p>Minimal pemesanan H-1.</p>");
-        window.showRantangTerms = () => window.openPopup("Ketentuan Rantang", "<p>Pemesanan bisa dilakukan mendadak.</p>");
-        window.showGrillTerms = () => window.openPopup("Ketentuan Grill", "<p>Tersedia setiap hari selama jam operasional.</p>");
 
-        // START APP
-        document.addEventListener("DOMContentLoaded", () => {
-             loadData();
-        });
+        document.addEventListener("DOMContentLoaded", loadData);
     </script>
 </body>
 </html>
