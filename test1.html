@@ -11,8 +11,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-  
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
@@ -216,7 +214,6 @@
     }
     .admin-container { max-width: 800px; margin: 20px auto; padding: 0 15px; padding-bottom: 50px; }
     
-    /* Login Form */
     .login-box {
       max-width: 400px; margin: 100px auto; background: white; padding: 30px;
       border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center;
@@ -224,7 +221,6 @@
     .login-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
     .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
-    /* Admin List */
     .admin-card {
       background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px;
@@ -247,9 +243,7 @@
       border-radius: 6px; font-weight: 600; cursor: pointer; align-self: flex-start;
       display: flex; align-items: center; gap: 5px; font-size: 0.9rem;
     }
-    .progress-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; display: none; margin-top: 5px; }
-    .progress-fill { height: 100%; background: var(--success); width: 0%; transition: width 0.3s; }
-
+    
   </style>
 </head>
 <body>
@@ -388,7 +382,7 @@
       </div>
       
       <div class="card" style="background:#fff3cd; color:#856404; font-size:0.85rem; margin-bottom:20px;">
-        <i class="fas fa-info-circle"></i> <b>Panduan:</b> Pilih file gambar baru, lalu klik tombol "Upload & Simpan". Jika terjadi Eror, sistem akan menampilkan detailnya.
+        <i class="fas fa-info-circle"></i> <b>Info:</b> Foto akan otomatis dikompres agar ringan dan disimpan langsung ke database (bukan storage). Ini menjamin keberhasilan upload.
       </div>
 
       <div id="adminLocationList">
@@ -412,7 +406,7 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-    const storage = firebase.storage();
+    // Kita tidak menggunakan storage() di logika baru
 
     const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
 
@@ -432,7 +426,6 @@
       document.getElementById('loader').style.display = 'none';
       updateUIState();
       
-      // Setup Secret Trigger for Admin
       const headerTitle = document.querySelector('#mainHeader h1');
       headerTitle.addEventListener('click', () => {
         clickCount++;
@@ -446,7 +439,7 @@
       });
     });
 
-    // --- PAX INPUT LOGIC ---
+    // --- LOGIC UMUM (TIDAK BERUBAH) ---
     function updatePaxStep(amount) {
         const input = document.getElementById('inputPax');
         let val = parseInt(input.value) || 0;
@@ -459,7 +452,6 @@
         if(parseInt(input.value) < 1) input.value = 1;
     }
 
-    // --- DATE/TIME UI ---
     function updateDateUI() {
         const val = document.getElementById('inputDate').value;
         const display = document.getElementById('displayDate');
@@ -479,10 +471,8 @@
         } else display.textContent = "--:--";
     }
 
-    // --- DATA LOADING ---
     async function loadData() {
       try {
-        // Load Locations
         try {
             let snap = await db.collection('locations').get();
             if(snap.empty) snap = await db.collection('Locations').get(); 
@@ -490,7 +480,6 @@
             snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
         } catch(e) { console.error("Error loading locations:", e); }
 
-        // Load Menus
         try {
             let snap = await db.collection('menus').get();
             menusData = {};
@@ -505,7 +494,6 @@
       } catch (err) { console.error(err); }
     }
 
-    // --- MENU LOGIC ---
     function categorizeMenu(name) {
         const n = name.toLowerCase();
         if(n.includes("jeep") || n.includes("jip")) return "Wisata Jeep";
@@ -584,7 +572,6 @@
         icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     }
 
-    // --- MENU QTY LOGIC ---
     function updateMenuQty(name, change, safeCat) {
         const id = cleanId(name);
         const input = document.getElementById(`qty-${id}`);
@@ -619,7 +606,6 @@
     }
     function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
 
-    // --- NAVIGATION ---
     async function nextStep() {
         if(currentStep === 1) {
             const date = document.getElementById('inputDate').value;
@@ -676,7 +662,6 @@
         else if(currentStep === 4) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>'; priceInfo.style.display = 'none'; }
     }
 
-    // --- CHECK AVAILABILITY ---
     async function checkAvailability() {
         const dateVal = document.getElementById('inputDate').value;
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
@@ -787,7 +772,7 @@
     function closeImage() { document.getElementById('imgModal').style.display = 'none'; }
 
     // ===============================================
-    // ADMIN FUNCTIONS (ADVANCED ERROR HANDLING)
+    // ADMIN FUNCTIONS (NEW BYPASS LOGIC)
     // ===============================================
 
     function openAdmin() {
@@ -838,160 +823,99 @@
                  <div class="upload-controls">
                     <input type="file" id="file-${loc.id}" accept="image/*" class="file-input">
                     <button class="btn-upload-save" onclick="handleFileUpload('${loc.id}')">
-                       <i class="fas fa-cloud-upload-alt"></i> Upload & Simpan
+                       <i class="fas fa-save"></i> Simpan Foto
                     </button>
-                    <div class="progress-bar" id="prog-bar-${loc.id}">
-                       <div class="progress-fill" id="prog-fill-${loc.id}"></div>
-                    </div>
                  </div>
               </div>
             `;
             container.appendChild(card);
           });
       } catch (err) {
-          showDetailedError('Gagal Memuat Lokasi Admin', err);
+          Swal.fire('Error', 'Gagal memuat list admin', 'error');
       }
     }
 
-    /**
-     * FUNGSI HELPER UNTUK MENAMPILKAN DETAIL EROR YANG BISA DISALIN
-     */
-    function showDetailedError(title, errorObj) {
-        console.error(title, errorObj);
-        
-        // Konversi objek error ke String yang rapi
-        let errorDetails = "";
-        
-        if (typeof errorObj === 'object') {
-             // Coba ambil property standard
-             const code = errorObj.code || 'No Code';
-             const message = errorObj.message || JSON.stringify(errorObj);
-             const stack = errorObj.stack || 'No Stack Trace';
-             
-             errorDetails = `CODE: ${code}\nMESSAGE: ${message}\n\nSTACK:\n${stack}`;
-        } else {
-             errorDetails = String(errorObj);
-        }
-
-        // Tampilkan SweetAlert dengan Textarea yang berisi detail eror
-        Swal.fire({
-            icon: 'error',
-            title: title,
-            html: `
-                <p style="font-size:0.9rem; color:#555;">Terjadi kesalahan sistem. Silakan salin detail di bawah dan kirim ke developer.</p>
-                <textarea id="errTextArea" style="width:100%; height:150px; font-size:0.75rem; font-family:monospace; background:#eee; border:1px solid #ccc; margin-top:10px; padding:5px;" readonly>${errorDetails}</textarea>
-                <button onclick="copyErrorToClipboard()" style="margin-top:10px; background:#333; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">
-                    <i class="fas fa-copy"></i> Salin Detail Eror
-                </button>
-            `,
-            confirmButtonText: 'Tutup',
-            confirmButtonColor: '#d33'
-        });
-    }
-
-    // Fungsi kecil untuk menyalin teks di dalam SweetAlert
-    function copyErrorToClipboard() {
-        const copyText = document.getElementById("errTextArea");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999); /* Untuk mobile */
-        navigator.clipboard.writeText(copyText.value).then(() => {
-            const btn = document.querySelector('button[onclick="copyErrorToClipboard()"]');
-            btn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
-            btn.style.background = '#27ae60';
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-copy"></i> Salin Detail Eror';
-                btn.style.background = '#333';
-            }, 2000);
-        });
-    }
-
-    // --- FUNGSI UPLOAD YANG SUDAH DIPERBAIKI (ADVANCED) ---
-    function handleFileUpload(locId) {
-        // 1. Validasi Input Dasar (Try-Catch Synchronous)
+    // --- LOGIKA UPLOAD BARU (TANPA FIREBASE STORAGE) ---
+    // Foto dikompres -> diubah jadi teks Base64 -> disimpan di Firestore
+    async function handleFileUpload(locId) {
         try {
             const fileInput = document.getElementById(`file-${locId}`);
-            if (!fileInput) throw new Error("Element input file tidak ditemukan di DOM.");
-            
             const file = fileInput.files[0];
             
-            // Validasi: Apakah file dipilih?
-            if (!file) {
-                Swal.fire('Peringatan', 'Mohon pilih file foto terlebih dahulu!', 'warning');
+            if(!file) {
+                Swal.fire('Peringatan', 'Pilih file foto dulu!', 'warning');
                 return;
             }
 
-            // Validasi: Apakah tipe file gambar?
+            // Validasi tipe file
             if (!file.type.match('image.*')) {
-                 Swal.fire('Format Salah', 'File yang dipilih bukan gambar (jpg/png).', 'error');
-                 return;
+                Swal.fire('Format Salah', 'Harus file gambar (jpg/png).', 'error');
+                return;
             }
 
-            // Validasi: Ukuran File (Max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                 Swal.fire('Terlalu Besar', 'Ukuran gambar maksimal 5MB agar website tidak lambat.', 'warning');
-                 return;
-            }
+            // Ubah tombol jadi loading
+            const btn = document.querySelector(`button[onclick="handleFileUpload('${locId}')"]`);
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            btn.disabled = true;
 
-            // Reset Progress Bar
-            const progBar = document.getElementById(`prog-bar-${locId}`);
-            const progFill = document.getElementById(`prog-fill-${locId}`);
-            if(progBar) { progBar.style.display = 'block'; }
-            if(progFill) { progFill.style.width = '0%'; }
+            // 1. Kompres dan Ubah ke Base64
+            const compressedBase64 = await compressImage(file);
 
-            // 2. Persiapan Upload
-            const ext = file.name.split('.').pop();
-            const fileName = `${locId}_${Date.now()}.${ext}`;
-            const filePath = `location_images/${fileName}`;
-            const storageRef = firebase.storage().ref(filePath);
-            const metadata = { contentType: file.type };
+            // 2. Simpan LANGSUNG ke Database (Firestore)
+            await db.collection('locations').doc(locId).update({
+                imageUrl: compressedBase64
+            });
 
-            // 3. Eksekusi Upload dengan Error Handling Listener
-            const uploadTask = storageRef.put(file, metadata);
+            // 3. Update tampilan
+            document.getElementById(`preview-${locId}`).src = compressedBase64;
+            Swal.fire('Berhasil!', 'Foto berhasil disimpan ke Database.', 'success');
 
-            uploadTask.on('state_changed',
-                // A. Progress Monitor
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    if(progFill) progFill.style.width = progress + '%';
-                },
-                
-                // B. Error Handler (Storage Level)
-                (error) => {
-                    if(progBar) progBar.style.display = 'none';
-                    // Tampilkan detail eror storage
-                    showDetailedError('Gagal Upload ke Storage', error);
-                },
-                
-                // C. Success Handler
-                async () => {
-                    try {
-                        // Coba ambil URL
-                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                        
-                        // Coba simpan ke Firestore
-                        await db.collection('locations').doc(locId).update({
-                            imageUrl: downloadURL
-                        });
+            btn.innerHTML = oldText;
+            btn.disabled = false;
 
-                        // Update UI
-                        const previewImg = document.getElementById(`preview-${locId}`);
-                        if(previewImg) previewImg.src = downloadURL;
-                        
-                        if(progBar) progBar.style.display = 'none';
-                        Swal.fire('Berhasil!', 'Foto lokasi berhasil diperbarui.', 'success');
-
-                    } catch (postUploadError) {
-                        // Error terjadi SETELAH upload (saat ambil URL atau update Firestore)
-                        if(progBar) progBar.style.display = 'none';
-                        showDetailedError('Gagal Update Database', postUploadError);
-                    }
-                }
-            );
-
-        } catch (initialError) {
-            // Error terjadi bahkan SEBELUM upload dimulai (masalah coding/DOM)
-            showDetailedError('Gagal Inisialisasi', initialError);
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Gagal', 'Terjadi kesalahan: ' + e.message, 'error');
+            
+            const btn = document.querySelector(`button[onclick="handleFileUpload('${locId}')"]`);
+            if(btn) { btn.innerHTML = '<i class="fas fa-save"></i> Simpan Foto'; btn.disabled = false; }
         }
+    }
+
+    // Fungsi Pembantu: Kompres Gambar menggunakan Canvas HTML5
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600; // Lebar maksimal 600px (biar ringan)
+                    const scaleSize = MAX_WIDTH / img.width;
+                    
+                    // Hitung dimensi baru
+                    if (img.width > MAX_WIDTH) {
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                    } else {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                    }
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // Ubah jadi JPEG kualitas rendah (0.6) agar string pendek
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                    resolve(dataUrl);
+                }
+                img.onerror = (err) => reject(new Error("File gambar rusak"));
+            }
+            reader.onerror = (err) => reject(new Error("Gagal membaca file"));
+        });
     }
 
   </script>
