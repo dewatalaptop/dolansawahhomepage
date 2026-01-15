@@ -883,97 +883,68 @@
     }
 
     function handleFileUpload(locId) {
-  const fileInput = document.getElementById(`file-${locId}`);
-  const file = fileInput.files[0];
-  
-  // 1. Cek apakah file sudah dipilih
-  if(!file) {
-    Swal.fire('Peringatan', 'Anda belum memilih file gambar.', 'warning');
-    return;
-  }
+  try {
+    // TES AWAL: Jika ini muncul, berarti tombol berfungsi
+    console.log("Tombol klik terdeteksi untuk ID:", locId);
 
-  console.log("Memulai proses upload untuk ID:", locId);
-  console.log("Detail File:", { name: file.name, size: file.size, type: file.type });
-
-  const progBar = document.getElementById(`prog-bar-${locId}`);
-  const progFill = document.getElementById(`prog-fill-${locId}`);
-  
-  // Tampilkan progress bar
-  progBar.style.display = 'block';
-  progFill.style.width = '0%';
-
-  // 2. Tentukan jalur penyimpanan di Firebase Storage
-  const fileName = `location_images/${locId}_${Date.now()}`;
-  const storageRef = firebase.storage().ref(fileName);
-
-  // 3. Eksekusi Upload
-  const uploadTask = storageRef.put(file);
-
-  uploadTask.on('state_changed', 
-    (snapshot) => {
-      // Menghitung progress secara real-time
-      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      console.log('Progress upload: ' + progress + '%');
-      progFill.style.width = progress + '%';
-    }, 
-    (error) => {
-      // --- BAGIAN DIAGNOSA ERROR ---
-      console.error("FULL ERROR OBJECT:", error);
-      progBar.style.display = 'none';
-
-      let detailPesan = "";
-      switch (error.code) {
-        case 'storage/unauthorized':
-          detailPesan = "Error (403): Izin ditolak. Rules Firebase Storage Anda belum mengizinkan upload.";
-          break;
-        case 'storage/canceled':
-          detailPesan = "Upload dibatalkan oleh pengguna.";
-          break;
-        case 'storage/unknown':
-          detailPesan = "Error tidak dikenal. Kemungkinan besar masalah koneksi atau CORS (Cross-Origin).";
-          break;
-        default:
-          detailPesan = "Terjadi kesalahan: " + error.message;
-      }
-
-      // Tampilkan popup error yang bisa Anda screenshot/salin informasinya
-      Swal.fire({
-        icon: 'error',
-        title: 'Upload Gagal',
-        html: `<div style="text-align:left; font-size:0.8rem; background:#f8f9fa; padding:10px; border-radius:5px;">
-                <strong>Kode Error:</strong> ${error.code}<br>
-                <strong>Pesan:</strong> ${detailPesan}
-               </div>`,
-        confirmButtonText: 'Saya Mengerti'
-      });
-    }, 
-    () => {
-      // 4. Jika Upload Berhasil
-      uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-        console.log('File sukses terupload. URL:', downloadURL);
-        
-        // Simpan URL ke Firestore
-        db.collection('locations').doc(locId).update({
-          imageUrl: downloadURL
-        }).then(() => {
-          Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: 'Foto lokasi telah diperbarui.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-          document.getElementById(`preview-${locId}`).src = downloadURL;
-          progBar.style.display = 'none';
-          fileInput.value = '';
-        }).catch((dbError) => {
-          console.error("Firestore Update Error:", dbError);
-          Swal.fire('Database Error', 'File terupload tapi gagal update data lokasi.', 'error');
-        });
-      });
+    const fileInput = document.getElementById(`file-${locId}`);
+    if (!fileInput) {
+      alert("Error: Input file tidak ditemukan di HTML");
+      return;
     }
-  );
+
+    const file = fileInput.files[0];
+    if (!file) {
+      Swal.fire('Peringatan', 'Pilih foto dulu!', 'warning');
+      return;
+    }
+
+    // Pastikan Firebase Storage siap
+    if (typeof firebase === 'undefined' || !firebase.storage) {
+      alert("Error: Firebase Storage belum terpasang dengan benar");
+      return;
+    }
+
+    const progBar = document.getElementById(`prog-bar-${locId}`);
+    const progFill = document.getElementById(`prog-fill-${locId}`);
+    progBar.style.display = 'block';
+    progFill.style.width = '0%';
+
+    const fileName = `location_images/${locId}_${Date.now()}`;
+    const storageRef = firebase.storage().ref(fileName);
+
+    console.log("Mencoba melakukan put(file)...");
+    const uploadTask = storageRef.put(file);
+
+    uploadTask.on('state_changed', 
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        progFill.style.width = progress + '%';
+      }, 
+      (error) => {
+        console.error("Firebase Storage Error:", error);
+        alert("Gagal di Firebase: " + error.message);
+        progBar.style.display = 'none';
+      }, 
+      () => {
+        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+          db.collection('locations').doc(locId).update({ imageUrl: downloadURL })
+            .then(() => {
+              Swal.fire('Berhasil!', 'Foto terupdate.', 'success');
+              document.getElementById(`preview-${locId}`).src = downloadURL;
+              progBar.style.display = 'none';
+            });
+        });
+      }
+    );
+
+  } catch (err) {
+    // JIKA KODE MATI, INI AKAN MENAMPILKAN PESANNYA
+    console.error("CRASH ERROR:", err);
+    alert("KODE ERROR (Crash): " + err.message);
+  }
 }
+
 
 
   </script>
