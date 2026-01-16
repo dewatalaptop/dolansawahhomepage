@@ -10,9 +10,11 @@
   
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+    /* --- CSS UTAMA --- */
     :root {
       --primary: #2a9d8f;
       --primary-dark: #264653;
@@ -45,6 +47,7 @@
       border-bottom-right-radius: 30px;
       box-shadow: 0 4px 15px rgba(0,0,0,0.1);
       position: sticky; top: 0; z-index: 99;
+      user-select: none;
     }
     .dynamic-title { font-size: 1.3rem; font-weight: 700; margin-top: 5px; animation: fadeIn 0.5s; }
 
@@ -196,11 +199,56 @@
 
     .step-section { display: none; }
     .step-section.active { display: block; }
+
+    /* ========================================= */
+    /* ADMIN PANEL STYLES */
+    /* ========================================= */
+    .admin-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: #f0f2f5; z-index: 5000; overflow-y: auto;
+    }
+    .admin-header {
+      background: var(--dark); color: white; padding: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .admin-container { max-width: 800px; margin: 20px auto; padding: 0 15px; padding-bottom: 50px; }
+    
+    .login-box {
+      max-width: 400px; margin: 100px auto; background: white; padding: 30px;
+      border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center;
+    }
+    .login-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
+    .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+    .admin-card {
+      background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px;
+    }
+    .admin-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .admin-card h4 { margin: 0; color: var(--dark); font-size: 1rem; }
+    
+    .upload-area {
+      display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap;
+    }
+    .img-preview-box {
+      width: 100px; height: 100px; background: #eee; border-radius: 8px; overflow: hidden; flex-shrink: 0; position: relative;
+    }
+    .img-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+    .upload-controls { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 200px; }
+    
+    .file-input { font-size: 0.9rem; }
+    .btn-upload-save {
+      background: var(--secondary); color: var(--dark); border: none; padding: 8px 15px;
+      border-radius: 6px; font-weight: 600; cursor: pointer; align-self: flex-start;
+      display: flex; align-items: center; gap: 5px; font-size: 0.9rem;
+    }
+    
   </style>
 </head>
 <body>
 
-  <header>
+  <header id="mainHeader">
     <h1><i class="fas fa-leaf"></i> Dolan Sawah</h1>
     <div class="dynamic-title" id="headerTitle">Halo, Silahkan pilih waktu reservasi Anda</div>
     
@@ -309,8 +357,43 @@
     <button class="btn-action" id="btnNext" onclick="nextStep()">Cari Tempat <i class="fas fa-search"></i></button>
   </div>
 
+  <div id="adminPanel" class="admin-overlay">
+    
+    <div class="admin-header">
+      <div style="font-weight:700;"><i class="fas fa-user-cog"></i> Admin Panel</div>
+      <button onclick="closeAdmin()" style="background:transparent; border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:6px; cursor:pointer;">
+        Close <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div id="adminLoginView" class="login-box" style="display:none;">
+      <h3 style="color:var(--primary-dark); margin-bottom:20px;">Login Admin</h3>
+      <input type="email" id="adminEmail" class="login-input" placeholder="Email Admin">
+      <input type="password" id="adminPass" class="login-input" placeholder="Password">
+      <button class="btn-login" onclick="adminLogin()">Masuk</button>
+      <p id="loginError" style="color:red; font-size:0.8rem; display:none; margin-top:10px;"></p>
+    </div>
+
+    <div id="adminDashboardView" class="admin-container" style="display:none;">
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0; color:var(--dark);">Kelola Foto Tempat</h3>
+        <button onclick="adminLogout()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:6px; font-size:0.8rem; cursor:pointer;">Logout</button>
+      </div>
+      
+      <div class="card" style="background:#fff3cd; color:#856404; font-size:0.85rem; margin-bottom:20px;">
+        <i class="fas fa-info-circle"></i> <b>Info:</b> Foto akan otomatis dikompres agar ringan dan disimpan langsung ke database (bukan storage). Ini menjamin keberhasilan upload.
+      </div>
+
+      <div id="adminLocationList">
+        <div style="text-align:center; padding:20px;"><div class="spinner"></div></div>
+      </div>
+
+    </div>
+  </div>
+
   <script>
-    // --- FIREBASE SETUP ---
+    // --- FIREBASE CONFIGURATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
       authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -319,26 +402,12 @@
       messagingSenderId: "213151400721",
       appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
     };
+
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth();
+    // Kita tidak menggunakan storage() di logika baru
 
-    // --- PHOTO MAPPING ---
-    const locationImages = {
-        "Lantai 1 belakang": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7474_ve5qwo.jpg",
-        "Gubug 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7477_bxsmc6.jpg",
-        "Lantai 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7475_s9rtpo.jpg",
-        "Lantai 1 depan": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935935/IMG_7472_gd2zsf.jpg",
-        "Pondok 2": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936109/3ac34945-6aef-4921-8c08-f9cbf8ab4892_mfdft0.jpg",
-        "Pondok 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/49d5f9c2-da86-461e-bdca-ad04398bfd99_yturyb.jpg",
-        "Pondok 1": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764936110/ae454394-906a-43d6-a3e7-7453e5ef91b7_fdzogh.jpg",
-        "Lantai 3": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764935931/IMG_7479_dlgxmv.jpg",
-        "Lantai 1 tengah": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985452/IMG_7494_wyskxg.jpg",
-        "Meeting room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg",
-        "Meeting Room": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985551/IMG_7491_shjtqx.jpg",
-        "Lantai 1 Full Blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
-        "Lantai 1 full blok": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg",
-        "Lantai 1 Full Blok (peserta wajib di atas 200 orang)": "https://res.cloudinary.com/dn60ib3ur/image/upload/v1764985614/image_e2za88.jpg"
-    };
     const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
 
     let currentStep = 1;
@@ -346,15 +415,31 @@
     let menusData = {};
     let selectedMenus = {}; 
     let selectedLocationName = "";
+    
+    // Admin Variables
+    let clickCount = 0;
+    let clickTimer = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('inputDate').setAttribute('min', new Date().toISOString().split('T')[0]);
       await loadData();
       document.getElementById('loader').style.display = 'none';
       updateUIState();
+      
+      const headerTitle = document.querySelector('#mainHeader h1');
+      headerTitle.addEventListener('click', () => {
+        clickCount++;
+        if(clickTimer) clearTimeout(clickTimer);
+        clickTimer = setTimeout(() => { clickCount = 0; }, 2000); 
+
+        if(clickCount === 5) {
+            clickCount = 0;
+            openAdmin();
+        }
+      });
     });
 
-    // --- PAX INPUT LOGIC ---
+    // --- LOGIC UMUM (TIDAK BERUBAH) ---
     function updatePaxStep(amount) {
         const input = document.getElementById('inputPax');
         let val = parseInt(input.value) || 0;
@@ -367,7 +452,6 @@
         if(parseInt(input.value) < 1) input.value = 1;
     }
 
-    // --- DATE/TIME UI ---
     function updateDateUI() {
         const val = document.getElementById('inputDate').value;
         const display = document.getElementById('displayDate');
@@ -387,15 +471,14 @@
         } else display.textContent = "--:--";
     }
 
-    // --- DATA LOADING ---
     async function loadData() {
       try {
         try {
             let snap = await db.collection('locations').get();
-            if(snap.empty) snap = await db.collection('Locations').get();
+            if(snap.empty) snap = await db.collection('Locations').get(); 
             locationsData = [];
             snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
-        } catch(e) {}
+        } catch(e) { console.error("Error loading locations:", e); }
 
         try {
             let snap = await db.collection('menus').get();
@@ -405,12 +488,12 @@
                let desc = Array.isArray(d.details) ? d.details.join(", ") : (d.deskripsi || "");
                menusData[doc.id] = { name: doc.id, desc: desc, category: categorizeMenu(doc.id) };
             });
-        } catch(e) {}
+        } catch(e) { console.error("Error loading menus:", e); }
+        
         renderMenuAccordions();
-      } catch (err) {}
+      } catch (err) { console.error(err); }
     }
 
-    // --- MENU LOGIC ---
     function categorizeMenu(name) {
         const n = name.toLowerCase();
         if(n.includes("jeep") || n.includes("jip")) return "Wisata Jeep";
@@ -489,7 +572,6 @@
         icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
     }
 
-    // --- MENU QTY LOGIC ---
     function updateMenuQty(name, change, safeCat) {
         const id = cleanId(name);
         const input = document.getElementById(`qty-${id}`);
@@ -524,7 +606,6 @@
     }
     function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
 
-    // --- NAVIGATION ---
     async function nextStep() {
         if(currentStep === 1) {
             const date = document.getElementById('inputDate').value;
@@ -581,7 +662,6 @@
         else if(currentStep === 4) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>'; priceInfo.style.display = 'none'; }
     }
 
-    // --- CHECK AVAILABILITY LOGIC (UPDATED) ---
     async function checkAvailability() {
         const dateVal = document.getElementById('inputDate').value;
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
@@ -591,22 +671,17 @@
         try {
             const snapshot = await db.collection('reservations').where('date', '==', dateVal).get();
             const usageMap = {};
-            
-            // --- LOGIKA BARU: Cek Status Full Blok ---
             let isLantai1FullBooked = false;
 
             snapshot.forEach(doc => {
                 const d = doc.data();
                 if(d.tempat) {
                     usageMap[d.tempat] = (usageMap[d.tempat] || 0) + (parseInt(d.jumlah) || 0);
-                    
-                    // Cek apakah ada reservasi untuk Full Blok lantai 1
                     if (d.tempat.toLowerCase().includes("lantai 1 full blok")) {
                         isLantai1FullBooked = true;
                     }
                 }
             });
-            // ------------------------------------------
 
             container.innerHTML = '';
             locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
@@ -617,20 +692,15 @@
                 let isFull = remaining < paxVal;
                 let customError = "";
 
-                // --- LOGIKA BARU: Override jika Full Blok dipesan ---
-                // Jika Lantai 1 Full Blok sudah dipesan, maka bagian Depan, Tengah, dan Belakang dianggap PENUH
                 if (isLantai1FullBooked) {
                     if (locNameLower.includes("lantai 1 depan") || 
                         locNameLower.includes("lantai 1 tengah") || 
                         locNameLower.includes("lantai 1 belakang")) {
-                        
                         isFull = true;
-                        remaining = 0; // Set sisa 0 agar label menjadi "PENUH"
+                        remaining = 0; 
                     }
                 }
-                // ----------------------------------------------------
-
-                // Logika existing untuk validasi Full Blok (min 200 orang)
+                
                 if(locNameLower.includes("full blok") && paxVal < 200) { 
                     isFull = true; 
                     customError = "Min. 200 Orang"; 
@@ -639,10 +709,10 @@
                 let capClass = "cap-safe";
                 if(remaining <= 0) capClass = "cap-full";
                 
-                const imageUrl = locationImages[loc.name] || defaultImage;
+                const imageUrl = loc.imageUrl || defaultImage;
+
                 const div = document.createElement('div');
                 div.className = `location-option ${isFull ? 'disabled' : ''}`;
-                // Hapus seleksi jika lokasi tiba-tiba jadi full
                 if(selectedLocationName === loc.name && !isFull) div.classList.add('selected');
                 
                 div.innerHTML = `
@@ -686,7 +756,7 @@
                 tambahan: document.getElementById('inputNote').value,
                 menus: Object.entries(selectedMenus).map(([k,v]) => ({name:k, quantity:v})),
                 status: 'pending',
-                via: 'Web App V7',
+                via: 'Web App V8',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
             Swal.fire({ icon: 'success', title: 'Terkirim!', text: 'Admin akan menghubungi WhatsApp Anda.', confirmButtonColor: 'var(--primary)' }).then(() => window.location.reload());
@@ -700,6 +770,154 @@
         document.getElementById('modalCaption').textContent = caption; 
     }
     function closeImage() { document.getElementById('imgModal').style.display = 'none'; }
+
+    // ===============================================
+    // ADMIN FUNCTIONS (NEW BYPASS LOGIC)
+    // ===============================================
+
+    function openAdmin() {
+      document.getElementById('adminPanel').style.display = 'block';
+      auth.onAuthStateChanged(user => {
+        if(user) showAdminDashboard();
+        else showAdminLogin();
+      });
+    }
+
+    function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
+    function showAdminLogin() { document.getElementById('adminLoginView').style.display = 'block'; document.getElementById('adminDashboardView').style.display = 'none'; }
+    function showAdminDashboard() { document.getElementById('adminLoginView').style.display = 'none'; document.getElementById('adminDashboardView').style.display = 'block'; renderAdminLocations(); }
+
+    function adminLogin() {
+      const email = document.getElementById('adminEmail').value;
+      const pass = document.getElementById('adminPass').value;
+      const errEl = document.getElementById('loginError');
+
+      if(!email || !pass) { errEl.textContent = "Isi email dan password."; errEl.style.display = 'block'; return; }
+
+      auth.signInWithEmailAndPassword(email, pass)
+        .then(() => { errEl.style.display = 'none'; showAdminDashboard(); })
+        .catch(error => { errEl.textContent = "Login gagal: " + error.message; errEl.style.display = 'block'; });
+    }
+
+    function adminLogout() { auth.signOut().then(() => showAdminLogin()); }
+
+    async function renderAdminLocations() {
+      const container = document.getElementById('adminLocationList');
+      container.innerHTML = '<div class="spinner"></div>';
+      try {
+          await loadData();
+          container.innerHTML = '';
+          locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
+            const currentImg = loc.imageUrl || defaultImage;
+            const card = document.createElement('div');
+            card.className = 'admin-card';
+            card.innerHTML = `
+              <div class="admin-card-header">
+                 <h4>${loc.name}</h4>
+                 <small style="color:#888;">ID: ${loc.id}</small>
+              </div>
+              <div class="upload-area">
+                 <div class="img-preview-box">
+                    <img src="${currentImg}" id="preview-${loc.id}">
+                 </div>
+                 <div class="upload-controls">
+                    <input type="file" id="file-${loc.id}" accept="image/*" class="file-input">
+                    <button class="btn-upload-save" onclick="handleFileUpload('${loc.id}')">
+                       <i class="fas fa-save"></i> Simpan Foto
+                    </button>
+                 </div>
+              </div>
+            `;
+            container.appendChild(card);
+          });
+      } catch (err) {
+          Swal.fire('Error', 'Gagal memuat list admin', 'error');
+      }
+    }
+
+    // --- LOGIKA UPLOAD BARU (TANPA FIREBASE STORAGE) ---
+    // Foto dikompres -> diubah jadi teks Base64 -> disimpan di Firestore
+    async function handleFileUpload(locId) {
+        try {
+            const fileInput = document.getElementById(`file-${locId}`);
+            const file = fileInput.files[0];
+            
+            if(!file) {
+                Swal.fire('Peringatan', 'Pilih file foto dulu!', 'warning');
+                return;
+            }
+
+            // Validasi tipe file
+            if (!file.type.match('image.*')) {
+                Swal.fire('Format Salah', 'Harus file gambar (jpg/png).', 'error');
+                return;
+            }
+
+            // Ubah tombol jadi loading
+            const btn = document.querySelector(`button[onclick="handleFileUpload('${locId}')"]`);
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            btn.disabled = true;
+
+            // 1. Kompres dan Ubah ke Base64
+            const compressedBase64 = await compressImage(file);
+
+            // 2. Simpan LANGSUNG ke Database (Firestore)
+            await db.collection('locations').doc(locId).update({
+                imageUrl: compressedBase64
+            });
+
+            // 3. Update tampilan
+            document.getElementById(`preview-${locId}`).src = compressedBase64;
+            Swal.fire('Berhasil!', 'Foto berhasil disimpan ke Database.', 'success');
+
+            btn.innerHTML = oldText;
+            btn.disabled = false;
+
+        } catch (e) {
+            console.error(e);
+            Swal.fire('Gagal', 'Terjadi kesalahan: ' + e.message, 'error');
+            
+            const btn = document.querySelector(`button[onclick="handleFileUpload('${locId}')"]`);
+            if(btn) { btn.innerHTML = '<i class="fas fa-save"></i> Simpan Foto'; btn.disabled = false; }
+        }
+    }
+
+    // Fungsi Pembantu: Kompres Gambar menggunakan Canvas HTML5
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600; // Lebar maksimal 600px (biar ringan)
+                    const scaleSize = MAX_WIDTH / img.width;
+                    
+                    // Hitung dimensi baru
+                    if (img.width > MAX_WIDTH) {
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                    } else {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                    }
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // Ubah jadi JPEG kualitas rendah (0.6) agar string pendek
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                    resolve(dataUrl);
+                }
+                img.onerror = (err) => reject(new Error("File gambar rusak"));
+            }
+            reader.onerror = (err) => reject(new Error("Gagal membaca file"));
+        });
+    }
+
   </script>
 </body>
 </html>
