@@ -109,6 +109,38 @@
         .popup-button { background: #ff5722; color: white; padding: 10px 30px; border-radius: 8px; border: none; cursor: pointer; margin-top: 15px; }
         @keyframes fadeInPopup { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
+        /* --- NEW STYLES FOR MENU IMAGE POPUP (PROPORTIONAL) --- */
+        .promo-popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 6000;
+            display: none; justify-content: center; align-items: center;
+            padding: 10px; animation: popIn 0.4s ease-out;
+        }
+        @keyframes popIn { 0% { opacity:0; transform: scale(0.8); } 100% { opacity:1; transform: scale(1); }}
+        
+        .promo-popup-container {
+            position: relative;
+            max-width: 90%; max-height: 90%;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        .promo-popup-container img {
+            width: auto; height: auto;
+            max-width: 100%; max-height: 85vh; /* Proporsional terhadap layar */
+            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(255,255,255,0.2);
+            object-fit: contain;
+        }
+        
+        .promo-close-btn {
+            position: absolute; top: -15px; right: -15px;
+            background: red; color: white; border: 2px solid white;
+            width: 40px; height: 40px; border-radius: 50%;
+            font-weight: bold; font-size: 20px; cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+        }
+
         #scroll-indicator { position: fixed; bottom: 20px; right: 20px; background: rgba(0, 0, 0, 0.6); color: white; padding: 8px 15px; border-radius: 20px; font-size: 14px; z-index: 3000; display: none; align-items: center; gap: 5px; animation: bounce 2s infinite ease-in-out; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
@@ -156,6 +188,11 @@
         .btn-save-container { position: fixed; bottom: 0; right: 0; width: 100%; max-width: 450px; padding: 15px; background: white; border-top: 1px solid #ddd; z-index: 11; }
         .btn-save { background: linear-gradient(135deg, #4caf50, #2e7d32); color: white; padding: 15px; font-size: 16px; border: none; border-radius: 8px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; font-weight: bold; letter-spacing: 0.5px; }
         .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Switch Toggle Style */
+        .switch-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .switch-toggle input[type="checkbox"] { width: auto; margin: 0; }
+        .switch-label { font-size: 13px; font-weight: bold; color: #333; }
     </style>
 </head>
 <body>
@@ -200,21 +237,23 @@
             </div>
 
             <div class="menu-grid-container">
-                <a onclick="showPage('page-reguler')" class="menu-card bg-orange">
+                <a onclick="handlePageNavigation('page-reguler', 'reguler')" class="menu-card bg-orange">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg><span>Menu<br>Reguler</span>
                 </a>
-                <a onclick="showPage('page-menu')" class="menu-card bg-green">
+                <a onclick="handlePageNavigation('page-menu', 'reservation')" class="menu-card bg-green">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V5h10v14zM9 7h6v2H9zm0 4h6v2H9zm0 4h4v2H9z"/></svg><span>Menu<br>Reservasi</span>
                 </a>
-                <a onclick="showPage('page-gallery')" class="menu-card bg-orange">
+                <a onclick="handlePageNavigation('page-gallery', 'gallery')" class="menu-card bg-orange">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>Gallery<br>Lokasi</span>
                 </a>
-                <a onclick="showPage('page-jadwal')" class="menu-card bg-green">
+                <a onclick="handlePageNavigation('page-jadwal', 'jadwal')" class="menu-card bg-green">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>Jadwal<br>Buka</span>
                 </a>
-                <a onclick="showPage('page-jeep')" class="menu-card bg-orange">
+                
+                <a onclick="handlePageNavigation('page-jeep', 'jeep')" class="menu-card bg-orange">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,12H5L6,8H18L19,12M20,13V7H4V13L2,13V16C2,17.1 2.9,18 4,18V21C4,21.55 4.45,22 5,22H7C7.55,22 8,21.55 8,21V18H16V21C16,21.55 16.45,22 17,22H19C19.55,22 20,21.55 20,21V18C21.1,18 22,17.1 22,16V13L20,13M6.5,16C5.67,16 5,15.33 5,14.5C5,13.67 5.67,13 6.5,13C7.33,13 8,13.67 8,14.5C8,15.33 7.33,16 6.5,16M17.5,16C16.67,16 16,15.33 16,14.5C16,13.67 16.67,13 17.5,13C18.33,13 19,13.67 19,14.5C19,15.33 18.33,16 17.5,16Z"/></svg><span>Jeep<br>Adventure</span>
                 </a>
+                
                 <a href="https://maps.app.goo.gl/gCyTugKbGJEdobXs8?g_st=ic" target="_blank" class="menu-card bg-green">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><span>Lokasi<br>Maps</span>
                 </a>
@@ -271,6 +310,13 @@
     <div class="fullscreen-modal" id="fullscreen-modal"><button class="close-btn" onclick="closeFullscreen()">X</button><img id="fullscreen-img" src="" alt="Gambar besar" referrerpolicy="no-referrer"></div>
     <div id="generic-popup" class="popup-overlay" onclick="closePopup()"><div class="popup-content" onclick="event.stopPropagation()"><h2 id="popup-title"></h2><div id="popup-body"></div><button id="popup-button" class="popup-button" onclick="closePopup()">Tutup</button></div></div>
     
+    <div id="menu-image-popup" class="promo-popup-overlay">
+        <div class="promo-popup-container">
+            <button class="promo-close-btn" onclick="closeMenuPopup()">X</button>
+            <img id="menu-popup-img" src="" alt="Promo Popup">
+        </div>
+    </div>
+
     <div id="scroll-indicator">Scroll ke Bawah <span>↓</span></div>
 
     <button id="floating-home-button" onclick="showPage('page-home')">
@@ -302,12 +348,20 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // DATA STRUKTUR BARU (Advanced)
+        // DATA STRUKTUR BARU (Dengan menuPopups)
         const defaultData = {
             general: {
                 headerImage: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752467234/IMG_5184_qcsvrt.jpg",
                 overlayImage: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1765194271/IMG_7534_xbo5fc.png",
                 memberBtnImage: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1762433981/IMG_7095_muk3qw.png"
+            },
+            // PENGATURAN POPUP MENU BARU
+            menuPopups: {
+                jeep: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Jeep" },
+                reservation: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Reservasi" },
+                reguler: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Reguler" },
+                gallery: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Gallery" },
+                jadwal: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Jadwal" }
             },
             slideshow: [
                 "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5218_k3sgqn.jpg",
@@ -376,53 +430,50 @@
             document.getElementById('open-dashboard-btn').style.display = user ? 'block' : 'none';
         });
 
-        // GANTI FUNGSI loadData() YANG LAMA DENGAN INI:
+        async function loadData() {
+            try {
+                // KEMBALI KE V4 UNTUK MENGEMBALIKAN DATA LAMA
+                const docRef = doc(db, "website_data", "master_config_v4"); 
+                const docSnap = await getDoc(docRef);
 
-async function loadData() {
-    try {
-        const docRef = doc(db, "website_data", "master_config_v4");
-        
-        // Tambahkan opsi 'source: default' agar mencoba ambil dari server dulu
-        const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    console.log("Data lama ditemukan di Firebase!");
+                    globalConfig = docSnap.data();
+                    
+                    // PENYELAMAT: Jika data lama belum punya menuPopups, kita tambahkan otomatis
+                    if(!globalConfig.menuPopups) globalConfig.menuPopups = defaultData.menuPopups; 
+                    
+                    // Pengecekan data lainnya
+                    if(!globalConfig.general) globalConfig.general = defaultData.general;
+                    if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
+                    if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
+                    if(!globalConfig.slideshow) globalConfig.slideshow = defaultData.slideshow;
+                    if(!globalConfig.jeepPackages) globalConfig.jeepPackages = defaultData.jeepPackages;
+                    if(!globalConfig.gallery) globalConfig.gallery = defaultData.gallery;
 
-        if (docSnap.exists()) {
-            console.log("Data ditemukan di Firebase!");
-            globalConfig = docSnap.data();
+                    renderWebsite(globalConfig);
+                } else {
+                    console.warn("Dokumen tidak ditemukan, menggunakan default.");
+                    globalConfig = defaultData;
+                    renderWebsite(globalConfig);
+                }
+            } catch (e) {
+                console.error("GAGAL MEMUAT DATA:", e);
+                alert("Gagal mengambil data: " + e.message + "\nMenampilkan data default.");
+                globalConfig = defaultData; 
+                renderWebsite(globalConfig);
+            }
             
-            // Pengecekan data kosong untuk menjaga struktur
-            if(!globalConfig.general) globalConfig.general = defaultData.general;
-            if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
-            if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
-            if(!globalConfig.slideshow) globalConfig.slideshow = defaultData.slideshow;
-            if(!globalConfig.jeepPackages) globalConfig.jeepPackages = defaultData.jeepPackages;
-            if(!globalConfig.gallery) globalConfig.gallery = defaultData.gallery;
-
-            renderWebsite(globalConfig);
-        } else {
-            console.warn("Dokumen tidak ditemukan, menggunakan default.");
-            // Jika dokumen benar-benar tidak ada (belum pernah disimpan), baru pakai default
-            globalConfig = defaultData;
-            renderWebsite(globalConfig);
+            // Hapus loading screen
+            document.querySelector(".loading-fill").style.width = "100%";
+            document.querySelector(".loading-text").textContent = "100%";
+            setTimeout(() => {
+                document.querySelector(".loading-screen").style.display = "none";
+                const hash = window.location.hash.substring(1);
+                if(hash && document.getElementById(hash)) showPage(hash);
+                else showPage("page-home");
+            }, 500);
         }
-    } catch (e) {
-        // JANGAN SILENT! Tampilkan error di console dan alert jika perlu
-        console.error("GAGAL MEMUAT DATA:", e);
-        alert("Gagal mengambil data terbaru: " + e.message + "\nMenampilkan data default sementara.");
-        
-        globalConfig = defaultData; 
-        renderWebsite(globalConfig);
-    }
-    
-    // Hapus loading screen
-    document.querySelector(".loading-fill").style.width = "100%";
-    document.querySelector(".loading-text").textContent = "100%";
-    setTimeout(() => {
-        document.querySelector(".loading-screen").style.display = "none";
-        const hash = window.location.hash.substring(1);
-        if(hash && document.getElementById(hash)) showPage(hash);
-        else showPage("page-home");
-    }, 500);
-}
 
 
         // RENDER WEBSITE UTAMA
@@ -533,7 +584,42 @@ async function loadData() {
             const area = document.getElementById('admin-content-area');
             let html = '';
 
-            // 0. GENERAL SETTINGS (HEADER, OVERLAY, MEMBER BTN) - ADDED
+            // 0. PENGATURAN POP-UP MENU (FITUR BARU)
+            // Kita fokuskan Jeep di paling atas sesuai request, tapi juga generate untuk menu lain
+            html += `<div class="upload-group"><h3>Pengaturan Pop-up Menu Homepage</h3>`;
+            html += `<p style="font-size:12px; margin-bottom:10px;">Aktifkan pop-up agar gambar muncul saat menu diklik.</p>`;
+            
+            // Helper function untuk generate row popup admin
+            const generatePopupRow = (key, label) => {
+                const isActive = globalConfig.menuPopups[key].active ? 'checked' : '';
+                const imgSrc = globalConfig.menuPopups[key].image;
+                
+                return `
+                <div class="admin-item-row" style="background:#fff3e0; border:1px solid #ffe0b2; border-radius:8px; padding:10px;">
+                    <img src="${imgSrc}" class="preview-img">
+                    <div class="admin-item-info">
+                        <label style="font-size:14px; color:#e65100;">Menu: ${label}</label>
+                        <div class="switch-toggle">
+                            <input type="checkbox" id="popup-active-${key}" onchange="updatePopupActive('${key}', this.checked)" ${isActive}>
+                            <label for="popup-active-${key}" class="switch-label">Aktifkan Pop-up</label>
+                        </div>
+                        <input type="file" onchange="uploadFile(this, 'menuPopup', '${key}')">
+                    </div>
+                </div>`;
+            };
+
+            // Jeep Popup (Prioritas)
+            html += generatePopupRow('jeep', 'Jeep Adventure');
+            // Menu Lainnya
+            html += generatePopupRow('reservation', 'Menu Reservasi');
+            html += generatePopupRow('reguler', 'Menu Reguler');
+            html += generatePopupRow('gallery', 'Gallery Lokasi');
+            html += generatePopupRow('jadwal', 'Jadwal Buka');
+            
+            html += `</div>`;
+
+
+            // 0. GENERAL SETTINGS (HEADER, OVERLAY, MEMBER BTN)
             html += `<div class="upload-group"><h3>Pengaturan Umum (Gambar Utama)</h3>`;
             
             // Header Image
@@ -577,7 +663,7 @@ async function loadData() {
             html += `<button class="btn-add" onclick="addArrayItem('slideshow')">+ Tambah Slide</button></div>`;
 
             // 2. JEEP PACKAGES
-            html += `<div class="upload-group"><h3>Paket Jeep</h3>`;
+            html += `<div class="upload-group"><h3>Paket Jeep (Detail Halaman)</h3>`;
             globalConfig.jeepPackages.forEach((pkg, i) => {
                 html += `<div class="admin-item-row" style="background:#f9f9f9; padding:10px; border-radius:8px;">
                     <img src="${pkg.image}" class="preview-img">
@@ -648,6 +734,11 @@ async function loadData() {
 
         // --- ADMIN ACTIONS LOGIC ---
         
+        window.updatePopupActive = (key, status) => {
+            globalConfig.menuPopups[key].active = status;
+            // Tidak perlu refresh form, biar tidak lag
+        };
+
         window.addArrayItem = (key) => {
             if(key === 'slideshow') globalConfig.slideshow.push("https://via.placeholder.com/800x400?text=New+Slide");
             if(key === 'jeepPackages') globalConfig.jeepPackages.push({ title: "Paket Baru", image: "https://via.placeholder.com/400" });
@@ -702,10 +793,8 @@ async function loadData() {
                 const snapshot = await uploadBytes(storageRef, file);
                 const url = await getDownloadURL(snapshot.ref);
 
-                if (type === 'general') {
-                    // Logic baru untuk Header, Overlay, Member Btn
-                    globalConfig.general[key] = url;
-                }
+                if (type === 'general') globalConfig.general[key] = url;
+                else if (type === 'menuPopup') globalConfig.menuPopups[key].image = url; // Logic Baru
                 else if (type === 'slide') globalConfig.slideshow[key] = url;
                 else if (type === 'jeep') globalConfig.jeepPackages[key].image = url;
                 else if (type === 'resMenu') globalConfig.reservationMenu[key].image = url;
@@ -723,6 +812,7 @@ async function loadData() {
             const btn = document.querySelector('.btn-save');
             btn.disabled = true; btn.innerText = "MENYIMPAN...";
             try {
+                // TETAP SIMPAN DI V4 AGAR DATA LAMA TERUPDATE
                 await setDoc(doc(db, "website_data", "master_config_v4"), globalConfig);
                 alert("BERHASIL! Website telah diperbarui.");
                 location.reload();
@@ -749,6 +839,35 @@ async function loadData() {
             document.getElementById('floating-home-button').style.display = (pageId === 'page-home') ? 'none' : 'flex';
             const ind = document.getElementById('scroll-indicator');
             if(ind) ind.style.display = (['page-menu','page-reguler'].includes(pageId)) ? 'flex' : 'none';
+        };
+
+        // --- NEW LOGIC FOR MENU NAVIGATION WITH POPUP ---
+        window.handlePageNavigation = (pageId, configKey) => {
+            // 1. Pindah Halaman Dulu
+            showPage(pageId);
+
+            // 2. Cek apakah ada popup aktif untuk menu ini
+            if (globalConfig.menuPopups && 
+                globalConfig.menuPopups[configKey] && 
+                globalConfig.menuPopups[configKey].active &&
+                globalConfig.menuPopups[configKey].image) {
+                
+                // Jika aktif, tampilkan popup overlay
+                openMenuPopup(globalConfig.menuPopups[configKey].image);
+            }
+        };
+
+        const menuPopup = document.getElementById('menu-image-popup');
+        const menuPopupImg = document.getElementById('menu-popup-img');
+
+        window.openMenuPopup = (url) => {
+            menuPopupImg.src = url;
+            menuPopup.style.display = 'flex';
+        };
+
+        window.closeMenuPopup = () => {
+            menuPopup.style.display = 'none';
+            // User sudah berada di halaman tujuan, jadi hanya perlu menutup popup
         };
 
         window.openFullscreen = (img) => {
