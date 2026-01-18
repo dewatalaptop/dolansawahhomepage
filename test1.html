@@ -432,16 +432,19 @@
 
         async function loadData() {
             try {
-                const docRef = doc(db, "website_data", "master_config_v5"); // Updated version key
+                // KEMBALI KE V4 UNTUK MENGEMBALIKAN DATA LAMA
+                const docRef = doc(db, "website_data", "master_config_v4"); 
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    console.log("Data ditemukan di Firebase!");
+                    console.log("Data lama ditemukan di Firebase!");
                     globalConfig = docSnap.data();
                     
-                    // Pengecekan data kosong untuk menjaga struktur
+                    // PENYELAMAT: Jika data lama belum punya menuPopups, kita tambahkan otomatis
+                    if(!globalConfig.menuPopups) globalConfig.menuPopups = defaultData.menuPopups; 
+                    
+                    // Pengecekan data lainnya
                     if(!globalConfig.general) globalConfig.general = defaultData.general;
-                    if(!globalConfig.menuPopups) globalConfig.menuPopups = defaultData.menuPopups; // Ensure menuPopups exists
                     if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
                     if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
                     if(!globalConfig.slideshow) globalConfig.slideshow = defaultData.slideshow;
@@ -456,7 +459,7 @@
                 }
             } catch (e) {
                 console.error("GAGAL MEMUAT DATA:", e);
-                alert("Gagal mengambil data terbaru: " + e.message + "\nMenampilkan data default sementara.");
+                alert("Gagal mengambil data: " + e.message + "\nMenampilkan data default.");
                 globalConfig = defaultData; 
                 renderWebsite(globalConfig);
             }
@@ -809,7 +812,8 @@
             const btn = document.querySelector('.btn-save');
             btn.disabled = true; btn.innerText = "MENYIMPAN...";
             try {
-                await setDoc(doc(db, "website_data", "master_config_v5"), globalConfig);
+                // TETAP SIMPAN DI V4 AGAR DATA LAMA TERUPDATE
+                await setDoc(doc(db, "website_data", "master_config_v4"), globalConfig);
                 alert("BERHASIL! Website telah diperbarui.");
                 location.reload();
             } catch (e) {
