@@ -1,923 +1,890 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
-  <title>Reservasi Dolan Sawah</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <title>Mini Site Dolan Sawah - Pro Admin</title>
+    <style>
+        /* =========================================
+           1. CSS ORIGINAL WEBSITE
+           ========================================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif; text-align: center; color: black;
+            transition: background 0.5s ease; line-height: 1.6; background-color: #f0f0f0;
+        }
+        body.theme-home { background: linear-gradient(135deg, #ff9800, #ffcc80); }
+        body.theme-menu { background: linear-gradient(135deg, #ff9800, #e65100); }
+        body.theme-gallery { background: linear-gradient(135deg, #f6d365, #fda085); }
+        body.theme-jadwal { background: linear-gradient(135deg, #f6d365, #fda085); }
+        body.theme-reguler { background: linear-gradient(135deg, #f5f7fa, #c3cfe2); }
+        body.theme-jeep { background: linear-gradient(135deg, #414345, #232526); }
+        
+        .page-content { display: none; padding: 20px 15px; animation: fadeIn 0.8s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loading-screen {
+            position: fixed; width: 100%; height: 100%; background: white;
+            display: flex; justify-content: center; align-items: center; flex-direction: column; z-index: 6000;
+        }
+        .loading-bar { width: 80%; max-width: 300px; height: 8px; background: #ddd; border-radius: 5px; overflow: hidden; margin-top: 10px; }
+        .loading-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff9800, #ff5722); transition: width 0.2s; }
+        .loading-text { font-size: 18px; margin-top: 10px; font-weight: bold; color: #ff9800; }
 
-  <style>
-    /* --- CSS UTAMA --- */
-    :root {
-      --primary: #2a9d8f;
-      --primary-dark: #264653;
-      --secondary: #e9c46a;
-      --bg: #f0f2f5;
-      --white: #ffffff;
-      --text: #333333;
-      --dark: #222222;
-      --danger: #e74c3c;
-      --success: #27ae60;
-    }
-    
-    * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
-    
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: var(--bg);
-      margin: 0;
-      padding-bottom: 100px;
-      color: var(--text);
-    }
+        #page-home .header-gallery { width: 100%; position: fixed; top: 0; left: 0; z-index: 1000; background: white; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); cursor: pointer; }
+        #page-home .header-gallery img { width: 100%; height: auto; max-height: 200px; object-fit: cover; }
+        #page-home .main-container { max-width: 800px; margin: 0 auto; padding: 220px 20px 80px; background: white; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15); position: relative; }
+        
+        .slideshow-container { width: 100%; aspect-ratio: 16 / 9; position: relative; overflow: hidden; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .slide-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out; }
+        .slide-image.active { opacity: 1; }
+        .frame-overlay { position: absolute; top: 0; left: 0; width: 30%; height: auto; z-index: 20; pointer-events: none; }
+        @media screen and (max-width: 480px) { .frame-overlay { width: 40%; } }
 
-    /* HEADER */
-    header {
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-      color: white;
-      padding: 20px 20px 30px 20px;
-      text-align: center;
-      border-bottom-left-radius: 30px;
-      border-bottom-right-radius: 30px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-      position: sticky; top: 0; z-index: 99;
-      user-select: none;
-    }
-    .dynamic-title { font-size: 1.3rem; font-weight: 700; margin-top: 5px; animation: fadeIn 0.5s; }
+        .menu-grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px 0; width: 100%; }
+        .menu-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px 10px; border-radius: 15px; text-decoration: none; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; height: 100%; aspect-ratio: 1.3 / 1; cursor: pointer; }
+        .menu-card:active { transform: scale(0.95); }
+        .menu-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+        .menu-card svg { width: 36px; height: 36px; margin-bottom: 10px; fill: white; }
+        .menu-card span { font-size: 0.95rem; font-weight: 600; text-align: center; line-height: 1.2; }
+        
+        .bg-orange { background: linear-gradient(135deg, #ff9800, #f57c00); }
+        .bg-green  { background: linear-gradient(135deg, #4caf50, #2e7d32); }
+        .bg-blue   { background: linear-gradient(135deg, #2196f3, #1976d2); }
+        .full-width-btn { grid-column: span 2; flex-direction: row; aspect-ratio: auto; padding: 15px; background: linear-gradient(135deg, #d32f2f, #c62828); border: 2px solid #ffeb3b; animation: blink-effect 1.5s infinite alternate; }
+        .full-width-btn svg { margin-bottom: 0; margin-right: 10px; }
+        @keyframes blink-effect { from { box-shadow: 0px 0px 5px rgba(255, 152, 0, 0.5); } to { box-shadow: 0px 0px 15px rgba(255, 152, 0, 1); } }
 
-    /* STEP INDICATOR */
-    .step-indicator { display: flex; justify-content: center; margin-top: 15px; gap: 25px; }
-    .step-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-    .step-dot { width: 12px; height: 12px; background: rgba(255,255,255,0.4); border-radius: 50%; transition: 0.3s; }
-    .step-label { font-size: 0.65rem; color: rgba(255,255,255,0.6); font-weight: 500; }
-    .step-wrapper.active .step-dot { background: var(--white); transform: scale(1.2); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
-    .step-wrapper.active .step-label { color: var(--white); font-weight: 700; }
-    .step-wrapper.completed .step-dot { background: var(--secondary); }
+        #page-home .floating-button { display: flex; justify-content: center; align-items: center; gap: 10px; width: 90%; max-width: 320px; padding: 14px; margin: 30px auto 10px; font-size: clamp(1rem, 4vw, 1.1rem); font-weight: bold; text-decoration: none; color: black; background: linear-gradient(45deg, #ffeb3b, #fbc02d); border-radius: 10px; border: none; cursor: pointer; box-shadow: 0px 5px 15px rgba(255, 235, 59, 0.7); animation: blink-float 1.5s infinite alternate; }
+        #page-home .floating-button svg { width: 24px; height: 24px; }
+        @keyframes blink-float { from { opacity: 1; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.02); } to { opacity: 1; transform: scale(1); } }
+        
+        #floating-home-button { position: fixed; bottom: 20px; left: 20px; background: linear-gradient(45deg, #ff9800, #ff5722); color: white; border-radius: 30px; border: none; display: none; align-items: center; gap: 8px; padding: 10px 20px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 3500; transition: transform 0.2s; }
+        #floating-home-button:hover { transform: scale(1.1); }
+        #floating-home-button svg { width: 20px; height: 20px; }
 
-    .container { max-width: 600px; margin: -20px auto 0; padding: 0 15px; position: relative; z-index: 100; }
+        @keyframes bounce-button { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        #floating-member-button { position: fixed; bottom: 20px; right: 20px; width: 140px; height: 140px; background: transparent; border: none; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 3500; text-decoration: none; animation: bounce-button 1.5s infinite ease-in-out; }
+        #floating-member-button img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
-    /* CARD STYLE */
-    .card {
-      background: var(--white); border-radius: 20px; padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px;
-      animation: slideUp 0.4s ease;
-    }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        #page-menu .container { max-width: 600px; margin: auto; background: #111; padding: 20px; border-radius: 12px; box-shadow: 0px 0px 15px rgba(255, 152, 0, 0.8); color: white; }
+        #page-menu h1 { font-size: clamp(1.8rem, 5vw, 2.2rem); color: #ff9800; text-shadow: 0 0 10px rgba(255, 152, 0, 0.8); margin-bottom: 20px; }
+        #page-menu h2 { font-size: clamp(1.2rem, 4vw, 1.5rem); color: #fbc02d; margin-top: 30px; margin-bottom: 15px; }
+        #page-menu .image-container { display: flex; justify-content: center; margin-bottom: 20px; cursor: pointer;}
+        #page-menu .image-container img { width: 100%; max-width: 100%; border-radius: 10px; border: 3px solid #ff9800; transition: transform 0.3s; }
+        #page-menu .image-container img:hover { transform: scale(1.05); }
 
-    /* INPUTS */
-    .input-group-custom { position: relative; margin-bottom: 15px; }
-    .input-visual {
-      display: flex; align-items: center; padding: 15px;
-      background: #fff; border: 2px solid #eee; border-radius: 15px;
-      transition: 0.3s; cursor: pointer;
-    }
-    .input-visual:focus-within { border-color: var(--primary); }
-    .input-group-custom.error .input-visual { border-color: var(--danger); background: #fff5f5; }
-    .error-msg { color: var(--danger); font-size: 0.75rem; margin-top: 5px; display: none; }
-    .input-group-custom.error .error-msg { display: block; }
-    .input-visual i { font-size: 1.4rem; color: var(--primary); margin-right: 15px; width: 30px; text-align: center; }
-    .input-visual .label-text strong { font-size: 1.05rem; color: var(--dark); display:block;}
-    .input-visual .label-text span { font-size: 0.75rem; color: #888; }
-    .hidden-input { position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0; cursor: pointer; z-index: 10; }
+        #page-gallery .container { max-width: 95%; margin: 20px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15); }
+        #page-gallery .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; padding: 10px; }
+        #page-gallery .gallery img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1 / 1; border-radius: 10px; cursor: pointer; transition: transform 0.3s; }
+        #page-gallery .gallery img:hover { transform: scale(1.05); }
 
-    /* STEPPER QUANTITY */
-    .stepper-control {
-      display: flex; align-items: center; justify-content: space-between;
-      background: #f8f9fa; border-radius: 12px; padding: 5px;
-      border: 1px solid #eee;
-    }
-    .stepper-btn {
-      width: 35px; height: 35px; border-radius: 8px; border: none;
-      background: var(--white); color: var(--primary); 
-      font-size: 1.2rem; font-weight: bold; cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.1s;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .stepper-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
-    .stepper-input {
-      width: 50px; text-align: center; border: none; background: transparent;
-      font-weight: 700; font-size: 1.1rem; color: var(--dark);
-      -moz-appearance: textfield; 
-    }
-    .stepper-input::-webkit-outer-spin-button,
-    .stepper-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        #page-jeep .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
+        #page-jeep h1 { font-size: clamp(2rem, 6vw, 2.8rem); color: #f39c12; text-transform: uppercase; margin-bottom: 10px; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); }
+        #page-jeep p.subtitle { font-size: clamp(1rem, 3vw, 1.2rem); color: #ccc; margin-bottom: 40px; }
+        .jeep-packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .jeep-package-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; color: white; cursor: pointer; transition: transform 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); overflow: hidden; display: flex; flex-direction: column; }
+        .jeep-package-card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.1); }
+        .jeep-package-card img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+        .jeep-package-card .card-content { padding: 20px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .jeep-package-card h3 { color: #f39c12; margin-bottom: 10px; font-size: 1.3rem; }
 
-    /* LOCATION CARDS */
-    .location-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .location-option {
-      border: 1px solid #eee; border-radius: 15px; overflow: hidden;
-      background: white; display: flex; flex-direction: column;
-      transition: 0.2s; position: relative;
-    }
-    .location-option.selected { border: 2px solid var(--primary); box-shadow: 0 10px 20px rgba(42, 157, 143, 0.2); transform: translateY(-3px); }
-    .location-option.selected::after {
-        content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
-        position: absolute; top: 10px; right: 10px; background: var(--primary);
-        color: white; width: 25px; height: 25px; border-radius: 50%;
-        display: flex; justify-content: center; align-items: center; font-size: 0.8rem; z-index: 5;
-    }
-    .location-option.disabled { opacity: 0.6; filter: grayscale(100%); pointer-events: none; }
-    .loc-thumb-wrapper { width: 100%; height: 100px; background: #eee; position: relative; }
-    .loc-thumb-img { width: 100%; height: 100%; object-fit: cover; }
-    .loc-content { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
-    .loc-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 5px; color: var(--dark); line-height: 1.3; }
-    .cap-badge { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-align: center; margin-bottom: 10px; align-self: start; }
-    .cap-safe { background: #e8f5e9; color: #27ae60; }
-    .cap-full { background: #ffebee; color: #c0392b; }
-    
-    .btn-loc-view { 
-        background: var(--primary); color: white;
-        border: none; width: 100%; padding: 10px; 
-        border-radius: 10px; font-size: 0.85rem; font-weight: 600; margin-top: auto; cursor: pointer;
-        position: relative; z-index: 10; transition: 0.2s;
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-loc-view:hover { 
-        background: var(--primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(42, 157, 143, 0.3);
-    }
-    .btn-loc-view i { font-size: 1rem; }
+        #page-reguler .menu-container { max-width: 800px; margin: 0 auto; padding-bottom: 80px; }
+        #page-reguler h1 { color: #2c3e50; margin-bottom: 25px; font-size: clamp(2rem, 6vw, 2.5rem); }
+        #page-reguler .menu-category { background: white; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 30px; padding: 20px; text-align: left; overflow: hidden; }
+        #page-reguler .category-title { color: #e67e22; padding-bottom: 10px; margin-bottom: 20px; border-bottom: 2px solid #f39c12; font-size: clamp(1.4rem, 5vw, 1.8rem); }
+        #page-reguler .menu-item { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 0; border-bottom: 1px dashed #bdc3c7; }
+        #page-reguler .menu-item:last-child { border-bottom: none; }
+        #page-reguler .item-price { font-weight: bold; background-color: #f1c40f; padding: 3px 8px; border-radius: 5px; }
 
-    /* MENU ACCORDION */
-    .menu-category { margin-bottom: 15px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
-    .cat-header {
-      background: #fff; padding: 15px; cursor: pointer;
-      display: flex; justify-content: space-between; align-items: center;
-      font-weight: 600; color: var(--dark); transition: 0.2s;
-    }
-    .cat-badge { background: var(--primary); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; display: none; margin-left: 8px; }
-    .cat-content { display: none; padding: 0 15px; background: white; border-top: 1px solid #f0f0f0; }
-    .cat-content.show { display: block; }
-    
-    .menu-item { padding: 15px 0; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; align-items: flex-start; }
-    .menu-info { padding-right: 15px; flex: 1; }
-    .menu-info h4 { margin: 0 0 5px; font-size: 0.95rem; color: var(--dark); }
-    .menu-info p { margin: 0; font-size: 0.8rem; color: #888; line-height: 1.4; }
-    
-    .menu-note-badge {
-      display: inline-block; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;
-      margin-top: 5px; font-weight: 600;
-    }
-    .note-warn { background: #ffebee; color: #c0392b; border: 1px solid #ffcdd2; }
-    .note-info { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+        .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: none; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s; z-index: 5000; }
+        .fullscreen-modal.show { display: flex; opacity: 1; visibility: visible; }
+        .fullscreen-modal img { max-width: 95%; max-height: 90%; border-radius: 5px; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 24px; color: white; background: rgba(255,0,0,0.8); border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 4000; padding: 20px; animation: fadeInPopup 0.3s ease-out; }
+        .popup-overlay.show { display: flex; }
+        .popup-content { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); max-width: 500px; width: 100%; text-align: center; position: relative; }
+        .popup-button { background: #ff5722; color: white; padding: 10px 30px; border-radius: 8px; border: none; cursor: pointer; margin-top: 15px; }
+        @keyframes fadeInPopup { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
-    /* BOTTOM BAR */
-    .bottom-bar {
-      position: fixed; bottom: 0; left: 0; width: 100%;
-      background: white; padding: 15px 20px;
-      padding-bottom: calc(15px + env(safe-area-inset-bottom));
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-      display: flex; justify-content: space-between; align-items: center;
-      z-index: 900; border-top-left-radius: 20px; border-top-right-radius: 20px;
-    }
-    .btn-action {
-      background: var(--primary); color: white; border: none;
-      padding: 14px 25px; border-radius: 50px; font-weight: 600;
-      box-shadow: 0 5px 15px rgba(42, 157, 143, 0.4); cursor: pointer;
-      display: flex; align-items: center; gap: 10px; font-size: 1rem;
-    }
-    .btn-back {
-      background: #f5f5f5; color: #555; border: none;
-      width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;
-      display: flex; justify-content: center; align-items: center;
-    }
+        /* --- NEW STYLES FOR MENU IMAGE POPUP (PROPORTIONAL) --- */
+        .promo-popup-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 6000;
+            display: none; justify-content: center; align-items: center;
+            padding: 10px; animation: popIn 0.4s ease-out;
+        }
+        @keyframes popIn { 0% { opacity:0; transform: scale(0.8); } 100% { opacity:1; transform: scale(1); }}
+        
+        .promo-popup-container {
+            position: relative;
+            max-width: 90%; max-height: 90%;
+            display: flex; justify-content: center; align-items: center;
+        }
+        
+        .promo-popup-container img {
+            width: auto; height: auto;
+            max-width: 100%; max-height: 85vh; /* Proporsional terhadap layar */
+            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(255,255,255,0.2);
+            object-fit: contain;
+        }
+        
+        .promo-close-btn {
+            position: absolute; top: -15px; right: -15px;
+            background: red; color: white; border: 2px solid white;
+            width: 40px; height: 40px; border-radius: 50%;
+            font-weight: bold; font-size: 20px; cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+        }
 
-    /* MODAL */
-    .image-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; flex-direction: column; }
-    .modal-content { max-width: 90%; max-height: 70vh; border-radius: 10px; }
-    .close-modal { position: absolute; top: 30px; right: 30px; color: white; font-size: 2.5rem; cursor: pointer; background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
-    .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 3000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 15px; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #scroll-indicator { position: fixed; bottom: 20px; right: 20px; background: rgba(0, 0, 0, 0.6); color: white; padding: 8px 15px; border-radius: 20px; font-size: 14px; z-index: 3000; display: none; align-items: center; gap: 5px; animation: bounce 2s infinite ease-in-out; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
-    .step-section { display: none; }
-    .step-section.active { display: block; }
+        @media screen and (max-width: 768px) { #page-home .main-container { padding-top: 180px; } }
+        @media screen and (max-width: 480px) { #page-home .main-container { padding-top: 160px; padding-left: 15px; padding-right: 15px; } #page-reguler .item-dots { display: none; } }
 
-    /* ========================================= */
-    /* ADMIN PANEL STYLES */
-    /* ========================================= */
-    .admin-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: #f0f2f5; z-index: 5000; overflow-y: auto;
-    }
-    .admin-header {
-      background: var(--dark); color: white; padding: 20px;
-      display: flex; justify-content: space-between; align-items: center;
-      position: sticky; top: 0; z-index: 100;
-    }
-    .admin-container { max-width: 800px; margin: 20px auto; padding: 0 15px; padding-bottom: 50px; }
-    
-    .login-box {
-      max-width: 400px; margin: 100px auto; background: white; padding: 30px;
-      border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center;
-    }
-    .login-input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; }
-    .btn-login { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        /* =========================================
+           2. CSS ADMIN DASHBOARD (IMPROVED & EXPANDED)
+           ========================================= */
+        .admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
+        .admin-box { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 0 20px rgba(255,152,0, 0.5); }
+        .admin-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 16px;}
+        .admin-box button { width: 100%; padding: 12px; background: #ff9800; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; font-size: 16px;}
+        .admin-box button.close-admin { background: #555; margin-top: 5px; }
 
-    .admin-card {
-      background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 10px;
-    }
-    .admin-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    .admin-card h4 { margin: 0; color: var(--dark); font-size: 1rem; }
-    
-    .upload-area {
-      display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap;
-    }
-    .img-preview-box {
-      width: 100px; height: 100px; background: #eee; border-radius: 8px; overflow: hidden; flex-shrink: 0; position: relative;
-    }
-    .img-preview-box img { width: 100%; height: 100%; object-fit: cover; }
-    .upload-controls { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 200px; }
-    
-    .file-input { font-size: 0.9rem; }
-    .btn-upload-save {
-      background: var(--secondary); color: var(--dark); border: none; padding: 8px 15px;
-      border-radius: 6px; font-weight: 600; cursor: pointer; align-self: flex-start;
-      display: flex; align-items: center; gap: 5px; font-size: 0.9rem;
-    }
-    
-  </style>
+        .admin-panel-btn { display: none; position: fixed; top: 20px; right: 20px; z-index: 8000; background: #d32f2f; color: white; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid white; transition: transform 0.2s;}
+        .admin-panel-btn:hover { transform: scale(1.05); }
+        
+        .admin-dashboard { display: none; position: fixed; top: 0; right: 0; width: 100%; max-width: 450px; height: 100%; background: #f4f4f4; z-index: 9000; overflow-y: auto; padding: 0; box-shadow: -5px 0 15px rgba(0,0,0,0.2); }
+        .dashboard-header { background: white; padding: 20px; border-bottom: 2px solid #ff9800; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10;}
+        .dashboard-content { padding: 20px; padding-bottom: 100px; }
+        
+        .upload-group { border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 20px; border-radius: 10px; text-align: left; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .upload-group h3 { font-size: 16px; margin-bottom: 15px; color: #e65100; border-bottom: 2px solid #fff3e0; padding-bottom:8px; display: flex; justify-content: space-between; align-items: center;}
+        
+        .preview-img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; background: #eee;}
+        
+        .admin-item-row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0f0f0; }
+        .admin-item-row:last-child { border-bottom: none; }
+        .admin-item-info { flex-grow: 1; display: flex; flex-direction: column; gap: 5px; }
+        .admin-item-info input[type="text"], .admin-item-info input[type="number"] { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; width: 100%; }
+        .admin-item-info label { font-size: 12px; color: #666; font-weight: bold; }
+        .admin-item-info input[type="file"] { font-size: 12px; }
+        
+        .admin-sub-section { margin-left: 10px; padding: 10px; background: #fafafa; border-left: 3px solid #ddd; margin-top: 5px; }
+        .admin-sub-item { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
+
+        .btn-danger { background: #ffcdd2; color: #c62828; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; height: fit-content; align-self: center; white-space: nowrap;}
+        .btn-danger:hover { background: #ef9a9a; }
+        
+        .btn-add { background: #e3f2fd; color: #1565c0; border: 1px dashed #1565c0; padding: 10px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 5px; font-weight: bold; transition: 0.2s; }
+        .btn-add:hover { background: #bbdefb; }
+        .btn-add-small { background: #f1f8e9; color: #2e7d32; border: 1px dashed #2e7d32; padding: 5px; font-size: 12px; margin-top: 5px; cursor: pointer; border-radius: 4px; }
+        
+        .btn-save-container { position: fixed; bottom: 0; right: 0; width: 100%; max-width: 450px; padding: 15px; background: white; border-top: 1px solid #ddd; z-index: 11; }
+        .btn-save { background: linear-gradient(135deg, #4caf50, #2e7d32); color: white; padding: 15px; font-size: 16px; border: none; border-radius: 8px; width: 100%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; font-weight: bold; letter-spacing: 0.5px; }
+        .btn-save:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Switch Toggle Style */
+        .switch-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .switch-toggle input[type="checkbox"] { width: auto; margin: 0; }
+        .switch-label { font-size: 13px; font-weight: bold; color: #333; }
+    </style>
 </head>
 <body>
-
-  <header id="mainHeader">
-    <h1><i class="fas fa-leaf"></i> Dolan Sawah</h1>
-    <div class="dynamic-title" id="headerTitle">Halo, Silahkan pilih waktu reservasi Anda</div>
-    
-    <div class="step-indicator">
-      <div class="step-wrapper active" id="dot1"><div class="step-dot"></div><span class="step-label">Waktu</span></div>
-      <div class="step-wrapper" id="dot2"><div class="step-dot"></div><span class="step-label">Tempat</span></div>
-      <div class="step-wrapper" id="dot3"><div class="step-dot"></div><span class="step-label">Menu</span></div>
-      <div class="step-wrapper" id="dot4"><div class="step-dot"></div><span class="step-label">Data</span></div>
+    <div class="loading-screen">
+        <h2>Memuat Halaman...</h2>
+        <div class="loading-bar"><div class="loading-fill"></div></div>
+        <p class="loading-text">0%</p>
     </div>
-  </header>
-
-  <div class="loader-overlay" id="loader">
-    <div class="spinner"></div><p style="color:#666; font-size:0.9rem;">Menyiapkan Data...</p>
-  </div>
-
-  <div id="imgModal" class="image-modal" onclick="closeImage()">
-    <span class="close-modal">&times;</span>
-    <img class="modal-content" id="modalImg">
-    <p style="color:white; margin-top:15px; font-weight:600;" id="modalCaption"></p>
-  </div>
-
-  <div class="container">
     
-    <div id="step1" class="step-section active">
-      <div class="card">
-        <div class="input-group-custom" id="groupDate">
-          <div class="input-visual">
-            <i class="far fa-calendar-alt"></i>
-            <div class="label-text"><span>Tanggal Kunjungan</span><strong id="displayDate">Pilih Tanggal</strong></div>
-          </div>
-          <input type="date" id="inputDate" class="hidden-input" onchange="updateDateUI()">
-          <div class="error-msg">Mohon pilih tanggal.</div>
+    <div id="admin-login-modal" class="admin-modal">
+        <div class="admin-box">
+            <h2 style="color:#e65100; margin-bottom:15px;">Admin Login</h2>
+            <input type="email" id="admin-email" placeholder="Email Admin">
+            <input type="password" id="admin-password" placeholder="Password">
+            <button onclick="loginAdmin()">Masuk</button>
+            <button class="close-admin" onclick="closeAdminLogin()">Batal</button>
         </div>
+    </div>
+    
+    <button id="open-dashboard-btn" class="admin-panel-btn" onclick="openDashboard()">⚙️ EDIT WEBSITE</button>
 
-        <div class="input-group-custom" id="groupTime">
-          <div class="input-visual">
-            <i class="far fa-clock"></i>
-            <div class="label-text"><span>Jam Kedatangan</span><strong id="displayTime">--:--</strong></div>
-          </div>
-          <input type="time" id="inputTime" class="hidden-input" onchange="updateTimeUI()">
-          <div class="error-msg">Mohon tentukan jam.</div>
+    <div id="admin-dashboard" class="admin-dashboard">
+        <div class="dashboard-header">
+            <h2 style="font-size: 18px;">Dashboard Admin</h2>
+            <button onclick="closeDashboard()" style="background:#ffcdd2; color:#c62828; border:none; padding:8px 12px; border-radius:5px; font-weight:bold; width:auto; margin:0;">Tutup</button>
         </div>
+        <div class="dashboard-content" id="admin-content-area">
+            <p style="text-align:center; padding: 20px;">Memuat data konfigurasi...</p>
+        </div>
+        <div class="btn-save-container">
+            <button class="btn-save" onclick="saveConfigToFirestore()">💾 SIMPAN PERUBAHAN</button>
+        </div>
+    </div>
 
-        <div class="input-group-custom">
-            <label style="font-size:0.85rem; color:#666; margin-bottom:8px; display:block;">Jumlah Orang</label>
-            <div class="stepper-control">
-                <button class="stepper-btn" onclick="updatePaxStep(-1)">-</button>
-                <input type="number" id="inputPax" class="stepper-input" value="2" min="1" onchange="validatePax()">
-                <button class="stepper-btn" onclick="updatePaxStep(1)">+</button>
+    <div id="page-home" class="page-content">
+        <div class="header-gallery">
+            <img id="header-main-img" src="" alt="Header Image" />
+        </div>
+        <div class="main-container">
+            <div class="slideshow-container" id="slideshow-wrapper">
+                <img id="overlay-frame-img" src="" class="frame-overlay" alt="Frame Decoration">
             </div>
-        </div>
-      </div>
-    </div>
 
-    <div id="step2" class="step-section">
-      <div class="card" style="background:#e3f2fd; border-left:4px solid #2196f3; padding:15px;">
-        <p style="font-size:0.85rem; color:#0d47a1; margin:0;"><i class="fas fa-info-circle"></i> Klik kartu untuk memilih tempat.</p>
-      </div>
-      <div class="location-grid" id="locationList"></div>
-    </div>
-
-    <div id="step3" class="step-section">
-      <div class="card" style="padding:15px;">
-        <p style="font-size:0.85rem; color:#666; margin-bottom:15px; text-align:center;">Pilih kategori menu di bawah ini</p>
-        <div id="menuContainer"></div>
-      </div>
-    </div>
-
-    <div id="step4" class="step-section">
-      <div class="card">
-        <div class="input-group-custom" id="groupName">
-            <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Nama Lengkap</label>
-            <input type="text" id="inputName" placeholder="Contoh: Budi Santoso" style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
-            <div class="error-msg">Nama wajib diisi.</div>
-        </div>
-        <div class="input-group-custom" id="groupPhone">
-            <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">WhatsApp (Aktif)</label>
-            <input type="tel" id="inputPhone" placeholder="Contoh: 081234..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
-            <div class="error-msg">Nomor wajib diisi.</div>
-        </div>
-        <div style="margin-bottom:15px;">
-            <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Catatan (Opsional)</label>
-            <textarea id="inputNote" rows="2" placeholder="Contoh: Kursi bayi, dll..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-family:inherit;"></textarea>
-        </div>
-        <div style="background:#f1f8e9; padding:15px; border-radius:12px; border:1px solid #c5e1a5;">
-            <h5 style="margin:0 0 10px; color:#33691e;"><i class="fas fa-check-circle"></i> Ringkasan</h5>
-            <div style="font-size:0.85rem; color:#558b2f; line-height:1.6;">
-                <div style="display:flex; justify-content:space-between;"><span>Waktu:</span> <strong id="summaryDate"></strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Jam:</span> <strong id="summaryTime"></strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Orang:</span> <strong id="summaryPax"></strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Tempat:</span> <strong id="summaryLoc"></strong></div>
-                <div style="display:flex; justify-content:space-between; margin-top:5px; border-top:1px dashed #c5e1a5; padding-top:5px;"><span>Total Menu:</span> <strong id="summaryMenu">0 Item</strong></div>
+            <div class="menu-grid-container">
+                <a onclick="handlePageNavigation('page-reguler', 'reguler')" class="menu-card bg-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg><span>Menu<br>Reguler</span>
+                </a>
+                <a onclick="handlePageNavigation('page-menu', 'reservation')" class="menu-card bg-green">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V5h10v14zM9 7h6v2H9zm0 4h6v2H9zm0 4h4v2H9z"/></svg><span>Menu<br>Reservasi</span>
+                </a>
+                <a onclick="handlePageNavigation('page-gallery', 'gallery')" class="menu-card bg-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>Gallery<br>Lokasi</span>
+                </a>
+                <a onclick="handlePageNavigation('page-jadwal', 'jadwal')" class="menu-card bg-green">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>Jadwal<br>Buka</span>
+                </a>
+                
+                <a onclick="handlePageNavigation('page-jeep', 'jeep')" class="menu-card bg-orange">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,12H5L6,8H18L19,12M20,13V7H4V13L2,13V16C2,17.1 2.9,18 4,18V21C4,21.55 4.45,22 5,22H7C7.55,22 8,21.55 8,21V18H16V21C16,21.55 16.45,22 17,22H19C19.55,22 20,21.55 20,21V18C21.1,18 22,17.1 22,16V13L20,13M6.5,16C5.67,16 5,15.33 5,14.5C5,13.67 5.67,13 6.5,13C7.33,13 8,13.67 8,14.5C8,15.33 7.33,16 6.5,16M17.5,16C16.67,16 16,15.33 16,14.5C16,13.67 16.67,13 17.5,13C18.33,13 19,13.67 19,14.5C19,15.33 18.33,16 17.5,16Z"/></svg><span>Jeep<br>Adventure</span>
+                </a>
+                
+                <a href="https://maps.app.goo.gl/gCyTugKbGJEdobXs8?g_st=ic" target="_blank" class="menu-card bg-green">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><span>Lokasi<br>Maps</span>
+                </a>
+                <a href="https://dewatalaptop.github.io/checkerds" target="_blank" class="menu-card full-width-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg><span>Cek Ketersediaan Tempat</span>
+                </a>
             </div>
+            
+            <a href="https://wa.me/6285601393640" class="floating-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01s-.521.074-.792.372c-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" fill-rule="evenodd"/></svg>
+                <span>Reservasi via WhatsApp</span>
+            </a>
         </div>
-      </div>
     </div>
-
-  </div>
-
-  <div class="bottom-bar">
-    <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;"><i class="fas fa-arrow-left"></i></button>
-    <div id="priceInfo" style="display:none; flex-grow:1; margin-left:15px;">
-        <span style="display:block; font-size:0.7rem; color:#888; text-transform:uppercase;">Keranjang</span>
-        <strong style="color:var(--primary); font-size:1.1rem;" id="totalItemText">0 Menu</strong>
-    </div>
-    <button class="btn-action" id="btnNext" onclick="nextStep()">Cari Tempat <i class="fas fa-search"></i></button>
-  </div>
-
-  <div id="adminPanel" class="admin-overlay">
     
-    <div class="admin-header">
-      <div style="font-weight:700;"><i class="fas fa-user-cog"></i> Admin Panel</div>
-      <button onclick="closeAdmin()" style="background:transparent; border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:6px; cursor:pointer;">
-        Close <i class="fas fa-times"></i>
-      </button>
+    <div id="page-menu" class="page-content">
+        <div class="container" id="reservation-menu-container">
+            <h1>Menu Reservasi</h1>
+            <div id="reservation-menu-list"></div>
+        </div>
     </div>
-
-    <div id="adminLoginView" class="login-box" style="display:none;">
-      <h3 style="color:var(--primary-dark); margin-bottom:20px;">Login Admin</h3>
-      <input type="email" id="adminEmail" class="login-input" placeholder="Email Admin">
-      <input type="password" id="adminPass" class="login-input" placeholder="Password">
-      <button class="btn-login" onclick="adminLogin()">Masuk</button>
-      <p id="loginError" style="color:red; font-size:0.8rem; display:none; margin-top:10px;"></p>
-    </div>
-
-    <div id="adminDashboardView" class="admin-container" style="display:none;">
-      
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h3 style="margin:0; color:var(--dark);">Kelola Foto Tempat</h3>
-        <button onclick="adminLogout()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:6px; font-size:0.8rem; cursor:pointer;">Logout</button>
-      </div>
-      
-      <div class="card" style="background:#fff3cd; color:#856404; font-size:0.85rem; margin-bottom:20px;">
-        <i class="fas fa-info-circle"></i> <b>Info:</b> Foto akan otomatis dikompres agar ringan dan disimpan langsung ke database (bukan storage). Ini menjamin keberhasilan upload.
-      </div>
-
-      <div id="adminLocationList">
-        <div style="text-align:center; padding:20px;"><div class="spinner"></div></div>
-      </div>
-
-    </div>
-  </div>
-
-  <script>
-    // --- FIREBASE CONFIGURATION ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
-      authDomain: "reservasi-dolan-sawah.firebaseapp.com",
-      projectId: "reservasi-dolan-sawah",
-      storageBucket: "reservasi-dolan-sawah.appspot.com",
-      messagingSenderId: "213151400721",
-      appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
-    };
-
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-    // Kita tidak menggunakan storage() di logika baru
-
-    const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
-
-    let currentStep = 1;
-    let locationsData = [];
-    let menusData = {};
-    let selectedMenus = {}; 
-    let selectedLocationName = "";
     
-    // Admin Variables
-    let clickCount = 0;
-    let clickTimer = null;
+    <div id="page-gallery" class="page-content">
+        <div class="container">
+            <h1>Galeri Dolan Sawah</h1><p>Klik gambar untuk memperbesar.</p>
+            <div class="gallery" id="gallery-grid"></div>
+        </div>
+    </div>
+    
+    <div id="page-jadwal" class="page-content">
+        <div class="container">
+            <h1>Jadwal Buka</h1>
+            <p class="schedule">Senin - Minggu<br />06.00 - 22.00</p>
+            <p class="footer">Dolan Sawah - Tempat Wisata & Kuliner</p>
+        </div>
+    </div>
+    
+    <div id="page-jeep" class="page-content">
+        <div class="container">
+            <h1>Paket Jeep Adventure</h1>
+            <p class="subtitle">Jelajahi keindahan alam dengan paket wisata Jeep kami. Klik paket untuk melihat detail.</p>
+            <div class="jeep-packages-grid" id="jeep-packages-list"></div>
+        </div>
+    </div>
+    
+    <div id="page-reguler" class="page-content">
+        <div class="menu-container">
+            <h1>Daftar Menu Reguler</h1>
+            <div id="regular-menu-list"></div>
+            <p style="text-align:center; margin-top:20px;">*Harga belum termasuk PPN</p>
+        </div>
+    </div>
+    
+    <div class="fullscreen-modal" id="fullscreen-modal"><button class="close-btn" onclick="closeFullscreen()">X</button><img id="fullscreen-img" src="" alt="Gambar besar" referrerpolicy="no-referrer"></div>
+    <div id="generic-popup" class="popup-overlay" onclick="closePopup()"><div class="popup-content" onclick="event.stopPropagation()"><h2 id="popup-title"></h2><div id="popup-body"></div><button id="popup-button" class="popup-button" onclick="closePopup()">Tutup</button></div></div>
+    
+    <div id="menu-image-popup" class="promo-popup-overlay">
+        <div class="promo-popup-container">
+            <button class="promo-close-btn" onclick="closeMenuPopup()">X</button>
+            <img id="menu-popup-img" src="" alt="Promo Popup">
+        </div>
+    </div>
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('inputDate').setAttribute('min', new Date().toISOString().split('T')[0]);
-      await loadData();
-      document.getElementById('loader').style.display = 'none';
-      updateUIState();
-      
-      const headerTitle = document.querySelector('#mainHeader h1');
-      headerTitle.addEventListener('click', () => {
-        clickCount++;
-        if(clickTimer) clearTimeout(clickTimer);
-        clickTimer = setTimeout(() => { clickCount = 0; }, 2000); 
+    <div id="scroll-indicator">Scroll ke Bawah <span>↓</span></div>
 
-        if(clickCount === 5) {
-            clickCount = 0;
-            openAdmin();
-        }
-      });
-    });
+    <button id="floating-home-button" onclick="showPage('page-home')">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Kembali</span>
+    </button>
+    
+    <a id="floating-member-button" href="https://www.dolansawah.my.id/daftarmember.html" target="_blank">
+        <img id="member-btn-img" src="" alt="Tombol Member Area">
+    </a>
 
-    // --- LOGIC UMUM (TIDAK BERUBAH) ---
-    function updatePaxStep(amount) {
-        const input = document.getElementById('inputPax');
-        let val = parseInt(input.value) || 0;
-        val += amount;
-        if(val < 1) val = 1;
-        input.value = val;
-    }
-    function validatePax() {
-        const input = document.getElementById('inputPax');
-        if(parseInt(input.value) < 1) input.value = 1;
-    }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-    function updateDateUI() {
-        const val = document.getElementById('inputDate').value;
-        const display = document.getElementById('displayDate');
-        if(val) {
-            display.textContent = new Date(val).toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-            display.style.color = 'var(--primary-dark)';
-            document.getElementById('groupDate').classList.remove('error');
-        } else display.textContent = "Pilih Tanggal";
-    }
-    function updateTimeUI() {
-        const val = document.getElementById('inputTime').value;
-        const display = document.getElementById('displayTime');
-        if(val) {
-            display.textContent = val;
-            display.style.color = 'var(--primary-dark)';
-            document.getElementById('groupTime').classList.remove('error');
-        } else display.textContent = "--:--";
-    }
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+          apiKey: "AIzaSyAk0CnaeiRRBqo5O_DnFUDpGHSM017wNiU",
+          authDomain: "slidemonitor.firebaseapp.com",
+          projectId: "slidemonitor",
+          storageBucket: "slidemonitor.firebasestorage.app",
+          messagingSenderId: "1010222267025",
+          appId: "1:1010222267025:web:d5448ad6c1e3d02b90dd30"
+        };
 
-    async function loadData() {
-      try {
-        try {
-            let snap = await db.collection('locations').get();
-            if(snap.empty) snap = await db.collection('Locations').get(); 
-            locationsData = [];
-            snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
-        } catch(e) { console.error("Error loading locations:", e); }
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
 
-        try {
-            let snap = await db.collection('menus').get();
-            menusData = {};
-            snap.forEach(doc => {
-               let d = doc.data();
-               let desc = Array.isArray(d.details) ? d.details.join(", ") : (d.deskripsi || "");
-               menusData[doc.id] = { name: doc.id, desc: desc, category: categorizeMenu(doc.id) };
-            });
-        } catch(e) { console.error("Error loading menus:", e); }
-        
-        renderMenuAccordions();
-      } catch (err) { console.error(err); }
-    }
+        // DATA STRUKTUR BARU (Dengan menuPopups)
+        const defaultData = {
+            general: {
+                headerImage: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752467234/IMG_5184_qcsvrt.jpg",
+                overlayImage: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1765194271/IMG_7534_xbo5fc.png",
+                memberBtnImage: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1762433981/IMG_7095_muk3qw.png"
+            },
+            // PENGATURAN POPUP MENU BARU
+            menuPopups: {
+                jeep: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Jeep" },
+                reservation: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Reservasi" },
+                reguler: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Reguler" },
+                gallery: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Gallery" },
+                jadwal: { active: false, image: "https://via.placeholder.com/600x800?text=Promo+Jadwal" }
+            },
+            slideshow: [
+                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5218_k3sgqn.jpg",
+                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5217_ui0bir.jpg",
+                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5223_gaiovo.jpg"
+            ],
+            jeepPackages: [
+                { title: "Paket Short Trip", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066030/IMG_6559_bvqd6w.jpg" },
+                { title: "Paket Medium Trip", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066034/IMG_6560_laiobh.jpg" },
+                { title: "Paket Off-road Kering", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066034/IMG_6561_ljijy0.jpg" },
+                { title: "Paket Long Trip", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066035/IMG_6563_xg0oov.jpg" }
+            ],
+            gallery: [
+                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465151/IMG_5179_gaqxnv.jpg",
+                "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465454/IMG_5180_ws8xwl.jpg"
+            ],
+            reservationMenu: [
+                { title: "Paket Prasmanan", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1754808317/E983BD8B-5D43-448A-9E32-DB52316FA7E8_ls3xed.jpg", desc: "Minimal H-3 sebelum acara." },
+                { title: "Paket Kembulan", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461119/91d77689-1e31-4293-921e-3b52b6e61a2e_mb4ft3.jpg", desc: "Minimal pemesanan H-1." },
+                { title: "Tumpeng Nasi Kuning", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1757126294/IMG_6002_kmtqob.png", desc: "Minimal pemesanan H-1." },
+                { title: "Paket Rantang", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461212/ec438e76-f56a-417c-97f6-6b68cb62c85d_pw5uxi.jpg", desc: "Bisa dipesan dadakan." }
+            ],
+            regularMenu: [
+                {
+                    category: "Daging, Ayam & Bebek",
+                    items: [
+                        { name: "Iga Bakar", price: "55.000" },
+                        { name: "Opor Bebek", price: "38.000" }
+                    ]
+                },
+                {
+                    category: "Minuman Segar",
+                    items: [
+                        { name: "Es Teh Manis", price: "5.000" },
+                        { name: "Jus Jeruk", price: "12.000" }
+                    ]
+                }
+            ]
+        };
 
-    function categorizeMenu(name) {
-        const n = name.toLowerCase();
-        if(n.includes("jeep") || n.includes("jip")) return "Wisata Jeep";
-        if(n.includes("prasmanan") || n.includes("buffet") || n.match(/paket [a-j](?!\w)/)) return "Prasmanan";
-        if(n.includes("tumpeng") || n.includes("kembulan") || n.includes("bancakan")) return "Kembulan";
-        if(n.includes("rantang") || n.includes("besek") || n.includes("box")) return "Paket Rantang";
-        if(n.includes("grill") || n.includes("bbq")) return "Grill & BBQ";
-        if(n.includes("minum") || n.includes("wedang") || n.includes("jus")) return "Minuman";
-        return "Menu Lainnya";
-    }
+        let globalConfig = null;
+        let headerClickCount = 0;
 
-    function getMenuNote(name, category) {
-        const n = name.toLowerCase();
-        if(category === "Prasmanan") return `<span class="menu-note-badge note-warn">Min. order 20 porsi</span>`;
-        if(n.includes("kembulan 1") || n.includes("kembulan 2")) return `<span class="menu-note-badge note-info">Porsi untuk 5 Orang</span>`;
-        if(n.includes("kembulan 3") || n.includes("kembulan 4") || n.includes("kembulan 5") || n.includes("kembulan 6")) return `<span class="menu-note-badge note-info">Porsi untuk 10 Orang</span>`;
-        if(n.includes("tumpeng")) return `<span class="menu-note-badge note-info">Porsi untuk 5 Orang</span>`;
-        return "";
-    }
-
-    function renderMenuAccordions() {
-        const container = document.getElementById('menuContainer');
-        container.innerHTML = "";
-        const groups = {};
-        Object.values(menusData).forEach(item => {
-            if(!groups[item.category]) groups[item.category] = [];
-            groups[item.category].push(item);
+        // AUTH LOGIC
+        document.querySelector('.header-gallery').addEventListener('click', () => {
+            headerClickCount++;
+            if(headerClickCount === 5) {
+                document.getElementById('admin-login-modal').style.display = 'flex';
+                headerClickCount = 0;
+            }
+            setTimeout(() => { headerClickCount = 0; }, 2000);
         });
 
-        const order = ["Wisata Jeep", "Prasmanan", "Kembulan", "Paket Rantang", "Grill & BBQ", "Minuman", "Menu Lainnya"];
+        window.loginAdmin = async () => {
+            const email = document.getElementById('admin-email').value;
+            const pass = document.getElementById('admin-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+                alert("Login Berhasil!");
+                document.getElementById('admin-login-modal').style.display = 'none';
+            } catch (e) { alert("Login Gagal: " + e.message); }
+        };
+        window.closeAdminLogin = () => document.getElementById('admin-login-modal').style.display = 'none';
         
-        order.forEach(cat => {
-            if(groups[cat]) {
-                const safeCat = cat.replace(/\s+/g, '-');
-                const section = document.createElement('div');
-                section.className = 'menu-category';
-                let htmlItems = "";
-                
-                groups[cat].sort((a,b)=>a.name.localeCompare(b.name)).forEach(menu => {
-                    const note = getMenuNote(menu.name, cat);
-                    htmlItems += `
-                        <div class="menu-item">
-                            <div class="menu-info">
-                                <h4>${menu.name}</h4>
-                                <p>${menu.desc}</p>
-                                ${note}
-                            </div>
-                            <div class="stepper-control" style="width:110px;">
-                                <button class="stepper-btn" onclick="updateMenuQty('${menu.name}', -1, '${safeCat}')">-</button>
-                                <input type="number" id="qty-${cleanId(menu.name)}" class="stepper-input" value="0" min="0" onchange="manualMenuQty('${menu.name}', '${safeCat}')">
-                                <button class="stepper-btn" onclick="updateMenuQty('${menu.name}', 1, '${safeCat}')">+</button>
-                            </div>
+        onAuthStateChanged(auth, (user) => {
+            document.getElementById('open-dashboard-btn').style.display = user ? 'block' : 'none';
+        });
+
+        async function loadData() {
+            try {
+                const docRef = doc(db, "website_data", "master_config_v5"); // Updated version key
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    console.log("Data ditemukan di Firebase!");
+                    globalConfig = docSnap.data();
+                    
+                    // Pengecekan data kosong untuk menjaga struktur
+                    if(!globalConfig.general) globalConfig.general = defaultData.general;
+                    if(!globalConfig.menuPopups) globalConfig.menuPopups = defaultData.menuPopups; // Ensure menuPopups exists
+                    if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
+                    if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
+                    if(!globalConfig.slideshow) globalConfig.slideshow = defaultData.slideshow;
+                    if(!globalConfig.jeepPackages) globalConfig.jeepPackages = defaultData.jeepPackages;
+                    if(!globalConfig.gallery) globalConfig.gallery = defaultData.gallery;
+
+                    renderWebsite(globalConfig);
+                } else {
+                    console.warn("Dokumen tidak ditemukan, menggunakan default.");
+                    globalConfig = defaultData;
+                    renderWebsite(globalConfig);
+                }
+            } catch (e) {
+                console.error("GAGAL MEMUAT DATA:", e);
+                alert("Gagal mengambil data terbaru: " + e.message + "\nMenampilkan data default sementara.");
+                globalConfig = defaultData; 
+                renderWebsite(globalConfig);
+            }
+            
+            // Hapus loading screen
+            document.querySelector(".loading-fill").style.width = "100%";
+            document.querySelector(".loading-text").textContent = "100%";
+            setTimeout(() => {
+                document.querySelector(".loading-screen").style.display = "none";
+                const hash = window.location.hash.substring(1);
+                if(hash && document.getElementById(hash)) showPage(hash);
+                else showPage("page-home");
+            }, 500);
+        }
+
+
+        // RENDER WEBSITE UTAMA
+        function renderWebsite(data) {
+            // A. General
+            if (data.general) {
+                document.getElementById('header-main-img').src = data.general.headerImage;
+                document.getElementById('overlay-frame-img').src = data.general.overlayImage;
+                document.getElementById('member-btn-img').src = data.general.memberBtnImage;
+            }
+
+            // B. Slideshow
+            const slideWrapper = document.getElementById('slideshow-wrapper');
+            const overlay = slideWrapper.querySelector('.frame-overlay');
+            slideWrapper.innerHTML = '';
+            slideWrapper.appendChild(overlay);
+            if (data.slideshow && data.slideshow.length > 0) {
+                data.slideshow.forEach((url, i) => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = `slide-image ${i===0 ? 'active' : ''}`;
+                    slideWrapper.appendChild(img);
+                });
+                startSlideshow();
+            }
+
+            // C. Menu Reservasi
+            const resList = document.getElementById('reservation-menu-list');
+            resList.innerHTML = '';
+            if(data.reservationMenu) {
+                data.reservationMenu.forEach((item, idx) => {
+                    resList.innerHTML += `
+                        <h2>${item.title}</h2>
+                        <div class="image-container" onclick="openPopup('${item.title}', '${item.desc}')">
+                            <img src="${item.image}" alt="${item.title}" />
                         </div>
                     `;
                 });
+            }
+
+            // D. Gallery
+            const galGrid = document.getElementById('gallery-grid');
+            galGrid.innerHTML = '';
+            if (data.gallery) {
+                data.gallery.forEach(url => {
+                    galGrid.innerHTML += `<img src="${url}" onclick="openFullscreen(this)">`;
+                });
+            }
+
+            // E. Jeep Packages
+            const jeepGrid = document.getElementById('jeep-packages-list');
+            jeepGrid.innerHTML = '';
+            if (data.jeepPackages) {
+                data.jeepPackages.forEach(pkg => {
+                    jeepGrid.innerHTML += `
+                        <div class="jeep-package-card" onclick="openFullscreenImage('${pkg.image}')">
+                            <img src="${pkg.image}">
+                            <div class="card-content"><h3>${pkg.title}</h3><span>Lihat Detail</span></div>
+                        </div>`;
+                });
+            }
+
+            // F. Menu Reguler
+            const regList = document.getElementById('regular-menu-list');
+            regList.innerHTML = '';
+            if(data.regularMenu) {
+                data.regularMenu.forEach(cat => {
+                    let itemsHtml = '';
+                    cat.items.forEach(itm => {
+                        itemsHtml += `
+                        <div class="menu-item">
+                            <span class="item-name">${itm.name}</span>
+                            <span class="item-dots"></span>
+                            <span class="item-price">Rp ${itm.price}</span>
+                        </div>`;
+                    });
+                    
+                    regList.innerHTML += `
+                    <div class="menu-category">
+                        <h2 class="category-title">${cat.category}</h2>
+                        ${itemsHtml}
+                    </div>`;
+                });
+            }
+        }
+
+        let slideInterval;
+        function startSlideshow() {
+            if(slideInterval) clearInterval(slideInterval);
+            let idx = 0;
+            slideInterval = setInterval(() => {
+                const slides = document.querySelectorAll('.slide-image');
+                if(slides.length === 0) return;
+                slides.forEach(s => s.classList.remove('active'));
+                idx = (idx + 1) % slides.length;
+                slides[idx].classList.add('active');
+            }, 4000);
+        }
+
+        // --- ADMIN DASHBOARD GENERATOR ---
+        window.openDashboard = () => {
+            document.getElementById('admin-dashboard').style.display = 'block';
+            generateAdminForm();
+        };
+        window.closeDashboard = () => document.getElementById('admin-dashboard').style.display = 'none';
+
+        function generateAdminForm() {
+            const area = document.getElementById('admin-content-area');
+            let html = '';
+
+            // 0. PENGATURAN POP-UP MENU (FITUR BARU)
+            // Kita fokuskan Jeep di paling atas sesuai request, tapi juga generate untuk menu lain
+            html += `<div class="upload-group"><h3>Pengaturan Pop-up Menu Homepage</h3>`;
+            html += `<p style="font-size:12px; margin-bottom:10px;">Aktifkan pop-up agar gambar muncul saat menu diklik.</p>`;
+            
+            // Helper function untuk generate row popup admin
+            const generatePopupRow = (key, label) => {
+                const isActive = globalConfig.menuPopups[key].active ? 'checked' : '';
+                const imgSrc = globalConfig.menuPopups[key].image;
                 
-                section.innerHTML = `
-                    <div class="cat-header" onclick="toggleAccordion(this)">
-                        <div style="display:flex; align-items:center;">
-                            <span>${cat}</span> <span class="cat-badge" id="badge-${safeCat}">0</span>
+                return `
+                <div class="admin-item-row" style="background:#fff3e0; border:1px solid #ffe0b2; border-radius:8px; padding:10px;">
+                    <img src="${imgSrc}" class="preview-img">
+                    <div class="admin-item-info">
+                        <label style="font-size:14px; color:#e65100;">Menu: ${label}</label>
+                        <div class="switch-toggle">
+                            <input type="checkbox" id="popup-active-${key}" onchange="updatePopupActive('${key}', this.checked)" ${isActive}>
+                            <label for="popup-active-${key}" class="switch-label">Aktifkan Pop-up</label>
                         </div>
-                        <i class="fas fa-chevron-down"></i>
+                        <input type="file" onchange="uploadFile(this, 'menuPopup', '${key}')">
                     </div>
-                    <div class="cat-content">${htmlItems}</div>
-                `;
-                container.appendChild(section);
-            }
-        });
-    }
+                </div>`;
+            };
 
-    function toggleAccordion(header) {
-        const content = header.nextElementSibling;
-        const icon = header.querySelector('i');
-        document.querySelectorAll('.cat-content').forEach(el => { if(el !== content) el.classList.remove('show'); });
-        content.classList.toggle('show');
-        icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
-    }
-
-    function updateMenuQty(name, change, safeCat) {
-        const id = cleanId(name);
-        const input = document.getElementById(`qty-${id}`);
-        let val = parseInt(input.value) || 0;
-        val += change;
-        if(val < 0) val = 0;
-        input.value = val;
-        syncMenuData(name, val, safeCat);
-    }
-    function manualMenuQty(name, safeCat) {
-        const id = cleanId(name);
-        const input = document.getElementById(`qty-${id}`);
-        let val = parseInt(input.value) || 0;
-        if(val < 0) val = 0;
-        input.value = val;
-        syncMenuData(name, val, safeCat);
-    }
-    function syncMenuData(name, val, safeCat) {
-        if(val === 0) delete selectedMenus[name];
-        else selectedMenus[name] = val;
-
-        const total = Object.values(selectedMenus).reduce((a,b)=>a+b,0);
-        document.getElementById('totalItemText').textContent = `${total} Menu`;
-        
-        let catCount = 0;
-        for(let key in selectedMenus) {
-             let c = categorizeMenu(key).replace(/\s+/g, '-');
-             if(c === safeCat) catCount += selectedMenus[key];
-        }
-        const badge = document.getElementById(`badge-${safeCat}`);
-        if(badge) { badge.textContent = catCount; badge.style.display = catCount > 0 ? 'inline-block' : 'none'; }
-    }
-    function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
-
-    async function nextStep() {
-        if(currentStep === 1) {
-            const date = document.getElementById('inputDate').value;
-            const time = document.getElementById('inputTime').value;
-            let isValid = true;
-            if(!date) { document.getElementById('groupDate').classList.add('error'); isValid = false; }
-            if(!time) { document.getElementById('groupTime').classList.add('error'); isValid = false; }
-            if(!isValid) return;
-            await checkAvailability();
-            currentStep = 2;
-        } 
-        else if(currentStep === 2) {
-            if(!selectedLocationName) return Swal.fire('Belum Ada Tempat', 'Pilih tempat dulu.', 'warning');
-            currentStep = 3;
-        }
-        else if(currentStep === 3) {
-            if(Object.keys(selectedMenus).length === 0) return Swal.fire('Menu Kosong', 'Pilih minimal 1 menu.', 'warning');
-            document.getElementById('summaryDate').textContent = document.getElementById('displayDate').textContent;
-            document.getElementById('summaryTime').textContent = document.getElementById('inputTime').value;
-            document.getElementById('summaryPax').textContent = document.getElementById('inputPax').value + " Orang";
-            document.getElementById('summaryLoc').textContent = selectedLocationName;
-            document.getElementById('summaryMenu').textContent = Object.values(selectedMenus).reduce((a,b)=>a+b,0) + " Item";
-            currentStep = 4;
-        }
-        else if(currentStep === 4) {
-            const name = document.getElementById('inputName').value.trim();
-            const phone = document.getElementById('inputPhone').value.trim();
-            if(!name) return document.getElementById('groupName').classList.add('error');
-            if(!phone) return document.getElementById('groupPhone').classList.add('error');
-            submitReservation();
-            return;
-        }
-        updateUIState();
-        window.scrollTo(0,0);
-    }
-    
-    function prevStep() { if(currentStep > 1) currentStep--; updateUIState(); }
-
-    function updateUIState() {
-        document.querySelectorAll('.step-section').forEach((el, idx) => el.classList.toggle('active', (idx + 1) === currentStep));
-        document.querySelectorAll('.step-wrapper').forEach((el, idx) => {
-            el.classList.toggle('active', (idx + 1) === currentStep);
-            el.classList.toggle('completed', (idx + 1) < currentStep);
-        });
-        document.getElementById('headerTitle').textContent = ["Halo, Silahkan pilih waktu reservasi Anda", "Pilih Tempat Duduk", "Pilih Menu Favorit", "Isi Data Diri"][currentStep-1];
-        
-        const btnNext = document.getElementById('btnNext');
-        const btnBack = document.getElementById('btnBack');
-        const priceInfo = document.getElementById('priceInfo');
-        
-        if(currentStep === 1) { btnBack.style.display = 'none'; btnNext.innerHTML = 'Cari Tempat <i class="fas fa-search"></i>'; priceInfo.style.display = 'none'; }
-        else if(currentStep === 2) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Lanjut Menu <i class="fas fa-arrow-right"></i>'; priceInfo.style.display = 'none'; }
-        else if(currentStep === 3) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Lanjut Data <i class="fas fa-arrow-right"></i>'; priceInfo.style.display = 'flex'; }
-        else if(currentStep === 4) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>'; priceInfo.style.display = 'none'; }
-    }
-
-    async function checkAvailability() {
-        const dateVal = document.getElementById('inputDate').value;
-        const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
-        const container = document.getElementById('locationList');
-        container.innerHTML = '<div class="spinner" style="margin:20px auto;"></div>';
-
-        try {
-            const snapshot = await db.collection('reservations').where('date', '==', dateVal).get();
-            const usageMap = {};
-            let isLantai1FullBooked = false;
-
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                if(d.tempat) {
-                    usageMap[d.tempat] = (usageMap[d.tempat] || 0) + (parseInt(d.jumlah) || 0);
-                    if (d.tempat.toLowerCase().includes("lantai 1 full blok")) {
-                        isLantai1FullBooked = true;
-                    }
-                }
-            });
-
-            container.innerHTML = '';
-            locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
-                const locNameLower = loc.name.toLowerCase();
-                const used = usageMap[loc.name] || 0;
-                let capacity = loc.capacity;
-                let remaining = capacity - used;
-                let isFull = remaining < paxVal;
-                let customError = "";
-
-                if (isLantai1FullBooked) {
-                    if (locNameLower.includes("lantai 1 depan") || 
-                        locNameLower.includes("lantai 1 tengah") || 
-                        locNameLower.includes("lantai 1 belakang")) {
-                        isFull = true;
-                        remaining = 0; 
-                    }
-                }
-                
-                if(locNameLower.includes("full blok") && paxVal < 200) { 
-                    isFull = true; 
-                    customError = "Min. 200 Orang"; 
-                }
-                
-                let capClass = "cap-safe";
-                if(remaining <= 0) capClass = "cap-full";
-                
-                const imageUrl = loc.imageUrl || defaultImage;
-
-                const div = document.createElement('div');
-                div.className = `location-option ${isFull ? 'disabled' : ''}`;
-                if(selectedLocationName === loc.name && !isFull) div.classList.add('selected');
-                
-                div.innerHTML = `
-                    <div class="loc-thumb-wrapper">
-                        <img src="${imageUrl}" class="loc-thumb-img" loading="lazy">
-                        ${customError ? `<span style="position:absolute; bottom:0; width:100%; background:rgba(231,76,60,0.9); color:white; font-size:0.7rem; text-align:center;">${customError}</span>` : ''}
-                    </div>
-                    <div class="loc-content">
-                        <span class="loc-name">${loc.name}</span>
-                        <span class="cap-badge ${capClass}">${remaining<=0?'PENUH':`Sisa ${remaining}`}</span>
-                        <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')">
-                            <i class="fas fa-images"></i> Lihat Foto
-                        </button>
-                    </div>
-                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer;" onclick="selectLocation('${loc.name}', this)"></div>
-                `;
-                container.appendChild(div);
-            });
-        } catch(e) {
-            console.error(e);
-            container.innerHTML = '<p style="text-align:center; color:red;">Gagal memuat data.</p>';
-        }
-    }
-
-    function selectLocation(name, el) {
-        selectedLocationName = name;
-        document.querySelectorAll('.location-option').forEach(e => e.classList.remove('selected'));
-        el.closest('.location-option').classList.add('selected');
-    }
-
-    async function submitReservation() {
-        Swal.showLoading();
-        try {
-            await db.collection('reservation_requests').add({
-                date: document.getElementById('inputDate').value,
-                jam: document.getElementById('inputTime').value,
-                jumlah: parseInt(document.getElementById('inputPax').value),
-                tempat: selectedLocationName,
-                nama: document.getElementById('inputName').value,
-                nomorHp: document.getElementById('inputPhone').value.replace(/[^0-9]/g,'').replace(/^0/,'62'),
-                tambahan: document.getElementById('inputNote').value,
-                menus: Object.entries(selectedMenus).map(([k,v]) => ({name:k, quantity:v})),
-                status: 'pending',
-                via: 'Web App V8',
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            Swal.fire({ icon: 'success', title: 'Terkirim!', text: 'Admin akan menghubungi WhatsApp Anda.', confirmButtonColor: 'var(--primary)' }).then(() => window.location.reload());
-        } catch(e) { Swal.fire('Error', 'Gagal koneksi.', 'error'); }
-    }
-
-    function openImage(url, caption) { 
-        event.stopPropagation(); 
-        document.getElementById('imgModal').style.display = 'flex'; 
-        document.getElementById('modalImg').src = url; 
-        document.getElementById('modalCaption').textContent = caption; 
-    }
-    function closeImage() { document.getElementById('imgModal').style.display = 'none'; }
-
-    // ===============================================
-    // ADMIN FUNCTIONS (NEW BYPASS LOGIC)
-    // ===============================================
-
-    function openAdmin() {
-      document.getElementById('adminPanel').style.display = 'block';
-      auth.onAuthStateChanged(user => {
-        if(user) showAdminDashboard();
-        else showAdminLogin();
-      });
-    }
-
-    function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
-    function showAdminLogin() { document.getElementById('adminLoginView').style.display = 'block'; document.getElementById('adminDashboardView').style.display = 'none'; }
-    function showAdminDashboard() { document.getElementById('adminLoginView').style.display = 'none'; document.getElementById('adminDashboardView').style.display = 'block'; renderAdminLocations(); }
-
-    function adminLogin() {
-      const email = document.getElementById('adminEmail').value;
-      const pass = document.getElementById('adminPass').value;
-      const errEl = document.getElementById('loginError');
-
-      if(!email || !pass) { errEl.textContent = "Isi email dan password."; errEl.style.display = 'block'; return; }
-
-      auth.signInWithEmailAndPassword(email, pass)
-        .then(() => { errEl.style.display = 'none'; showAdminDashboard(); })
-        .catch(error => { errEl.textContent = "Login gagal: " + error.message; errEl.style.display = 'block'; });
-    }
-
-    function adminLogout() { auth.signOut().then(() => showAdminLogin()); }
-
-    async function renderAdminLocations() {
-      const container = document.getElementById('adminLocationList');
-      container.innerHTML = '<div class="spinner"></div>';
-      try {
-          await loadData();
-          container.innerHTML = '';
-          locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
-            const currentImg = loc.imageUrl || defaultImage;
-            const card = document.createElement('div');
-            card.className = 'admin-card';
-            card.innerHTML = `
-              <div class="admin-card-header">
-                 <h4>${loc.name}</h4>
-                 <small style="color:#888;">ID: ${loc.id}</small>
-              </div>
-              <div class="upload-area">
-                 <div class="img-preview-box">
-                    <img src="${currentImg}" id="preview-${loc.id}">
-                 </div>
-                 <div class="upload-controls">
-                    <input type="file" id="file-${loc.id}" accept="image/*" class="file-input">
-                    <button class="btn-upload-save" onclick="handleFileUpload('${loc.id}')">
-                       <i class="fas fa-save"></i> Simpan Foto
-                    </button>
-                 </div>
-              </div>
-            `;
-            container.appendChild(card);
-          });
-      } catch (err) {
-          Swal.fire('Error', 'Gagal memuat list admin', 'error');
-      }
-    }
-
-    // --- LOGIKA UPLOAD BARU (TANPA FIREBASE STORAGE) ---
-    // Foto dikompres -> diubah jadi teks Base64 -> disimpan di Firestore
-    async function handleFileUpload(locId) {
-        try {
-            const fileInput = document.getElementById(`file-${locId}`);
-            const file = fileInput.files[0];
+            // Jeep Popup (Prioritas)
+            html += generatePopupRow('jeep', 'Jeep Adventure');
+            // Menu Lainnya
+            html += generatePopupRow('reservation', 'Menu Reservasi');
+            html += generatePopupRow('reguler', 'Menu Reguler');
+            html += generatePopupRow('gallery', 'Gallery Lokasi');
+            html += generatePopupRow('jadwal', 'Jadwal Buka');
             
-            if(!file) {
-                Swal.fire('Peringatan', 'Pilih file foto dulu!', 'warning');
-                return;
-            }
+            html += `</div>`;
 
-            // Validasi tipe file
-            if (!file.type.match('image.*')) {
-                Swal.fire('Format Salah', 'Harus file gambar (jpg/png).', 'error');
-                return;
-            }
 
-            // Ubah tombol jadi loading
-            const btn = document.querySelector(`button[onclick="handleFileUpload('${locId}')"]`);
-            const oldText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-            btn.disabled = true;
-
-            // 1. Kompres dan Ubah ke Base64
-            const compressedBase64 = await compressImage(file);
-
-            // 2. Simpan LANGSUNG ke Database (Firestore)
-            await db.collection('locations').doc(locId).update({
-                imageUrl: compressedBase64
-            });
-
-            // 3. Update tampilan
-            document.getElementById(`preview-${locId}`).src = compressedBase64;
-            Swal.fire('Berhasil!', 'Foto berhasil disimpan ke Database.', 'success');
-
-            btn.innerHTML = oldText;
-            btn.disabled = false;
-
-        } catch (e) {
-            console.error(e);
-            Swal.fire('Gagal', 'Terjadi kesalahan: ' + e.message, 'error');
+            // 0. GENERAL SETTINGS (HEADER, OVERLAY, MEMBER BTN)
+            html += `<div class="upload-group"><h3>Pengaturan Umum (Gambar Utama)</h3>`;
             
-            const btn = document.querySelector(`button[onclick="handleFileUpload('${locId}')"]`);
-            if(btn) { btn.innerHTML = '<i class="fas fa-save"></i> Simpan Foto'; btn.disabled = false; }
+            // Header Image
+            html += `<div class="admin-item-row">
+                <img src="${globalConfig.general.headerImage}" class="preview-img">
+                <div class="admin-item-info">
+                    <label>Gambar Header (Banner Atas)</label>
+                    <input type="file" onchange="uploadFile(this, 'general', 'headerImage')">
+                </div>
+            </div>`;
+
+            // Overlay Image
+            html += `<div class="admin-item-row">
+                <img src="${globalConfig.general.overlayImage}" class="preview-img">
+                <div class="admin-item-info">
+                    <label>Overlay/Frame Slideshow</label>
+                    <input type="file" onchange="uploadFile(this, 'general', 'overlayImage')">
+                </div>
+            </div>`;
+
+             // Member Button Image
+             html += `<div class="admin-item-row">
+                <img src="${globalConfig.general.memberBtnImage}" class="preview-img">
+                <div class="admin-item-info">
+                    <label>Tombol Member (Pojok Kanan Bawah)</label>
+                    <input type="file" onchange="uploadFile(this, 'general', 'memberBtnImage')">
+                </div>
+            </div>`;
+            html += `</div>`;
+
+
+            // 1. SLIDESHOW
+            html += `<div class="upload-group"><h3>Slideshow (Carousel)</h3>`;
+            globalConfig.slideshow.forEach((url, i) => {
+                html += `<div class="admin-item-row">
+                    <img src="${url}" class="preview-img">
+                    <div class="admin-item-info"><input type="file" onchange="uploadFile(this, 'slide', ${i})"></div>
+                    <button class="btn-danger" onclick="deleteArrayItem('slideshow', ${i})">Hapus</button>
+                </div>`;
+            });
+            html += `<button class="btn-add" onclick="addArrayItem('slideshow')">+ Tambah Slide</button></div>`;
+
+            // 2. JEEP PACKAGES
+            html += `<div class="upload-group"><h3>Paket Jeep (Detail Halaman)</h3>`;
+            globalConfig.jeepPackages.forEach((pkg, i) => {
+                html += `<div class="admin-item-row" style="background:#f9f9f9; padding:10px; border-radius:8px;">
+                    <img src="${pkg.image}" class="preview-img">
+                    <div class="admin-item-info">
+                        <label>Nama Paket:</label>
+                        <input type="text" value="${pkg.title}" oninput="updateDeepValue('jeepPackages', ${i}, 'title', this.value)">
+                        <input type="file" onchange="uploadFile(this, 'jeep', ${i})">
+                    </div>
+                    <button class="btn-danger" onclick="deleteArrayItem('jeepPackages', ${i})">Hapus</button>
+                </div>`;
+            });
+            html += `<button class="btn-add" onclick="addArrayItem('jeepPackages')">+ Tambah Paket Jeep</button></div>`;
+
+            // 3. MENU RESERVASI
+            html += `<div class="upload-group"><h3>Menu Reservasi (Gambar & Ketentuan)</h3>`;
+            globalConfig.reservationMenu.forEach((item, i) => {
+                html += `<div class="admin-item-row" style="background:#f9f9f9; padding:10px; border-radius:8px;">
+                    <img src="${item.image}" class="preview-img">
+                    <div class="admin-item-info">
+                        <label>Judul Menu:</label>
+                        <input type="text" value="${item.title}" oninput="updateDeepValue('reservationMenu', ${i}, 'title', this.value)">
+                        <label>Ketentuan (Popup):</label>
+                        <input type="text" value="${item.desc}" oninput="updateDeepValue('reservationMenu', ${i}, 'desc', this.value)">
+                        <input type="file" onchange="uploadFile(this, 'resMenu', ${i})">
+                    </div>
+                    <button class="btn-danger" onclick="deleteArrayItem('reservationMenu', ${i})">Hapus</button>
+                </div>`;
+            });
+            html += `<button class="btn-add" onclick="addArrayItem('reservationMenu')">+ Tambah Menu Reservasi</button></div>`;
+
+            // 4. MENU REGULER
+            html += `<div class="upload-group"><h3>Menu Reguler (Kategori & Item)</h3>`;
+            globalConfig.regularMenu.forEach((cat, catIdx) => {
+                html += `<div style="background:#f5f5f5; padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #ddd;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <input type="text" value="${cat.category}" style="font-weight:bold; color:#e65100; width:70%;" oninput="updateCatTitle(${catIdx}, this.value)">
+                        <button class="btn-danger" onclick="deleteRegularCategory(${catIdx})">Hapus Kategori</button>
+                    </div>
+                    <div class="admin-sub-section">`;
+                
+                cat.items.forEach((item, itemIdx) => {
+                    html += `<div class="admin-sub-item">
+                        <input type="text" value="${item.name}" placeholder="Nama Menu" style="width:50%" oninput="updateRegItem(${catIdx}, ${itemIdx}, 'name', this.value)">
+                        <input type="text" value="${item.price}" placeholder="Harga" style="width:30%" oninput="updateRegItem(${catIdx}, ${itemIdx}, 'price', this.value)">
+                        <button class="btn-danger" style="padding:5px;" onclick="deleteRegItem(${catIdx}, ${itemIdx})">X</button>
+                    </div>`;
+                });
+                
+                html += `<button class="btn-add-small" onclick="addRegItem(${catIdx})">+ Tambah Menu di ${cat.category}</button>
+                    </div>
+                </div>`;
+            });
+            html += `<button class="btn-add" onclick="addRegularCategory()">+ Tambah Kategori Baru</button></div>`;
+
+            // 5. GALERI & UMUM
+            html += `<div class="upload-group"><h3>Galeri Foto</h3><div style="display:flex; flex-wrap:wrap; gap:8px;">`;
+            globalConfig.gallery.forEach((url, i) => {
+                html += `<div style="position:relative; width:80px; height:80px;">
+                    <img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:5px;">
+                    <button onclick="deleteArrayItem('gallery', ${i})" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; font-size:10px; cursor:pointer;">X</button>
+                </div>`;
+            });
+            html += `</div><br><button class="btn-add" onclick="document.getElementById('input-gallery-add').click()">+ Upload Foto</button>
+            <input type="file" id="input-gallery-add" style="display:none" onchange="uploadFile(this, 'gallery_add')"></div>`;
+
+            area.innerHTML = html;
         }
-    }
 
-    // Fungsi Pembantu: Kompres Gambar menggunakan Canvas HTML5
-    function compressImage(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; // Lebar maksimal 600px (biar ringan)
-                    const scaleSize = MAX_WIDTH / img.width;
-                    
-                    // Hitung dimensi baru
-                    if (img.width > MAX_WIDTH) {
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleSize;
-                    } else {
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                    }
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    // Ubah jadi JPEG kualitas rendah (0.6) agar string pendek
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                    resolve(dataUrl);
-                }
-                img.onerror = (err) => reject(new Error("File gambar rusak"));
+        // --- ADMIN ACTIONS LOGIC ---
+        
+        window.updatePopupActive = (key, status) => {
+            globalConfig.menuPopups[key].active = status;
+            // Tidak perlu refresh form, biar tidak lag
+        };
+
+        window.addArrayItem = (key) => {
+            if(key === 'slideshow') globalConfig.slideshow.push("https://via.placeholder.com/800x400?text=New+Slide");
+            if(key === 'jeepPackages') globalConfig.jeepPackages.push({ title: "Paket Baru", image: "https://via.placeholder.com/400" });
+            if(key === 'reservationMenu') globalConfig.reservationMenu.push({ title: "Menu Baru", image: "https://via.placeholder.com/400", desc: "Keterangan disini" });
+            generateAdminForm();
+        };
+
+        window.deleteArrayItem = (key, index) => {
+            if(!confirm("Yakin hapus?")) return;
+            globalConfig[key].splice(index, 1);
+            generateAdminForm();
+        };
+
+        window.updateDeepValue = (key, index, field, value) => {
+            globalConfig[key][index][field] = value;
+        };
+
+        // Regular Menu Logic
+        window.addRegularCategory = () => {
+            globalConfig.regularMenu.push({ category: "Kategori Baru", items: [] });
+            generateAdminForm();
+        };
+        window.deleteRegularCategory = (idx) => {
+            if(!confirm("Hapus kategori dan semua isinya?")) return;
+            globalConfig.regularMenu.splice(idx, 1);
+            generateAdminForm();
+        };
+        window.updateCatTitle = (idx, val) => {
+            globalConfig.regularMenu[idx].category = val;
+        };
+        window.addRegItem = (catIdx) => {
+            globalConfig.regularMenu[catIdx].items.push({ name: "Menu Baru", price: "0" });
+            generateAdminForm();
+        };
+        window.deleteRegItem = (catIdx, itemIdx) => {
+            globalConfig.regularMenu[catIdx].items.splice(itemIdx, 1);
+            generateAdminForm();
+        };
+        window.updateRegItem = (catIdx, itemIdx, field, val) => {
+            globalConfig.regularMenu[catIdx].items[itemIdx][field] = val;
+        };
+
+        // Upload Logic
+        window.uploadFile = async (input, type, key) => {
+            const file = input.files[0];
+            if(!file) return;
+            const btnSave = document.querySelector('.btn-save');
+            btnSave.disabled = true; btnSave.innerText = "UPLOADING...";
+
+            try {
+                const storageRef = ref(storage, `uploads_v4/${type}_${Date.now()}_${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(snapshot.ref);
+
+                if (type === 'general') globalConfig.general[key] = url;
+                else if (type === 'menuPopup') globalConfig.menuPopups[key].image = url; // Logic Baru
+                else if (type === 'slide') globalConfig.slideshow[key] = url;
+                else if (type === 'jeep') globalConfig.jeepPackages[key].image = url;
+                else if (type === 'resMenu') globalConfig.reservationMenu[key].image = url;
+                else if (type === 'gallery_add') globalConfig.gallery.push(url);
+                
+                generateAdminForm();
+            } catch (error) {
+                alert("Upload Gagal: " + error.message);
+            } finally {
+                btnSave.disabled = false; btnSave.innerText = "💾 SIMPAN PERUBAHAN";
             }
-            reader.onerror = (err) => reject(new Error("Gagal membaca file"));
-        });
-    }
+        };
 
-  </script>
+        window.saveConfigToFirestore = async () => {
+            const btn = document.querySelector('.btn-save');
+            btn.disabled = true; btn.innerText = "MENYIMPAN...";
+            try {
+                await setDoc(doc(db, "website_data", "master_config_v5"), globalConfig);
+                alert("BERHASIL! Website telah diperbarui.");
+                location.reload();
+            } catch (e) {
+                alert("Gagal menyimpan: " + e.message);
+                btn.disabled = false; btn.innerText = "💾 SIMPAN PERUBAHAN";
+            }
+        };
+
+        // UI Helpers
+        window.showPage = (pageId) => {
+            document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+            const target = document.getElementById(pageId);
+            if(target) target.style.display = 'block';
+            window.scrollTo(0,0);
+            
+            document.body.className = '';
+            if(pageId === 'page-home') document.body.classList.add('theme-home');
+            else if(pageId === 'page-menu') document.body.classList.add('theme-menu');
+            else if(pageId === 'page-gallery') document.body.classList.add('theme-gallery');
+            else if(pageId === 'page-jeep') document.body.classList.add('theme-jeep');
+            else if(pageId === 'page-reguler') document.body.classList.add('theme-reguler');
+
+            document.getElementById('floating-home-button').style.display = (pageId === 'page-home') ? 'none' : 'flex';
+            const ind = document.getElementById('scroll-indicator');
+            if(ind) ind.style.display = (['page-menu','page-reguler'].includes(pageId)) ? 'flex' : 'none';
+        };
+
+        // --- NEW LOGIC FOR MENU NAVIGATION WITH POPUP ---
+        window.handlePageNavigation = (pageId, configKey) => {
+            // 1. Pindah Halaman Dulu
+            showPage(pageId);
+
+            // 2. Cek apakah ada popup aktif untuk menu ini
+            if (globalConfig.menuPopups && 
+                globalConfig.menuPopups[configKey] && 
+                globalConfig.menuPopups[configKey].active &&
+                globalConfig.menuPopups[configKey].image) {
+                
+                // Jika aktif, tampilkan popup overlay
+                openMenuPopup(globalConfig.menuPopups[configKey].image);
+            }
+        };
+
+        const menuPopup = document.getElementById('menu-image-popup');
+        const menuPopupImg = document.getElementById('menu-popup-img');
+
+        window.openMenuPopup = (url) => {
+            menuPopupImg.src = url;
+            menuPopup.style.display = 'flex';
+        };
+
+        window.closeMenuPopup = () => {
+            menuPopup.style.display = 'none';
+            // User sudah berada di halaman tujuan, jadi hanya perlu menutup popup
+        };
+
+        window.openFullscreen = (img) => {
+            document.getElementById("fullscreen-img").src = img.src;
+            document.getElementById("fullscreen-modal").classList.add("show");
+        };
+        window.openFullscreenImage = (url) => {
+             document.getElementById("fullscreen-img").src = url;
+             document.getElementById("fullscreen-modal").classList.add("show");
+        };
+        window.closeFullscreen = () => document.getElementById("fullscreen-modal").classList.remove("show");
+
+        const popup = document.getElementById("generic-popup");
+        window.openPopup = (t, b) => {
+            document.getElementById("popup-title").innerText = t;
+            document.getElementById("popup-body").innerHTML = `<p>${b}</p>`;
+            popup.classList.add("show");
+        };
+        window.closePopup = () => popup.classList.remove("show");
+
+        document.addEventListener("DOMContentLoaded", loadData);
+    </script>
 </body>
 </html>
