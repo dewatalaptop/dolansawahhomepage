@@ -105,11 +105,31 @@
             text-align: center;
             margin-bottom: 25px;
         }
-        .step-header .material-symbols-outlined {
-            font-size: 48px;
-            color: var(--primary-color);
-            margin-bottom: 10px;
+        
+        /* === [MODIFIKASI GAMBAR UTAMA] === */
+        .welcome-image-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
         }
+
+        .welcome-image {
+            width: 100%;
+            max-width: 320px; /* Ukuran proporsional, tidak terlalu kecil/besar */
+            height: auto;
+            object-fit: contain;
+            /* Efek bayangan agar gambar "pop" */
+            filter: drop-shadow(0 8px 15px rgba(0,0,0,0.15));
+            /* Animasi berdenyut */
+            animation: pulse-grow 2.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-grow {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); } /* Membesar 8% */
+            100% { transform: scale(1); }
+        }
+        /* === [AKHIR MODIFIKASI GAMBAR] === */
 
         .step-header h2 {
             margin: 0 0 8px 0;
@@ -125,77 +145,109 @@
             line-height: 1.6;
         }
 
-        /* Styling Leaderboard */
+        /* === [MODIFIKASI LEADERBOARD PROFESIONAL] === */
         .leaderboard-container {
-            margin-top: 25px;
-            padding: 20px;
-            background-color: var(--bg-light);
+            margin-top: 30px;
+            background-color: #fff;
             border-radius: 12px;
+            overflow: hidden; /* Agar sudut header mengikuti radius */
+            border: 1px solid #dcdcdc;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
             text-align: left;
         }
-        .leaderboard-container h3 {
-            margin: 0 0 15px 0;
-            font-size: 1.2em;
-            font-weight: 600;
-            color: var(--primary-color);
+
+        .leaderboard-header-box {
+            background-color: var(--primary-color);
+            padding: 15px 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            gap: 10px;
+            color: #fff;
         }
-        .leaderboard-container h3 .material-symbols-outlined {
-            font-size: 1.4em;
+
+        .leaderboard-header-box h3 {
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #fff;
         }
+        
+        .leaderboard-header-box .material-symbols-outlined {
+            color: #FFD700; /* Warna Emas untuk ikon piala */
+            font-size: 1.5em;
+        }
+
         .leaderboard-list {
             list-style: none;
-            padding: 0;
+            padding: 15px;
             margin: 0;
+            background-color: #fafafa;
         }
+
         .leaderboard-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background-color: #fff;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
+
+        .leaderboard-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+
         .leaderboard-list li:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
+            margin-bottom: 0;
         }
         
+        /* Rank 1 Styling - Spesial */
+        .leaderboard-list li:first-child.leaderboard-item {
+            border: 1px solid #ffe58f;
+            background: linear-gradient(to right, #fff, #fffbe6);
+        }
+
         .leaderboard-rank {
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            background-color: var(--primary-color);
-            color: var(--text-light);
-            font-weight: 600;
-            font-size: 0.95em;
+            background-color: #e0e0e0;
+            color: #555;
+            font-weight: 700;
+            font-size: 0.9em;
         }
 
-        .leaderboard-list li:first-child .leaderboard-rank {
-            background-color: var(--accent-color);
-        }
+        /* Warna Rank 1-3 */
+        .leaderboard-list li:nth-child(1) .leaderboard-rank { background-color: #FFD700; color: #fff; box-shadow: 0 2px 5px rgba(255, 215, 0, 0.4); }
+        .leaderboard-list li:nth-child(2) .leaderboard-rank { background-color: #C0C0C0; color: #fff; }
+        .leaderboard-list li:nth-child(3) .leaderboard-rank { background-color: #CD7F32; color: #fff; }
         
         .leaderboard-name {
             flex-grow: 1;
             color: var(--text-dark);
-            font-weight: 500;
-            font-size: 1em;
-            line-height: 1.3;
+            font-weight: 600;
+            font-size: 0.95em;
         }
 
         .leaderboard-item .points {
-            font-weight: 600;
-            color: var(--accent-color);
+            font-weight: 700;
+            color: var(--primary-color);
             font-size: 0.9em;
-            padding: 4px 8px;
-            background-color: #fff;
-            border-radius: 6px;
-            border: 1px solid #ffe58f;
+            padding: 4px 10px;
+            background-color: #e0f2f1;
+            border-radius: 20px;
             flex-shrink: 0;
         }
         
@@ -204,7 +256,10 @@
             color: #777;
             font-style: italic;
             padding: 10px 0;
+            width: 100%;
+            display: block;
         }
+        /* === [AKHIR MODIFIKASI LEADERBOARD] === */
 
 
         /* Form Styling */
@@ -294,26 +349,21 @@
             border-color: var(--primary-light);
         }
 
-        /* === [PERUBAHAN] === */
         /* Tombol Cek Profil (Hijau & Goyang) */
         #check-profile-btn {
             background-color: var(--success-color);
             color: var(--text-light);
             border: 2px solid var(--success-color);
-            /* Animasi goyang untuk menarik atensi */
             animation: wobble 2.5s ease-in-out infinite;
-            animation-delay: 2s; /* Mulai animasi setelah 2 detik */
+            animation-delay: 2s; 
             transform-origin: center;
         }
         #check-profile-btn:hover {
-            background-color: #43A047; /* Hijau lebih gelap */
+            background-color: #43A047; 
             border-color: #43A047;
             color: var(--text-light);
-            /* Hentikan animasi saat di-hover agar mudah diklik */
             animation-play-state: paused;
         }
-        /* === [AKHIR PERUBAHAN] === */
-
 
         .spinner {
             width: 20px; height: 20px;
@@ -367,19 +417,12 @@
         }
 
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
         }
         
-        /* === [PERUBAHAN] === */
-        /* Keyframes untuk animasi goyang */
+        /* Keyframes untuk animasi goyang tombol cek profil */
         @keyframes wobble {
             0% { transform: rotate(0deg) scale(1); }
             15% { transform: rotate(-5deg) scale(1.02); }
@@ -389,7 +432,6 @@
             75% { transform: rotate(-2deg) scale(1); }
             100% { transform: rotate(0deg) scale(1); }
         }
-        /* === [AKHIR PERUBAHAN] === */
         
     </style>
 </head>
@@ -407,15 +449,20 @@
 
         <div class="registration-step active" id="step-0">
             <div class="step-header">
-                <span class="material-symbols-outlined">celebration</span>
+                <div class="welcome-image-wrapper">
+                    <img src="https://firebasestorage.googleapis.com/v0/b/slidemonitor.firebasestorage.app/o/uploads_v4%2Fjeep_1768806857249_IMG_8256.png?alt=media&token=21a85315-8e4d-4478-a981-b5916e91914e" 
+                         alt="Selamat Datang Dolan Sawah" 
+                         class="welcome-image">
+                </div>
+
                 <h2>Selamat Datang!</h2>
                 <p>Jadilah bagian dari keluarga Dolan Sawah dan nikmati berbagai keuntungan eksklusif. Pendaftaran ini cepat, mudah, dan gratis!</p>
 
                 <div class="leaderboard-container">
-                    <h3>
+                    <div class="leaderboard-header-box">
                         <span class="material-symbols-outlined">emoji_events</span>
-                        Para Pelanggan Setia Dolan Sawah
-                    </h3>
+                        <h3>Pelanggan Setia</h3>
+                    </div>
                     <ol class="leaderboard-list" id="leaderboard-list">
                         <li class="leaderboard-loading">Memuat data...</li>
                     </ol>
@@ -498,11 +545,12 @@
 
         <div class="registration-step" id="step-final">
             <div class="step-header">
-                <span class="material-symbols-outlined" style="color:var(--success-color);">verified</span>
+                <span class="material-symbols-outlined" style="color:var(--success-color); font-size: 64px;">verified</span>
                 <h2>Terima Kasih!</h2>
                 <p>Pendaftaran Anda telah berhasil. Selamat bergabung menjadi Member Dolan Sawah!</p>
-                <p style="margin-top:20px; font-weight:600; background-color: #fffbe6; padding:15px; border-radius:8px; border: 1px solid #ffe58f;">
-                    PENTING: Selalu sebutkan <strong>Nomor HP Anda</strong> setiap kali melakukan transaksi di kasir untuk mendapatkan poin. Poin dapat ditukar dengan beragam produk dan diskon menarik!
+                <p style="margin-top:20px; font-weight:600; background-color: #fffbe6; padding:15px; border-radius:8px; border: 1px solid #ffe58f; text-align: left;">
+                    <span style="display:block; margin-bottom:5px; color: #856404;">📝 PENTING:</span>
+                    Selalu sebutkan <strong>Nomor HP Anda</strong> setiap kali melakukan transaksi di kasir untuk mendapatkan poin.
                 </p>
             </div>
         </div>
@@ -517,7 +565,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc, serverTimestamp, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Ganti dengan konfigurasi Firebase Anda
+    // Konfigurasi Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAEzWDI9ZWlc7NnUTDBbx7wednnUVeS9Ao",
         authDomain: "member-hp-dolansawah.firebaseapp.com",
@@ -531,7 +579,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // [UPDATE] Fungsi untuk mengambil data top 5 member
+    // Fungsi untuk mengambil data top 5 member
     const fetchTopMembers = async () => {
         const listElement = document.getElementById('leaderboard-list');
         if (!listElement) return;
@@ -548,10 +596,8 @@
 
             listElement.innerHTML = ''; 
             
-            // [UPDATE] Membuat counter manual, dimulai dari 1
             let rankCounter = 1;
 
-            // [UPDATE] Hapus parameter 'index' dari forEach
             querySnapshot.forEach((doc) => {
                 const member = doc.data();
                 if (!member.nama) return; 
@@ -562,15 +608,13 @@
                 const displayName = member.nama;
                 const displayPoin = typeof member.poin === 'number' && !isNaN(member.poin) ? member.poin : 0;
 
-                // [UPDATE] Gunakan 'rankCounter' sebagai pengganti 'index + 1'
                 li.innerHTML = `
                     <div class="leaderboard-rank">${rankCounter}</div>
-                    <strong class="leaderboard-name">${displayName}</strong>
-                    <span class="points">${displayPoin} Poin</span>
+                    <div class="leaderboard-name">${displayName}</div>
+                    <div class="points">${displayPoin} Poin</div>
                 `;
                 listElement.appendChild(li);
                 
-                // [UPDATE] Tambahkan 1 ke counter setiap selesai satu loop
                 rankCounter++;
             });
 
@@ -749,7 +793,7 @@
         // Inisialisasi
         showStep(currentStep);
         
-        // Panggil fungsi untuk memuat leaderboard saat halaman dibuka
+        // Panggil fungsi untuk memuat leaderboard
         fetchTopMembers();
     });
 </script>
