@@ -31,6 +31,10 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
+        html {
+            scroll-behavior: auto; /* Diatur auto agar JS bisa mengontrol smooth scroll manual */
+        }
+
         body {
             font-family: var(--font-body);
             background-color: var(--bg-light);
@@ -50,6 +54,8 @@
             border-radius: 16px;
             box-shadow: var(--shadow);
             overflow: hidden;
+            position: relative;
+            z-index: 10;
         }
 
         header {
@@ -68,6 +74,7 @@
         
         main {
             padding: 30px;
+            padding-bottom: 60px; /* Tambahan padding bawah agar konten tidak tertutup tombol scroll */
         }
 
         /* Progress Bar */
@@ -115,21 +122,18 @@
 
         .welcome-image {
             width: 100%;
-            max-width: 320px; /* Ukuran proporsional, tidak terlalu kecil/besar */
+            max-width: 320px;
             height: auto;
             object-fit: contain;
-            /* Efek bayangan agar gambar "pop" */
             filter: drop-shadow(0 8px 15px rgba(0,0,0,0.15));
-            /* Animasi berdenyut */
             animation: pulse-grow 2.5s infinite ease-in-out;
         }
 
         @keyframes pulse-grow {
             0% { transform: scale(1); }
-            50% { transform: scale(1.08); } /* Membesar 8% */
+            50% { transform: scale(1.08); }
             100% { transform: scale(1); }
         }
-        /* === [AKHIR MODIFIKASI GAMBAR] === */
 
         .step-header h2 {
             margin: 0 0 8px 0;
@@ -150,7 +154,7 @@
             margin-top: 30px;
             background-color: #fff;
             border-radius: 12px;
-            overflow: hidden; /* Agar sudut header mengikuti radius */
+            overflow: hidden;
             border: 1px solid #dcdcdc;
             box-shadow: 0 6px 15px rgba(0,0,0,0.05);
             text-align: left;
@@ -176,7 +180,7 @@
         }
         
         .leaderboard-header-box .material-symbols-outlined {
-            color: #FFD700; /* Warna Emas untuk ikon piala */
+            color: #FFD700;
             font-size: 1.5em;
         }
 
@@ -209,7 +213,6 @@
             margin-bottom: 0;
         }
         
-        /* Rank 1 Styling - Spesial */
         .leaderboard-list li:first-child.leaderboard-item {
             border: 1px solid #ffe58f;
             background: linear-gradient(to right, #fff, #fffbe6);
@@ -229,7 +232,6 @@
             font-size: 0.9em;
         }
 
-        /* Warna Rank 1-3 */
         .leaderboard-list li:nth-child(1) .leaderboard-rank { background-color: #FFD700; color: #fff; box-shadow: 0 2px 5px rgba(255, 215, 0, 0.4); }
         .leaderboard-list li:nth-child(2) .leaderboard-rank { background-color: #C0C0C0; color: #fff; }
         .leaderboard-list li:nth-child(3) .leaderboard-rank { background-color: #CD7F32; color: #fff; }
@@ -259,8 +261,6 @@
             width: 100%;
             display: block;
         }
-        /* === [AKHIR MODIFIKASI LEADERBOARD] === */
-
 
         /* Form Styling */
         .form-group {
@@ -349,7 +349,6 @@
             border-color: var(--primary-light);
         }
 
-        /* Tombol Cek Profil (Hijau & Goyang) */
         #check-profile-btn {
             background-color: var(--success-color);
             color: var(--text-light);
@@ -386,29 +385,44 @@
         #status-message.success { background: #DFF0D8; color: #3C763D; border: 1px solid #D6E9C6; }
         #status-message.error { background: #F2DEDE; color: #A94442; border: 1px solid #EBCCD1; }
 
-        /* Styling untuk Scroll Indicator */
+        /* === [MODIFIKASI: SCROLL INDICATOR BARU] === */
         #scroll-indicator {
             position: fixed;
             bottom: 30px;
-            right: 30px;
+            right: 20px;
             background-color: var(--primary-color);
             color: var(--text-light);
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
+            /* Ubah bentuk menjadi kapsul vertikal */
+            width: 50px;
+            height: auto; 
+            padding: 10px 5px;
+            border-radius: 30px; /* Membuat sudut membulat seperti kapsul */
             display: flex;
+            flex-direction: column; /* Susun vertikal: Teks di atas, Panah di bawah */
             justify-content: center;
             align-items: center;
-            box-shadow: var(--shadow);
+            box-shadow: 0 4px 15px rgba(0,121,107, 0.4);
             cursor: pointer;
             z-index: 1000;
             transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
             opacity: 1;
+            transform: translateY(0);
         }
 
         #scroll-indicator.hidden {
             opacity: 0;
             pointer-events: none;
+            transform: translateY(20px);
+        }
+        
+        /* Styling teks "SCROLL" */
+        .scroll-text {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
         #scroll-indicator .material-symbols-outlined {
@@ -418,11 +432,10 @@
 
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
+            40% { transform: translateY(-6px); }
+            60% { transform: translateY(-3px); }
         }
         
-        /* Keyframes untuk animasi goyang tombol cek profil */
         @keyframes wobble {
             0% { transform: rotate(0deg) scale(1); }
             15% { transform: rotate(-5deg) scale(1.02); }
@@ -557,7 +570,8 @@
     </main>
 </div>
 
-<div id="scroll-indicator" class="hidden">
+<div id="scroll-indicator">
+    <span class="scroll-text">SCROLL</span>
     <span class="material-symbols-outlined">arrow_downward</span>
 </div>
 
@@ -636,6 +650,42 @@
         let currentStep = 0;
         const totalFormSteps = steps.filter(s => s.id.startsWith('step-') && s.id !== 'step-0' && s.id !== 'step-final').length;
         let lastScrollTop = 0;
+        
+        // === [VARIABEL AUTO SCROLL] ===
+        let isUserInteracting = false; 
+        
+        // Fungsi untuk menghentikan auto scroll
+        const stopAutoScroll = () => {
+            isUserInteracting = true;
+        };
+
+        // Deteksi interaksi user (mouse, touch, keyboard)
+        window.addEventListener('mousedown', stopAutoScroll);
+        window.addEventListener('wheel', stopAutoScroll, { passive: true });
+        window.addEventListener('touchstart', stopAutoScroll, { passive: true });
+        window.addEventListener('keydown', stopAutoScroll);
+
+        // Fungsi Auto Scroll (Halaman bergerak naik pelan-pelan)
+        const initAutoScroll = () => {
+            let scrollAmount = 0;
+            const targetScroll = 120; // Seberapa jauh scroll ke bawah (konten naik)
+            const speed = 0.6; // Kecepatan scroll (semakin kecil semakin lambat)
+
+            const scrollStep = () => {
+                if (isUserInteracting) return; // Berhenti jika user interaksi
+                
+                if (scrollAmount < targetScroll) {
+                    window.scrollBy(0, speed);
+                    scrollAmount += speed;
+                    requestAnimationFrame(scrollStep);
+                }
+            };
+            
+            // Mulai setelah delay sedikit agar user siap
+            setTimeout(() => {
+                requestAnimationFrame(scrollStep);
+            }, 1000);
+        };
 
         const showStep = (stepIndex) => {
             steps.forEach((step, index) => {
@@ -644,14 +694,11 @@
             updateProgressBar();
             updateNavigationButtons();
             
+            // Tampilkan scroll indicator hanya di step 0
             if (stepIndex === 0) {
-                const step0ContentHeight = steps[0].scrollHeight;
-                const viewportHeight = window.innerHeight;
-                if (step0ContentHeight > viewportHeight * 0.8 && window.pageYOffset < 10) { 
-                    scrollIndicator.classList.remove('hidden');
-                } else {
-                    scrollIndicator.classList.add('hidden'); 
-                }
+                 scrollIndicator.classList.remove('hidden');
+                 isUserInteracting = false; // Reset interaksi saat kembali ke awal
+                 // Jangan panggil initAutoScroll lagi jika sudah pernah, atau opsional reset
             } else {
                 scrollIndicator.classList.add('hidden');
             }
@@ -773,16 +820,30 @@
             }
         });
         
+        // Klik indikator scroll untuk manual scroll ke bawah
+        scrollIndicator.addEventListener('click', () => {
+            stopAutoScroll(); // Hentikan auto scroll jika user klik
+            window.scrollBy({
+                top: 300,
+                behavior: 'smooth'
+            });
+        });
+        
         window.addEventListener('scroll', () => {
             const st = window.pageYOffset || document.documentElement.scrollTop;
             
             if (currentStep === 0) {
-                if (st > lastScrollTop && st > 10) { 
+                // Logika visibilitas:
+                // Jika sedang auto scroll (user belum interaksi), biarkan terlihat.
+                // Jika user sudah interaksi, sembunyikan jika scroll ke bawah jauh (>150px).
+                
+                if (isUserInteracting && st > lastScrollTop && st > 150) { 
                     scrollIndicator.classList.add('hidden');
                 } else if (st < lastScrollTop) { 
+                    // Munculkan lagi jika scroll ke atas
                     scrollIndicator.classList.remove('hidden');
                 } else if (st === 0) { 
-                     showStep(currentStep);
+                     scrollIndicator.classList.remove('hidden');
                 }
             } else {
                  scrollIndicator.classList.add('hidden');
@@ -792,9 +853,10 @@
 
         // Inisialisasi
         showStep(currentStep);
-        
-        // Panggil fungsi untuk memuat leaderboard
         fetchTopMembers();
+        
+        // Jalankan Auto Scroll saat load
+        initAutoScroll();
     });
 </script>
 </body>
