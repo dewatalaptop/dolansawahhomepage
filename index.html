@@ -830,12 +830,24 @@
             window.scrollTo(0,0);
             
             document.body.className = '';
-            if(pageId === 'page-home') document.body.classList.add('theme-home');
-            else if(pageId === 'page-menu') document.body.classList.add('theme-menu');
-            else if(pageId === 'page-gallery') document.body.classList.add('theme-gallery');
-            else if(pageId === 'page-jeep') document.body.classList.add('theme-jeep');
-            else if(pageId === 'page-reguler') document.body.classList.add('theme-reguler');
 
+if(pageId === 'page-home') 
+    document.body.classList.add('theme-home');
+
+else if(pageId === 'page-menu') 
+    document.body.classList.add('theme-menu');
+
+else if(pageId === 'page-gallery') 
+    document.body.classList.add('theme-gallery');
+
+else if(pageId === 'page-jadwal')   // <-- TAMBAHKAN DI SINI
+    document.body.classList.add('theme-jadwal');
+
+else if(pageId === 'page-jeep') 
+    document.body.classList.add('theme-jeep');
+
+else if(pageId === 'page-reguler') 
+    document.body.classList.add('theme-reguler');
             document.getElementById('floating-home-button').style.display = (pageId === 'page-home') ? 'none' : 'flex';
             const ind = document.getElementById('scroll-indicator');
             if(ind) ind.style.display = (['page-menu','page-reguler'].includes(pageId)) ? 'flex' : 'none';
