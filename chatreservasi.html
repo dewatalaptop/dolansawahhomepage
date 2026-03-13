@@ -1,32 +1,405 @@
 <!DOCTYPE html>
 <html lang="id">
-<head> 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asisten Reservasi Dolan Sawah</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="chat-container">
-        <div id="chat-header">
-            <h3>Asisten Dolan Sawah</h3>
-            <span>Online</span>
-        </div>
-        <div id="chat-window">
-            <div id="message-container">
-                <div class="message bot-message">
-                    <p>Halo! Saya asisten virtual Dolan Sawah. Ada yang bisa saya bantu?</p>
-                </div>
-            </div>
-        </div>
-        <form id="chat-form">
-            <input type="text" id="user-input" placeholder="Ketik pertanyaan Anda..." autocomplete="off" required>
-            <button type="submit">Kirim</button>
-        </form>
-    </div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asisten Reservasi Dolan Sawah</title>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <script src="script.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<style>
+
+body{
+font-family:Arial,sans-serif;
+background:#f0f2f5;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+#chat-container{
+width:95%;
+max-width:400px;
+height:90vh;
+max-height:700px;
+background:white;
+border-radius:10px;
+box-shadow:0 4px 12px rgba(0,0,0,0.15);
+display:flex;
+flex-direction:column;
+overflow:hidden;
+}
+
+#chat-header{
+background:#075E54;
+color:white;
+padding:15px;
+text-align:center;
+}
+
+#chat-header span{
+font-size:0.8em;
+color:#a5d6a7;
+}
+
+#chat-window{
+flex-grow:1;
+overflow-y:auto;
+padding:15px;
+}
+
+#message-container{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.message{
+padding:10px 15px;
+border-radius:18px;
+max-width:80%;
+line-height:1.4;
+word-wrap:break-word;
+}
+
+.user-message{
+background:#DCF8C6;
+align-self:flex-end;
+border-bottom-right-radius:4px;
+}
+
+.bot-message{
+background:#ECE5DD;
+align-self:flex-start;
+border-bottom-left-radius:4px;
+}
+
+#chat-form{
+display:flex;
+padding:10px;
+border-top:1px solid #ddd;
+}
+
+#user-input{
+flex-grow:1;
+border:1px solid #ccc;
+border-radius:20px;
+padding:10px 15px;
+font-size:1em;
+}
+
+#chat-form button{
+background:#128C7E;
+color:white;
+border:none;
+border-radius:50%;
+width:45px;
+height:45px;
+margin-left:10px;
+cursor:pointer;
+font-size:1.2em;
+}
+
+.chat-image{
+max-width:100%;
+border-radius:8px;
+margin-bottom:5px;
+}
+
+.chat-button{
+display:block;
+background:#25D366;
+color:white!important;
+text-decoration:none;
+padding:10px;
+text-align:center;
+border-radius:8px;
+margin-top:10px;
+font-weight:bold;
+}
+
+.bot-message p{
+margin:5px 0;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div id="chat-container">
+
+<div id="chat-header">
+<h3>Asisten Dolan Sawah</h3>
+<span>Online</span>
+</div>
+
+<div id="chat-window">
+<div id="message-container">
+
+<div class="message bot-message">
+<p>Halo! Saya asisten virtual Dolan Sawah. Ada yang bisa saya bantu?</p>
+</div>
+
+</div>
+</div>
+
+<form id="chat-form">
+<input type="text" id="user-input" placeholder="Ketik pertanyaan Anda..." autocomplete="off" required>
+<button type="submit">➤</button>
+</form>
+
+</div>
+
+
+<script>
+
+// FIREBASE CONFIG
+const firebaseConfig = {
+apiKey: "AIzaSyDkSAxnbKHUbc4T-jQg6xVUiHyd4i0XiP0",
+authDomain: "chatbot-dolan-sawah-v2.firebaseapp.com",
+projectId: "chatbot-dolan-sawah-v2",
+storageBucket: "chatbot-dolan-sawah-v2.firebasestorage.app",
+messagingSenderId: "337869888557",
+appId: "1:337869888557:web:4416d6f89d8089c7096ca4"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+
+const knowledgeCollection = db.collection('knowledgeBase');
+const unansweredCollection = db.collection('unanswered_queries');
+
+const chatForm = document.getElementById('chat-form');
+const userInput = document.getElementById('user-input');
+const messageContainer = document.getElementById('message-container');
+const chatWindow = document.getElementById('chat-window');
+
+let knowledgeBase = [];
+let currentContext = null;
+
+
+const fallbackAnswer = `[
+{"type":"text","content":"Maaf, saya belum mengerti pertanyaan Anda."}
+]`;
+
+
+async function loadKnowledgeBase(){
+
+const snapshot = await knowledgeCollection.get();
+
+knowledgeBase = snapshot.docs.map(doc => ({
+id: doc.id,
+...doc.data()
+}));
+
+console.log("knowledge loaded");
+
+}
+
+
+async function logUnansweredQuery(message){
+
+try{
+
+await unansweredCollection.add({
+query:message,
+timestamp:firebase.firestore.FieldValue.serverTimestamp()
+})
+
+}catch(e){
+
+console.log("log gagal")
+
+}
+
+}
+
+
+function getSmartResponse(userMessage){
+
+const lowerCaseMessage = userMessage.toLowerCase();
+
+let bestMatch = {score:0,rule:null};
+
+for(const rule of knowledgeBase){
+
+let currentScore = 0;
+
+const keywords = Array.isArray(rule.keywords)?rule.keywords:[];
+
+for(const keyword of keywords){
+
+if(lowerCaseMessage.includes(keyword.toLowerCase())){
+
+currentScore += 10;
+
+}
+
+}
+
+if(rule.context && rule.context===currentContext){
+
+currentScore += 30;
+
+}
+
+currentScore += rule.priority || 0;
+
+if(currentScore > bestMatch.score){
+
+bestMatch = {score:currentScore,rule:rule};
+
+}
+
+}
+
+
+if(bestMatch.score > 0){
+
+currentContext = bestMatch.rule.context || null;
+
+return bestMatch.rule.answer;
+
+}else{
+
+logUnansweredQuery(userMessage);
+
+currentContext = null;
+
+return fallbackAnswer;
+
+}
+
+}
+
+
+
+function appendMessage(htmlContent,sender){
+
+const messageElement = document.createElement('div');
+
+messageElement.classList.add('message',sender+'-message');
+
+messageElement.innerHTML = htmlContent;
+
+messageContainer.appendChild(messageElement);
+
+chatWindow.scrollTop = chatWindow.scrollHeight;
+
+}
+
+
+
+function renderBotMessage(messageString){
+
+const messageDiv = document.createElement('div');
+
+try{
+
+const parsedData = JSON.parse(messageString);
+
+if(Array.isArray(parsedData)){
+
+parsedData.forEach(part=>{
+
+if(part.type==='text'){
+
+const p = document.createElement('p');
+
+p.textContent = part.content;
+
+messageDiv.appendChild(p);
+
+}
+
+if(part.type==='image'){
+
+const img = document.createElement('img');
+
+img.src = part.content;
+
+img.className='chat-image';
+
+messageDiv.appendChild(img);
+
+}
+
+if(part.type==='buttons'){
+
+part.content.forEach(buttonData=>{
+
+const button = document.createElement('a');
+
+button.textContent = buttonData.label;
+
+button.href = buttonData.url;
+
+button.target='_blank';
+
+button.className='chat-button';
+
+messageDiv.appendChild(button);
+
+})
+
+}
+
+})
+
+}else{
+
+throw new Error()
+
+}
+
+}catch{
+
+const p=document.createElement('p');
+
+p.textContent=messageString;
+
+messageDiv.appendChild(p);
+
+}
+
+appendMessage(messageDiv.innerHTML,'bot');
+
+}
+
+
+
+chatForm.addEventListener('submit',(e)=>{
+
+e.preventDefault();
+
+const userMessage = userInput.value.trim();
+
+if(!userMessage) return;
+
+appendMessage("<p>"+userMessage+"</p>","user");
+
+userInput.value="";
+
+const botResponseString = getSmartResponse(userMessage);
+
+setTimeout(()=>{
+
+renderBotMessage(botResponseString);
+
+},500);
+
+});
+
+
+document.addEventListener('DOMContentLoaded',loadKnowledgeBase);
+
+</script>
+
 </body>
 </html>
