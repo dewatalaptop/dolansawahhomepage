@@ -1,16 +1,20 @@
 <!DOCTYPE html>
+
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>Reservasi Dolan Sawah</title>
-  
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
@@ -245,19 +249,23 @@
     }
     
   </style>
+
 </head>
 <body>
 
   <header id="mainHeader">
     <h1><i class="fas fa-leaf"></i> Dolan Sawah</h1>
     <div class="dynamic-title" id="headerTitle">Halo, Silahkan pilih waktu reservasi Anda</div>
-    
-    <div class="step-indicator">
-      <div class="step-wrapper active" id="dot1"><div class="step-dot"></div><span class="step-label">Waktu</span></div>
-      <div class="step-wrapper" id="dot2"><div class="step-dot"></div><span class="step-label">Tempat</span></div>
-      <div class="step-wrapper" id="dot3"><div class="step-dot"></div><span class="step-label">Menu</span></div>
-      <div class="step-wrapper" id="dot4"><div class="step-dot"></div><span class="step-label">Data</span></div>
-    </div>
+
+```
+<div class="step-indicator">
+  <div class="step-wrapper active" id="dot1"><div class="step-dot"></div><span class="step-label">Waktu</span></div>
+  <div class="step-wrapper" id="dot2"><div class="step-dot"></div><span class="step-label">Tempat</span></div>
+  <div class="step-wrapper" id="dot3"><div class="step-dot"></div><span class="step-label">Menu</span></div>
+  <div class="step-wrapper" id="dot4"><div class="step-dot"></div><span class="step-label">Data</span></div>
+</div>
+```
+
   </header>
 
   <div class="loader-overlay" id="loader">
@@ -271,80 +279,82 @@
   </div>
 
   <div class="container">
-    
-    <div id="step1" class="step-section active">
-      <div class="card">
-        <div class="input-group-custom" id="groupDate">
-          <div class="input-visual">
-            <i class="far fa-calendar-alt"></i>
-            <div class="label-text"><span>Tanggal Kunjungan</span><strong id="displayDate">Pilih Tanggal</strong></div>
-          </div>
-          <input type="date" id="inputDate" class="hidden-input" onchange="updateDateUI()">
-          <div class="error-msg">Mohon pilih tanggal.</div>
-        </div>
 
-        <div class="input-group-custom" id="groupTime">
-          <div class="input-visual">
-            <i class="far fa-clock"></i>
-            <div class="label-text"><span>Jam Kedatangan</span><strong id="displayTime">--:--</strong></div>
-          </div>
-          <input type="time" id="inputTime" class="hidden-input" onchange="updateTimeUI()">
-          <div class="error-msg">Mohon tentukan jam.</div>
-        </div>
-
-        <div class="input-group-custom">
-            <label style="font-size:0.85rem; color:#666; margin-bottom:8px; display:block;">Jumlah Orang</label>
-            <div class="stepper-control">
-                <button class="stepper-btn" onclick="updatePaxStep(-1)">-</button>
-                <input type="number" id="inputPax" class="stepper-input" value="2" min="1" onchange="validatePax()">
-                <button class="stepper-btn" onclick="updatePaxStep(1)">+</button>
-            </div>
-        </div>
+```
+<div id="step1" class="step-section active">
+  <div class="card">
+    <div class="input-group-custom" id="groupDate">
+      <div class="input-visual">
+        <i class="far fa-calendar-alt"></i>
+        <div class="label-text"><span>Tanggal Kunjungan</span><strong id="displayDate">Pilih Tanggal</strong></div>
       </div>
+      <input type="date" id="inputDate" class="hidden-input" onchange="updateDateUI()">
+      <div class="error-msg">Mohon pilih tanggal.</div>
     </div>
 
-    <div id="step2" class="step-section">
-      <div class="card" style="background:#e3f2fd; border-left:4px solid #2196f3; padding:15px;">
-        <p style="font-size:0.85rem; color:#0d47a1; margin:0;"><i class="fas fa-info-circle"></i> Klik kartu untuk memilih tempat.</p>
+    <div class="input-group-custom" id="groupTime">
+      <div class="input-visual">
+        <i class="far fa-clock"></i>
+        <div class="label-text"><span>Jam Kedatangan</span><strong id="displayTime">--:--</strong></div>
       </div>
-      <div class="location-grid" id="locationList"></div>
+      <input type="time" id="inputTime" class="hidden-input" onchange="updateTimeUI()">
+      <div class="error-msg">Mohon tentukan jam.</div>
     </div>
 
-    <div id="step3" class="step-section">
-      <div class="card" style="padding:15px;">
-        <p style="font-size:0.85rem; color:#666; margin-bottom:15px; text-align:center;">Pilih kategori menu di bawah ini</p>
-        <div id="menuContainer"></div>
-      </div>
+    <div class="input-group-custom">
+        <label style="font-size:0.85rem; color:#666; margin-bottom:8px; display:block;">Jumlah Orang</label>
+        <div class="stepper-control">
+            <button class="stepper-btn" onclick="updatePaxStep(-1)">-</button>
+            <input type="number" id="inputPax" class="stepper-input" value="2" min="1" onchange="validatePax()">
+            <button class="stepper-btn" onclick="updatePaxStep(1)">+</button>
+        </div>
     </div>
+  </div>
+</div>
 
-    <div id="step4" class="step-section">
-      <div class="card">
-        <div class="input-group-custom" id="groupName">
-            <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Nama Lengkap</label>
-            <input type="text" id="inputName" placeholder="Contoh: Budi Santoso" style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
-            <div class="error-msg">Nama wajib diisi.</div>
-        </div>
-        <div class="input-group-custom" id="groupPhone">
-            <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">WhatsApp (Aktif)</label>
-            <input type="tel" id="inputPhone" placeholder="Contoh: 081234..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
-            <div class="error-msg">Nomor wajib diisi.</div>
-        </div>
-        <div style="margin-bottom:15px;">
-            <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Catatan (Opsional)</label>
-            <textarea id="inputNote" rows="2" placeholder="Contoh: Kursi bayi, dll..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-family:inherit;"></textarea>
-        </div>
-        <div style="background:#f1f8e9; padding:15px; border-radius:12px; border:1px solid #c5e1a5;">
-            <h5 style="margin:0 0 10px; color:#33691e;"><i class="fas fa-check-circle"></i> Ringkasan</h5>
-            <div style="font-size:0.85rem; color:#558b2f; line-height:1.6;">
-                <div style="display:flex; justify-content:space-between;"><span>Waktu:</span> <strong id="summaryDate"></strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Jam:</span> <strong id="summaryTime"></strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Orang:</span> <strong id="summaryPax"></strong></div>
-                <div style="display:flex; justify-content:space-between;"><span>Tempat:</span> <strong id="summaryLoc"></strong></div>
-                <div style="display:flex; justify-content:space-between; margin-top:5px; border-top:1px dashed #c5e1a5; padding-top:5px;"><span>Total Menu:</span> <strong id="summaryMenu">0 Item</strong></div>
-            </div>
-        </div>
-      </div>
+<div id="step2" class="step-section">
+  <div class="card" style="background:#e3f2fd; border-left:4px solid #2196f3; padding:15px;">
+    <p style="font-size:0.85rem; color:#0d47a1; margin:0;"><i class="fas fa-info-circle"></i> Klik kartu untuk memilih tempat.</p>
+  </div>
+  <div class="location-grid" id="locationList"></div>
+</div>
+
+<div id="step3" class="step-section">
+  <div class="card" style="padding:15px;">
+    <p style="font-size:0.85rem; color:#666; margin-bottom:15px; text-align:center;">Pilih kategori menu di bawah ini</p>
+    <div id="menuContainer"></div>
+  </div>
+</div>
+
+<div id="step4" class="step-section">
+  <div class="card">
+    <div class="input-group-custom" id="groupName">
+        <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Nama Lengkap</label>
+        <input type="text" id="inputName" placeholder="Contoh: Budi Santoso" style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
+        <div class="error-msg">Nama wajib diisi.</div>
     </div>
+    <div class="input-group-custom" id="groupPhone">
+        <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">WhatsApp (Aktif)</label>
+        <input type="tel" id="inputPhone" placeholder="Contoh: 081234..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
+        <div class="error-msg">Nomor wajib diisi.</div>
+    </div>
+    <div style="margin-bottom:15px;">
+        <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Catatan (Opsional)</label>
+        <textarea id="inputNote" rows="2" placeholder="Contoh: Kursi bayi, dll..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-family:inherit;"></textarea>
+    </div>
+    <div style="background:#f1f8e9; padding:15px; border-radius:12px; border:1px solid #c5e1a5;">
+        <h5 style="margin:0 0 10px; color:#33691e;"><i class="fas fa-check-circle"></i> Ringkasan</h5>
+        <div style="font-size:0.85rem; color:#558b2f; line-height:1.6;">
+            <div style="display:flex; justify-content:space-between;"><span>Waktu:</span> <strong id="summaryDate"></strong></div>
+            <div style="display:flex; justify-content:space-between;"><span>Jam:</span> <strong id="summaryTime"></strong></div>
+            <div style="display:flex; justify-content:space-between;"><span>Orang:</span> <strong id="summaryPax"></strong></div>
+            <div style="display:flex; justify-content:space-between;"><span>Tempat:</span> <strong id="summaryLoc"></strong></div>
+            <div style="display:flex; justify-content:space-between; margin-top:5px; border-top:1px dashed #c5e1a5; padding-top:5px;"><span>Total Menu:</span> <strong id="summaryMenu">0 Item</strong></div>
+        </div>
+    </div>
+  </div>
+</div>
+```
 
   </div>
 
@@ -358,38 +368,41 @@
   </div>
 
   <div id="adminPanel" class="admin-overlay">
-    
-    <div class="admin-header">
-      <div style="font-weight:700;"><i class="fas fa-user-cog"></i> Admin Panel</div>
-      <button onclick="closeAdmin()" style="background:transparent; border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:6px; cursor:pointer;">
-        Close <i class="fas fa-times"></i>
-      </button>
-    </div>
 
-    <div id="adminLoginView" class="login-box" style="display:none;">
-      <h3 style="color:var(--primary-dark); margin-bottom:20px;">Login Admin</h3>
-      <input type="email" id="adminEmail" class="login-input" placeholder="Email Admin">
-      <input type="password" id="adminPass" class="login-input" placeholder="Password">
-      <button class="btn-login" onclick="adminLogin()">Masuk</button>
-      <p id="loginError" style="color:red; font-size:0.8rem; display:none; margin-top:10px;"></p>
-    </div>
+```
+<div class="admin-header">
+  <div style="font-weight:700;"><i class="fas fa-user-cog"></i> Admin Panel</div>
+  <button onclick="closeAdmin()" style="background:transparent; border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:6px; cursor:pointer;">
+    Close <i class="fas fa-times"></i>
+  </button>
+</div>
 
-    <div id="adminDashboardView" class="admin-container" style="display:none;">
-      
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h3 style="margin:0; color:var(--dark);">Kelola Foto Tempat</h3>
-        <button onclick="adminLogout()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:6px; font-size:0.8rem; cursor:pointer;">Logout</button>
-      </div>
-      
-      <div class="card" style="background:#fff3cd; color:#856404; font-size:0.85rem; margin-bottom:20px;">
-        <i class="fas fa-info-circle"></i> <b>Info:</b> Foto akan otomatis dikompres agar ringan dan disimpan langsung ke database (bukan storage). Ini menjamin keberhasilan upload.
-      </div>
+<div id="adminLoginView" class="login-box" style="display:none;">
+  <h3 style="color:var(--primary-dark); margin-bottom:20px;">Login Admin</h3>
+  <input type="email" id="adminEmail" class="login-input" placeholder="Email Admin">
+  <input type="password" id="adminPass" class="login-input" placeholder="Password">
+  <button class="btn-login" onclick="adminLogin()">Masuk</button>
+  <p id="loginError" style="color:red; font-size:0.8rem; display:none; margin-top:10px;"></p>
+</div>
 
-      <div id="adminLocationList">
-        <div style="text-align:center; padding:20px;"><div class="spinner"></div></div>
-      </div>
+<div id="adminDashboardView" class="admin-container" style="display:none;">
+  
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h3 style="margin:0; color:var(--dark);">Kelola Foto Tempat</h3>
+    <button onclick="adminLogout()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:6px; font-size:0.8rem; cursor:pointer;">Logout</button>
+  </div>
+  
+  <div class="card" style="background:#fff3cd; color:#856404; font-size:0.85rem; margin-bottom:20px;">
+    <i class="fas fa-info-circle"></i> <b>Info:</b> Foto akan otomatis dikompres agar ringan dan disimpan langsung ke database (bukan storage). Ini menjamin keberhasilan upload.
+  </div>
 
-    </div>
+  <div id="adminLocationList">
+    <div style="text-align:center; padding:20px;"><div class="spinner"></div></div>
+  </div>
+
+</div>
+```
+
   </div>
 
   <script>
@@ -406,7 +419,6 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-    // Kita tidak menggunakan storage() di logika baru
 
     const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
 
@@ -415,13 +427,49 @@
     let menusData = {};
     let selectedMenus = {}; 
     let selectedLocationName = "";
-    
+
+    // =============================================
+    // [BARU] Variable global untuk menyimpan tanggal penuh
+    // =============================================
+    let fullDates = {};
+    let fullDatesLoaded = false;   // FIX #4: race condition guard
+    let unsubscribeDates = null;   // FIX #3: memory leak guard
+
     // Admin Variables
     let clickCount = 0;
     let clickTimer = null;
 
+    // =============================================
+    // [BARU] Fungsi listenFullDates - membaca collection
+    // date_status secara realtime menggunakan onSnapshot
+    // FIX #3: unsubscribe sebelum attach listener baru (anti memory leak)
+    // FIX #4: set fullDatesLoaded = true setelah snapshot pertama
+    // =============================================
+    function listenFullDates() {
+      if (unsubscribeDates) unsubscribeDates(); // FIX #3: cabut listener lama
+      unsubscribeDates = db.collection('date_status').onSnapshot((snapshot) => {
+        fullDates = {};
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.isFull === true) {
+            fullDates[data.date] = true;
+          }
+        });
+        fullDatesLoaded = true; // FIX #4: tandai bahwa data sudah siap
+        // Refresh indikator tanggal jika user sudah pilih tanggal
+        updateDateUI();
+      }, (error) => {
+        console.error("Gagal mendengarkan date_status:", error);
+        fullDatesLoaded = true; // tetap set true agar tidak memblokir user selamanya
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('inputDate').setAttribute('min', new Date().toISOString().split('T')[0]);
+
+      // [BARU] Jalankan listener realtime saat halaman selesai load
+      listenFullDates();
+
       await loadData();
       document.getElementById('loader').style.display = 'none';
       updateUIState();
@@ -452,15 +500,30 @@
         if(parseInt(input.value) < 1) input.value = 1;
     }
 
+    // =============================================
+    // [DIMODIFIKASI] updateDateUI - tambah indikator
+    // visual merah jika tanggal penuh
+    // =============================================
     function updateDateUI() {
         const val = document.getElementById('inputDate').value;
         const display = document.getElementById('displayDate');
-        if(val) {
-            display.textContent = new Date(val).toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-            display.style.color = 'var(--primary-dark)';
+
+        if (val) {
+            // [BARU] Cek apakah tanggal ini penuh
+            if (fullDates[val] === true) {
+                display.textContent = "Tanggal ini penuh";
+                display.style.color = 'var(--danger)';
+            } else {
+                display.textContent = new Date(val).toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+                display.style.color = 'var(--primary-dark)';
+            }
             document.getElementById('groupDate').classList.remove('error');
-        } else display.textContent = "Pilih Tanggal";
+        } else {
+            display.textContent = "Pilih Tanggal";
+            display.style.color = '';
+        }
     }
+
     function updateTimeUI() {
         const val = document.getElementById('inputTime').value;
         const display = document.getElementById('displayTime');
@@ -567,6 +630,8 @@
     function toggleAccordion(header) {
         const content = header.nextElementSibling;
         const icon = header.querySelector('i');
+        // FIX #10: reset semua icon accordion lain terlebih dahulu
+        document.querySelectorAll('.cat-header i').forEach(ic => { ic.className = 'fas fa-chevron-down'; });
         document.querySelectorAll('.cat-content').forEach(el => { if(el !== content) el.classList.remove('show'); });
         content.classList.toggle('show');
         icon.className = content.classList.contains('show') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
@@ -614,7 +679,10 @@
             if(!date) { document.getElementById('groupDate').classList.add('error'); isValid = false; }
             if(!time) { document.getElementById('groupTime').classList.add('error'); isValid = false; }
             if(!isValid) return;
-            await checkAvailability();
+            // FIX #1: checkAvailability sekarang mengembalikan boolean
+            // Jika false (tanggal penuh), hentikan — jangan lanjut ke step 2
+            const ok = await checkAvailability();
+            if(!ok) return;
             currentStep = 2;
         } 
         else if(currentStep === 2) {
@@ -662,32 +730,80 @@
         else if(currentStep === 4) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>'; priceInfo.style.display = 'none'; }
     }
 
+    // FIX #11: Helper untuk escape karakter HTML berbahaya (anti XSS)
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // =============================================
+    // [DIMODIFIKASI] checkAvailability
+    // FIX #1:  mengembalikan boolean (true = lanjut, false = berhenti)
+    // FIX #4:  guard fullDatesLoaded agar tidak lolos saat data belum siap
+    // FIX #6:  query dua collection (reservations + reservation_requests)
+    // FIX #7:  capacity fallback ke 0 jika undefined
+    // FIX #11: escape HTML untuk loc.name agar aman dari XSS
+    // FIX #12: spinner selalu diganti saat error
+    // =============================================
     async function checkAvailability() {
         const dateVal = document.getElementById('inputDate').value;
+
+        // FIX #4: Cegah race condition — data fullDates belum dimuat
+        if (!fullDatesLoaded) {
+            await Swal.fire({
+                icon: 'info',
+                title: 'Mohon Tunggu',
+                text: 'Sedang memuat data tanggal, silahkan coba lagi.',
+                confirmButtonColor: 'var(--primary)'
+            });
+            return false; // FIX #1: kembalikan false
+        }
+
+        // FIX #1: Cek tanggal penuh, kembalikan false jika ya
+        if (fullDates[dateVal] === true) {
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Reservasi Penuh',
+                text: 'Kuota reservasi pada tanggal ini sudah penuh. Silahkan pilih tanggal lain atau datang langsung.',
+                confirmButtonColor: 'var(--primary)'
+            });
+            return false; // FIX #1: hentikan flow
+        }
+
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
         const container = document.getElementById('locationList');
         container.innerHTML = '<div class="spinner" style="margin:20px auto;"></div>';
 
         try {
-            const snapshot = await db.collection('reservations').where('date', '==', dateVal).get();
+            // FIX #6: Query KEDUA collection agar pending reservasi ikut dihitung
+            const [snapConfirmed, snapPending] = await Promise.all([
+                db.collection('reservations').where('date', '==', dateVal).get(),
+                db.collection('reservation_requests').where('date', '==', dateVal).get()
+            ]);
+
             const usageMap = {};
             let isLantai1FullBooked = false;
 
-            snapshot.forEach(doc => {
-                const d = doc.data();
+            const processDoc = (d) => {
                 if(d.tempat) {
                     usageMap[d.tempat] = (usageMap[d.tempat] || 0) + (parseInt(d.jumlah) || 0);
                     if (d.tempat.toLowerCase().includes("lantai 1 full blok")) {
                         isLantai1FullBooked = true;
                     }
                 }
-            });
+            };
+            snapConfirmed.forEach(doc => processDoc(doc.data()));
+            snapPending.forEach(doc => processDoc(doc.data())); // FIX #6
 
             container.innerHTML = '';
             locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
                 const locNameLower = loc.name.toLowerCase();
                 const used = usageMap[loc.name] || 0;
-                let capacity = loc.capacity;
+                const capacity = loc.capacity || 0; // FIX #7: fallback ke 0
                 let remaining = capacity - used;
                 let isFull = remaining < paxVal;
                 let customError = "";
@@ -710,6 +826,7 @@
                 if(remaining <= 0) capClass = "cap-full";
                 
                 const imageUrl = loc.imageUrl || defaultImage;
+                const safeName = escapeHtml(loc.name); // FIX #11: sanitasi XSS
 
                 const div = document.createElement('div');
                 div.className = `location-option ${isFull ? 'disabled' : ''}`;
@@ -721,19 +838,23 @@
                         ${customError ? `<span style="position:absolute; bottom:0; width:100%; background:rgba(231,76,60,0.9); color:white; font-size:0.7rem; text-align:center;">${customError}</span>` : ''}
                     </div>
                     <div class="loc-content">
-                        <span class="loc-name">${loc.name}</span>
+                        <span class="loc-name">${safeName}</span>
                         <span class="cap-badge ${capClass}">${remaining<=0?'PENUH':`Sisa ${remaining}`}</span>
-                        <button class="btn-loc-view" onclick="openImage('${imageUrl}', '${loc.name}')">
+                        <button class="btn-loc-view" onclick="openImage(event,'${imageUrl}','${safeName}')">
                             <i class="fas fa-images"></i> Lihat Foto
                         </button>
                     </div>
-                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer;" onclick="selectLocation('${loc.name}', this)"></div>
+                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer;" onclick="selectLocation('${safeName}', this)"></div>
                 `;
                 container.appendChild(div);
             });
+
+            return true; // FIX #1: semua OK, lanjutkan ke step 2
         } catch(e) {
             console.error(e);
-            container.innerHTML = '<p style="text-align:center; color:red;">Gagal memuat data.</p>';
+            // FIX #12: spinner selalu terganti saat error, tidak stuck
+            container.innerHTML = '<p style="text-align:center; color:red;"><i class="fas fa-exclamation-circle"></i> Gagal memuat data. Coba lagi.</p>';
+            return false; // FIX #1: jangan lanjut jika error
         }
     }
 
@@ -743,16 +864,54 @@
         el.closest('.location-option').classList.add('selected');
     }
 
+    // =============================================
+    // [DIMODIFIKASI] submitReservation
+    // FIX #4: guard fullDatesLoaded
+    // FIX #5: normalisasi nomor HP yang aman (+62, 62, 08...)
+    // =============================================
+
+    // FIX #5: fungsi normalisasi nomor HP yang benar untuk semua format
+    function normalizePhone(phone) {
+        let p = phone.replace(/\D/g, ''); // hapus semua non-digit
+        if (p.startsWith('0')) p = '62' + p.slice(1);       // 08xxx → 628xxx
+        if (!p.startsWith('62')) p = '62' + p;              // tanpa kode negara → tambahkan
+        return p;
+    }
+
     async function submitReservation() {
+        const dateVal = document.getElementById('inputDate').value;
+
+        // FIX #4: Pastikan data fullDates sudah loaded
+        if (!fullDatesLoaded) {
+            await Swal.fire({
+                icon: 'info',
+                title: 'Mohon Tunggu',
+                text: 'Sedang memuat data, silahkan coba lagi.',
+                confirmButtonColor: 'var(--primary)'
+            });
+            return;
+        }
+
+        // FIX #1 lanjutan: proteksi bypass di layer submit
+        if (fullDates[dateVal] === true) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Reservasi Ditutup',
+                text: 'Tanggal ini sudah ditutup oleh admin.',
+                confirmButtonColor: 'var(--primary)'
+            });
+            return;
+        }
+
         Swal.showLoading();
         try {
             await db.collection('reservation_requests').add({
-                date: document.getElementById('inputDate').value,
+                date: dateVal,
                 jam: document.getElementById('inputTime').value,
                 jumlah: parseInt(document.getElementById('inputPax').value),
                 tempat: selectedLocationName,
                 nama: document.getElementById('inputName').value,
-                nomorHp: document.getElementById('inputPhone').value.replace(/[^0-9]/g,'').replace(/^0/,'62'),
+                nomorHp: normalizePhone(document.getElementById('inputPhone').value), // FIX #5
                 tambahan: document.getElementById('inputNote').value,
                 menus: Object.entries(selectedMenus).map(([k,v]) => ({name:k, quantity:v})),
                 status: 'pending',
@@ -763,7 +922,9 @@
         } catch(e) { Swal.fire('Error', 'Gagal koneksi.', 'error'); }
     }
 
-    function openImage(url, caption) { 
+    // FIX #2: event dideklarasikan sebagai parameter eksplisit
+    // agar tidak crash di browser strict mode
+    function openImage(event, url, caption) { 
         event.stopPropagation(); 
         document.getElementById('imgModal').style.display = 'flex'; 
         document.getElementById('modalImg').src = url; 
@@ -836,7 +997,6 @@
     }
 
     // --- LOGIKA UPLOAD BARU (TANPA FIREBASE STORAGE) ---
-    // Foto dikompres -> diubah jadi teks Base64 -> disimpan di Firestore
     async function handleFileUpload(locId) {
         try {
             const fileInput = document.getElementById(`file-${locId}`);
@@ -847,27 +1007,22 @@
                 return;
             }
 
-            // Validasi tipe file
             if (!file.type.match('image.*')) {
                 Swal.fire('Format Salah', 'Harus file gambar (jpg/png).', 'error');
                 return;
             }
 
-            // Ubah tombol jadi loading
             const btn = document.querySelector(`button[onclick="handleFileUpload('${locId}')"]`);
             const oldText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             btn.disabled = true;
 
-            // 1. Kompres dan Ubah ke Base64
             const compressedBase64 = await compressImage(file);
 
-            // 2. Simpan LANGSUNG ke Database (Firestore)
             await db.collection('locations').doc(locId).update({
                 imageUrl: compressedBase64
             });
 
-            // 3. Update tampilan
             document.getElementById(`preview-${locId}`).src = compressedBase64;
             Swal.fire('Berhasil!', 'Foto berhasil disimpan ke Database.', 'success');
 
@@ -883,7 +1038,6 @@
         }
     }
 
-    // Fungsi Pembantu: Kompres Gambar menggunakan Canvas HTML5
     function compressImage(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -893,10 +1047,9 @@
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; // Lebar maksimal 600px (biar ringan)
+                    const MAX_WIDTH = 600;
                     const scaleSize = MAX_WIDTH / img.width;
                     
-                    // Hitung dimensi baru
                     if (img.width > MAX_WIDTH) {
                         canvas.width = MAX_WIDTH;
                         canvas.height = img.height * scaleSize;
@@ -908,7 +1061,6 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     
-                    // Ubah jadi JPEG kualitas rendah (0.6) agar string pendek
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
                     resolve(dataUrl);
                 }
@@ -919,5 +1071,6 @@
     }
 
   </script>
+
 </body>
 </html>
