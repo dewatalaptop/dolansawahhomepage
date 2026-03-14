@@ -18,7 +18,6 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    /* --- CSS UTAMA --- */
     :root {
       --primary: #2a9d8f;
       --primary-dark: #264653;
@@ -41,7 +40,6 @@
       color: var(--text);
     }
 
-    /* HEADER */
     header {
       background: linear-gradient(135deg, var(--primary-dark), var(--primary));
       color: white;
@@ -55,7 +53,6 @@
     }
     .dynamic-title { font-size: 1.3rem; font-weight: 700; margin-top: 5px; animation: fadeIn 0.5s; }
 
-    /* STEP INDICATOR */
     .step-indicator { display: flex; justify-content: center; margin-top: 15px; gap: 25px; }
     .step-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; }
     .step-dot { width: 12px; height: 12px; background: rgba(255,255,255,0.4); border-radius: 50%; transition: 0.3s; }
@@ -66,16 +63,18 @@
 
     .container { max-width: 600px; margin: -20px auto 0; padding: 0 15px; position: relative; z-index: 100; }
 
-    /* CARD STYLE */
     .card {
       background: var(--white); border-radius: 20px; padding: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px;
       animation: slideUp 0.4s ease;
     }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* INPUTS */
     .input-group-custom { position: relative; margin-bottom: 15px; }
+    /* input-visual adalah <label> — klik di mana saja di dalam kotak membuka picker.
+       Tidak ada overlay transparan, tidak ada hidden-input di dalam kotak.
+       Ini metode paling stabil di semua browser termasuk iOS Safari. */
     .input-visual {
       display: flex; align-items: center; padding: 15px;
       background: #fff; border: 2px solid #eee; border-radius: 15px;
@@ -88,9 +87,19 @@
     .input-visual i { font-size: 1.4rem; color: var(--primary); margin-right: 15px; width: 30px; text-align: center; }
     .input-visual .label-text strong { font-size: 1.05rem; color: var(--dark); display:block;}
     .input-visual .label-text span { font-size: 0.75rem; color: #888; }
-    .hidden-input { position: absolute; top:0; left:0; width:100%; height:100%; opacity: 0; cursor: pointer; z-index: 10; }
+    /* Input date/time disembunyikan secara visual tapi TETAP bisa menerima
+       event dari <label for>. pointer-events:none DILARANG di sini karena
+       akan memblokir aktivasi picker dari label.
+       Teknik: clip-path memotong visual, width/height:0 menghilangkan dimensi,
+       position:absolute agar tidak mempengaruhi layout. */
+    .real-input {
+      position: absolute;
+      width: 0; height: 0;
+      overflow: hidden;
+      opacity: 0;
+      font-size: 16px;
+    }
 
-    /* STEPPER QUANTITY */
     .stepper-control {
       display: flex; align-items: center; justify-content: space-between;
       background: #f8f9fa; border-radius: 12px; padding: 5px;
@@ -112,7 +121,6 @@
     .stepper-input::-webkit-outer-spin-button,
     .stepper-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    /* LOCATION CARDS */
     .location-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .location-option {
       border: 1px solid #eee; border-radius: 15px; overflow: hidden;
@@ -149,7 +157,6 @@
     }
     .btn-loc-view i { font-size: 1rem; }
 
-    /* MENU ACCORDION */
     .menu-category { margin-bottom: 15px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
     .cat-header {
       background: #fff; padding: 15px; cursor: pointer;
@@ -172,7 +179,6 @@
     .note-warn { background: #ffebee; color: #c0392b; border: 1px solid #ffcdd2; }
     .note-info { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
 
-    /* BOTTOM BAR */
     .bottom-bar {
       position: fixed; bottom: 0; left: 0; width: 100%;
       background: white; padding: 15px 20px;
@@ -193,7 +199,6 @@
       display: flex; justify-content: center; align-items: center;
     }
 
-    /* MODAL */
     .image-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; flex-direction: column; }
     .modal-content { max-width: 90%; max-height: 70vh; border-radius: 10px; }
     .close-modal { position: absolute; top: 30px; right: 30px; color: white; font-size: 2.5rem; cursor: pointer; background: rgba(255,255,255,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
@@ -204,9 +209,7 @@
     .step-section { display: none; }
     .step-section.active { display: block; }
 
-    /* ========================================= */
-    /* ADMIN PANEL STYLES */
-    /* ========================================= */
+    /* ADMIN PANEL */
     .admin-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: #f0f2f5; z-index: 5000; overflow-y: auto;
@@ -232,22 +235,57 @@
     .admin-card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; }
     .admin-card h4 { margin: 0; color: var(--dark); font-size: 1rem; }
     
-    .upload-area {
-      display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap;
-    }
-    .img-preview-box {
-      width: 100px; height: 100px; background: #eee; border-radius: 8px; overflow: hidden; flex-shrink: 0; position: relative;
-    }
+    .upload-area { display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap; }
+    .img-preview-box { width: 100px; height: 100px; background: #eee; border-radius: 8px; overflow: hidden; flex-shrink: 0; position: relative; }
     .img-preview-box img { width: 100%; height: 100%; object-fit: cover; }
     .upload-controls { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 200px; }
-    
     .file-input { font-size: 0.9rem; }
     .btn-upload-save {
       background: var(--secondary); color: var(--dark); border: none; padding: 8px 15px;
       border-radius: 6px; font-weight: 600; cursor: pointer; align-self: flex-start;
       display: flex; align-items: center; gap: 5px; font-size: 0.9rem;
     }
-    
+
+    /* ── DIAGNOSTIC REPORTER ── */
+    #diagBox {
+      display: none;
+      position: fixed; bottom: 80px; left: 10px; right: 10px;
+      background: #1a1a2e; color: #e2e2e2;
+      border: 2px solid #e74c3c; border-radius: 14px;
+      padding: 14px; z-index: 99999;
+      font-family: monospace; font-size: 0.72rem;
+      max-height: 55vh; overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    #diagBox .diag-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    #diagBox .diag-title {
+      color: #e74c3c; font-weight: bold; font-size: 0.8rem; letter-spacing: 1px;
+    }
+    #diagBox .diag-actions { display: flex; gap: 8px; }
+    #diagBox button {
+      background: #e74c3c; color: white; border: none;
+      padding: 4px 10px; border-radius: 6px; font-size: 0.7rem;
+      cursor: pointer; font-weight: bold;
+    }
+    #diagBox button.diag-clear { background: #555; }
+    #diagLog { white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
+    #diagLog .log-ok   { color: #2ecc71; }
+    #diagLog .log-warn { color: #f39c12; }
+    #diagLog .log-err  { color: #e74c3c; }
+    #diagLog .log-info { color: #3498db; }
+    #diagLog .log-sep  { color: #555; }
+    #diagToggle {
+      position: fixed; bottom: 80px; right: 12px;
+      background: #e74c3c; color: white;
+      width: 42px; height: 42px; border-radius: 50%;
+      border: none; font-size: 1.1rem; font-weight: bold;
+      cursor: pointer; z-index: 99998;
+      box-shadow: 0 4px 12px rgba(231,76,60,0.5);
+      display: flex; align-items: center; justify-content: center;
+    }
   </style>
 
 </head>
@@ -256,16 +294,12 @@
   <header id="mainHeader">
     <h1><i class="fas fa-leaf"></i> Dolan Sawah</h1>
     <div class="dynamic-title" id="headerTitle">Halo, Silahkan pilih waktu reservasi Anda</div>
-
-```
-<div class="step-indicator">
-  <div class="step-wrapper active" id="dot1"><div class="step-dot"></div><span class="step-label">Waktu</span></div>
-  <div class="step-wrapper" id="dot2"><div class="step-dot"></div><span class="step-label">Tempat</span></div>
-  <div class="step-wrapper" id="dot3"><div class="step-dot"></div><span class="step-label">Menu</span></div>
-  <div class="step-wrapper" id="dot4"><div class="step-dot"></div><span class="step-label">Data</span></div>
-</div>
-```
-
+    <div class="step-indicator">
+      <div class="step-wrapper active" id="dot1"><div class="step-dot"></div><span class="step-label">Waktu</span></div>
+      <div class="step-wrapper" id="dot2"><div class="step-dot"></div><span class="step-label">Tempat</span></div>
+      <div class="step-wrapper" id="dot3"><div class="step-dot"></div><span class="step-label">Menu</span></div>
+      <div class="step-wrapper" id="dot4"><div class="step-dot"></div><span class="step-label">Data</span></div>
+    </div>
   </header>
 
   <div class="loader-overlay" id="loader">
@@ -284,29 +318,31 @@
 <div id="step1" class="step-section active">
   <div class="card">
     <div class="input-group-custom" id="groupDate">
-      <div class="input-visual">
+      <!-- label[for] menghubungkan ke #inputDate — klik label = buka picker.
+           Tidak ada overlay, tidak ada JS untuk membuka picker. Stabil di semua browser. -->
+      <label class="input-visual" for="inputDate">
         <i class="far fa-calendar-alt"></i>
         <div class="label-text"><span>Tanggal Kunjungan</span><strong id="displayDate">Pilih Tanggal</strong></div>
-      </div>
-      <input type="date" id="inputDate" class="hidden-input" onchange="updateDateUI()">
+      </label>
+      <input type="date" id="inputDate" class="real-input" onchange="updateDateUI()">
       <div class="error-msg">Mohon pilih tanggal.</div>
     </div>
 
     <div class="input-group-custom" id="groupTime">
-      <div class="input-visual">
+      <label class="input-visual" for="inputTime">
         <i class="far fa-clock"></i>
         <div class="label-text"><span>Jam Kedatangan</span><strong id="displayTime">--:--</strong></div>
-      </div>
-      <input type="time" id="inputTime" class="hidden-input" onchange="updateTimeUI()">
+      </label>
+      <input type="time" id="inputTime" class="real-input" onchange="updateTimeUI()">
       <div class="error-msg">Mohon tentukan jam.</div>
     </div>
 
     <div class="input-group-custom">
         <label style="font-size:0.85rem; color:#666; margin-bottom:8px; display:block;">Jumlah Orang</label>
         <div class="stepper-control">
-            <button class="stepper-btn" onclick="updatePaxStep(-1)">-</button>
+            <button type="button" class="stepper-btn" onclick="updatePaxStep(-1)">-</button>
             <input type="number" id="inputPax" class="stepper-input" value="2" min="1" onchange="validatePax()">
-            <button class="stepper-btn" onclick="updatePaxStep(1)">+</button>
+            <button type="button" class="stepper-btn" onclick="updatePaxStep(1)">+</button>
         </div>
     </div>
   </div>
@@ -330,12 +366,14 @@
   <div class="card">
     <div class="input-group-custom" id="groupName">
         <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">Nama Lengkap</label>
-        <input type="text" id="inputName" placeholder="Contoh: Budi Santoso" style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
+        <input type="text" id="inputName" placeholder="Contoh: Budi Santoso" style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;"
+               oninput="clearError('groupName')" autocomplete="name">
         <div class="error-msg">Nama wajib diisi.</div>
     </div>
     <div class="input-group-custom" id="groupPhone">
         <label style="font-size:0.85rem; color:#666; margin-bottom:5px; display:block;">WhatsApp (Aktif)</label>
-        <input type="tel" id="inputPhone" placeholder="Contoh: 081234..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;">
+        <input type="tel" id="inputPhone" placeholder="Contoh: 081234..." style="width:100%; padding:12px; border:2px solid #eee; border-radius:10px; font-size:1rem;"
+               oninput="clearError('groupPhone')" autocomplete="tel" inputmode="numeric">
         <div class="error-msg">Nomor wajib diisi.</div>
     </div>
     <div style="margin-bottom:15px;">
@@ -359,54 +397,48 @@
   </div>
 
   <div class="bottom-bar">
-    <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;"><i class="fas fa-arrow-left"></i></button>
+    <button type="button" class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;"><i class="fas fa-arrow-left"></i></button>
     <div id="priceInfo" style="display:none; flex-grow:1; margin-left:15px;">
         <span style="display:block; font-size:0.7rem; color:#888; text-transform:uppercase;">Keranjang</span>
         <strong style="color:var(--primary); font-size:1.1rem;" id="totalItemText">0 Menu</strong>
     </div>
-    <button class="btn-action" id="btnNext" onclick="nextStep()">Cari Tempat <i class="fas fa-search"></i></button>
+    <button type="button" class="btn-action" id="btnNext" onclick="nextStep()">Cari Tempat <i class="fas fa-search"></i></button>
   </div>
 
   <div id="adminPanel" class="admin-overlay">
+    <div class="admin-header">
+      <div style="font-weight:700;"><i class="fas fa-user-cog"></i> Admin Panel</div>
+      <button type="button" onclick="closeAdmin()" style="background:transparent; border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:6px; cursor:pointer;">
+        Close <i class="fas fa-times"></i>
+      </button>
+    </div>
 
 ```
-<div class="admin-header">
-  <div style="font-weight:700;"><i class="fas fa-user-cog"></i> Admin Panel</div>
-  <button onclick="closeAdmin()" style="background:transparent; border:1px solid rgba(255,255,255,0.3); color:white; padding:5px 12px; border-radius:6px; cursor:pointer;">
-    Close <i class="fas fa-times"></i>
-  </button>
-</div>
-
 <div id="adminLoginView" class="login-box" style="display:none;">
   <h3 style="color:var(--primary-dark); margin-bottom:20px;">Login Admin</h3>
   <input type="email" id="adminEmail" class="login-input" placeholder="Email Admin">
   <input type="password" id="adminPass" class="login-input" placeholder="Password">
-  <button class="btn-login" onclick="adminLogin()">Masuk</button>
+  <button type="button" class="btn-login" onclick="adminLogin()">Masuk</button>
   <p id="loginError" style="color:red; font-size:0.8rem; display:none; margin-top:10px;"></p>
 </div>
 
 <div id="adminDashboardView" class="admin-container" style="display:none;">
-  
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
     <h3 style="margin:0; color:var(--dark);">Kelola Foto Tempat</h3>
-    <button onclick="adminLogout()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:6px; font-size:0.8rem; cursor:pointer;">Logout</button>
+    <button type="button" onclick="adminLogout()" style="background:#e74c3c; color:white; border:none; padding:8px 15px; border-radius:6px; font-size:0.8rem; cursor:pointer;">Logout</button>
   </div>
-  
   <div class="card" style="background:#fff3cd; color:#856404; font-size:0.85rem; margin-bottom:20px;">
     <i class="fas fa-info-circle"></i> <b>Info:</b> Foto akan otomatis dikompres agar ringan dan disimpan langsung ke database (bukan storage). Ini menjamin keberhasilan upload.
   </div>
-
   <div id="adminLocationList">
     <div style="text-align:center; padding:20px;"><div class="spinner"></div></div>
   </div>
-
 </div>
 ```
 
   </div>
 
   <script>
-    // --- FIREBASE CONFIGURATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
       authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -425,28 +457,34 @@
     let currentStep = 1;
     let locationsData = [];
     let menusData = {};
-    let selectedMenus = {}; 
-    let selectedLocationName = "";
+    let selectedMenus = {};
+    let selectedLocationName = "";   // selalu nama ASLI dari database
 
-    // =============================================
-    // [BARU] Variable global untuk menyimpan tanggal penuh
-    // =============================================
     let fullDates = {};
-    let fullDatesLoaded = false;   // FIX #4: race condition guard
-    let unsubscribeDates = null;   // FIX #3: memory leak guard
+    let fullDatesLoaded = false;
+    let unsubscribeDates = null;
 
-    // Admin Variables
+    // FIX #6: guard anti spam klik "Cari Tempat"
+    let availabilityLoading = false;
+
+    // FIX #7: guard admin auth listener agar tidak duplikat
+    let adminAuthListener = null;
+
     let clickCount = 0;
     let clickTimer = null;
 
     // =============================================
-    // [BARU] Fungsi listenFullDates - membaca collection
-    // date_status secara realtime menggunakan onSnapshot
-    // FIX #3: unsubscribe sebelum attach listener baru (anti memory leak)
-    // FIX #4: set fullDatesLoaded = true setelah snapshot pertama
+    // FIX UTAMA: resetLocationState
+    // Dipanggil setiap kali tanggal atau jam berubah
+    // agar state lokasi lama tidak "tersangkut"
     // =============================================
+    function resetLocationState() {
+      selectedLocationName = "";
+      document.getElementById('locationList').innerHTML = "";
+    }
+
     function listenFullDates() {
-      if (unsubscribeDates) unsubscribeDates(); // FIX #3: cabut listener lama
+      if (unsubscribeDates) unsubscribeDates();
       unsubscribeDates = db.collection('date_status').onSnapshot((snapshot) => {
         fullDates = {};
         snapshot.forEach((doc) => {
@@ -455,31 +493,36 @@
             fullDates[data.date] = true;
           }
         });
-        fullDatesLoaded = true; // FIX #4: tandai bahwa data sudah siap
-        // Refresh indikator tanggal jika user sudah pilih tanggal
+        fullDatesLoaded = true;
         updateDateUI();
       }, (error) => {
         console.error("Gagal mendengarkan date_status:", error);
-        fullDatesLoaded = true; // tetap set true agar tidak memblokir user selamanya
+        fullDatesLoaded = true;
       });
     }
+
+    // FIX #4: bersihkan listener saat tab/browser ditutup
+    window.addEventListener('beforeunload', () => {
+      if (unsubscribeDates) unsubscribeDates();
+    });
 
     document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('inputDate').setAttribute('min', new Date().toISOString().split('T')[0]);
 
-      // [BARU] Jalankan listener realtime saat halaman selesai load
       listenFullDates();
 
       await loadData();
-      document.getElementById('loader').style.display = 'none';
+      // FIX #11: matikan loader sepenuhnya agar tidak menghalangi klik
+      const loader = document.getElementById('loader');
+      loader.style.display = 'none';
+      loader.style.pointerEvents = 'none';
       updateUIState();
       
       const headerTitle = document.querySelector('#mainHeader h1');
       headerTitle.addEventListener('click', () => {
         clickCount++;
         if(clickTimer) clearTimeout(clickTimer);
-        clickTimer = setTimeout(() => { clickCount = 0; }, 2000); 
-
+        clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
         if(clickCount === 5) {
             clickCount = 0;
             openAdmin();
@@ -487,7 +530,11 @@
       });
     });
 
-    // --- LOGIC UMUM (TIDAK BERUBAH) ---
+    // FIX #8: clearError() — hapus class error saat user mulai mengetik
+    function clearError(groupId) {
+        document.getElementById(groupId).classList.remove('error');
+    }
+
     function updatePaxStep(amount) {
         const input = document.getElementById('inputPax');
         let val = parseInt(input.value) || 0;
@@ -495,26 +542,37 @@
         if(val < 1) val = 1;
         input.value = val;
     }
+
     function validatePax() {
         const input = document.getElementById('inputPax');
         if(parseInt(input.value) < 1) input.value = 1;
     }
 
     // =============================================
-    // [DIMODIFIKASI] updateDateUI - tambah indikator
-    // visual merah jika tanggal penuh
+    // FIX: updateDateUI
+    // Sekarang memanggil resetLocationState() setiap kali
+    // tanggal berubah, sehingga state lama selalu bersih.
+    // Juga auto-refresh lokasi jika user sudah di step 2.
     // =============================================
     function updateDateUI() {
         const val = document.getElementById('inputDate').value;
         const display = document.getElementById('displayDate');
 
+        // FIX #5: hanya reset jika user memang sudah memilih tanggal
+        // Jika val kosong berarti dipanggil dari listenFullDates (init) — jangan reset
+        if (val) resetLocationState();
+
         if (val) {
-            // [BARU] Cek apakah tanggal ini penuh
             if (fullDates[val] === true) {
                 display.textContent = "Tanggal ini penuh";
                 display.style.color = 'var(--danger)';
             } else {
-                display.textContent = new Date(val).toLocaleDateString('id-ID', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+                // FIX #10: parse manual agar tidak terkena off-by-one timezone
+                // new Date('2025-03-15') = UTC midnight → di +07:00 jadi 14 Maret
+                const [y, m, d] = val.split('-').map(Number);
+                display.textContent = new Date(y, m-1, d).toLocaleDateString('id-ID', {
+                    weekday:'short', day:'numeric', month:'short', year:'numeric'
+                });
                 display.style.color = 'var(--primary-dark)';
             }
             document.getElementById('groupDate').classList.remove('error');
@@ -522,23 +580,47 @@
             display.textContent = "Pilih Tanggal";
             display.style.color = '';
         }
+
+        // Auto-refresh daftar lokasi jika user sudah di step 2
+        // FIX #6: availabilityLoading bisa true dari sesi sebelumnya; reset dulu
+        if (currentStep === 2) {
+            availabilityLoading = false;
+            checkAvailability().catch(() => {});
+        }
     }
 
+    // =============================================
+    // FIX: updateTimeUI
+    // Juga reset state lokasi saat jam berubah,
+    // karena availability bisa berbeda per jam.
+    // =============================================
     function updateTimeUI() {
         const val = document.getElementById('inputTime').value;
         const display = document.getElementById('displayTime');
+
+        // Reset state lokasi setiap jam berubah
+        resetLocationState();
+
         if(val) {
             display.textContent = val;
             display.style.color = 'var(--primary-dark)';
             document.getElementById('groupTime').classList.remove('error');
-        } else display.textContent = "--:--";
+        } else {
+            display.textContent = "--:--";
+        }
+
+        // Auto-refresh daftar lokasi jika user sudah di step 2
+        if (currentStep === 2) {
+            availabilityLoading = false;
+            checkAvailability().catch(() => {});
+        }
     }
 
     async function loadData() {
       try {
         try {
             let snap = await db.collection('locations').get();
-            if(snap.empty) snap = await db.collection('Locations').get(); 
+            if(snap.empty) snap = await db.collection('Locations').get();
             locationsData = [];
             snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
         } catch(e) { console.error("Error loading locations:", e); }
@@ -597,17 +679,21 @@
                 
                 groups[cat].sort((a,b)=>a.name.localeCompare(b.name)).forEach(menu => {
                     const note = getMenuNote(menu.name, cat);
+                    // FIX #7: escape untuk tampilan HTML (XSS) dan untuk atribut onclick (escape kutip)
+                    const safeMenuDisplay = escapeHtml(menu.name);
+                    const safeMenuDesc   = escapeHtml(menu.desc);
+                    const safeMenuOnclick = menu.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
                     htmlItems += `
                         <div class="menu-item">
                             <div class="menu-info">
-                                <h4>${menu.name}</h4>
-                                <p>${menu.desc}</p>
+                                <h4>${safeMenuDisplay}</h4>
+                                <p>${safeMenuDesc}</p>
                                 ${note}
                             </div>
                             <div class="stepper-control" style="width:110px;">
-                                <button class="stepper-btn" onclick="updateMenuQty('${menu.name}', -1, '${safeCat}')">-</button>
-                                <input type="number" id="qty-${cleanId(menu.name)}" class="stepper-input" value="0" min="0" onchange="manualMenuQty('${menu.name}', '${safeCat}')">
-                                <button class="stepper-btn" onclick="updateMenuQty('${menu.name}', 1, '${safeCat}')">+</button>
+                                <button type="button" class="stepper-btn" onclick="updateMenuQty('${safeMenuOnclick}', -1, '${safeCat}')">-</button>
+                                <input type="number" id="qty-${cleanId(menu.name)}" class="stepper-input" value="0" min="0" onchange="manualMenuQty('${safeMenuOnclick}', '${safeCat}')">
+                                <button type="button" class="stepper-btn" onclick="updateMenuQty('${safeMenuOnclick}', 1, '${safeCat}')">+</button>
                             </div>
                         </div>
                     `;
@@ -630,7 +716,6 @@
     function toggleAccordion(header) {
         const content = header.nextElementSibling;
         const icon = header.querySelector('i');
-        // FIX #10: reset semua icon accordion lain terlebih dahulu
         document.querySelectorAll('.cat-header i').forEach(ic => { ic.className = 'fas fa-chevron-down'; });
         document.querySelectorAll('.cat-content').forEach(el => { if(el !== content) el.classList.remove('show'); });
         content.classList.toggle('show');
@@ -646,6 +731,7 @@
         input.value = val;
         syncMenuData(name, val, safeCat);
     }
+
     function manualMenuQty(name, safeCat) {
         const id = cleanId(name);
         const input = document.getElementById(`qty-${id}`);
@@ -654,6 +740,7 @@
         input.value = val;
         syncMenuData(name, val, safeCat);
     }
+
     function syncMenuData(name, val, safeCat) {
         if(val === 0) delete selectedMenus[name];
         else selectedMenus[name] = val;
@@ -669,6 +756,7 @@
         const badge = document.getElementById(`badge-${safeCat}`);
         if(badge) { badge.textContent = catCount; badge.style.display = catCount > 0 ? 'inline-block' : 'none'; }
     }
+
     function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
 
     async function nextStep() {
@@ -679,9 +767,10 @@
             if(!date) { document.getElementById('groupDate').classList.add('error'); isValid = false; }
             if(!time) { document.getElementById('groupTime').classList.add('error'); isValid = false; }
             if(!isValid) return;
-            // FIX #1: checkAvailability sekarang mengembalikan boolean
-            // Jika false (tanggal penuh), hentikan — jangan lanjut ke step 2
-            const ok = await checkAvailability();
+            // FIX #6: cegah double klik tombol "Cari Tempat"
+            if (availabilityLoading) return;
+            // FIX #4: .catch(()=>false) agar unhandled rejection tidak crash
+            const ok = await checkAvailability().catch(() => false);
             if(!ok) return;
             currentStep = 2;
         } 
@@ -718,7 +807,12 @@
             el.classList.toggle('active', (idx + 1) === currentStep);
             el.classList.toggle('completed', (idx + 1) < currentStep);
         });
-        document.getElementById('headerTitle').textContent = ["Halo, Silahkan pilih waktu reservasi Anda", "Pilih Tempat Duduk", "Pilih Menu Favorit", "Isi Data Diri"][currentStep-1];
+        document.getElementById('headerTitle').textContent = [
+            "Halo, Silahkan pilih waktu reservasi Anda",
+            "Pilih Tempat Duduk",
+            "Pilih Menu Favorit",
+            "Isi Data Diri"
+        ][currentStep-1];
         
         const btnNext = document.getElementById('btnNext');
         const btnBack = document.getElementById('btnBack');
@@ -730,7 +824,6 @@
         else if(currentStep === 4) { btnBack.style.display = 'flex'; btnNext.innerHTML = 'Kirim Reservasi <i class="fas fa-paper-plane"></i>'; priceInfo.style.display = 'none'; }
     }
 
-    // FIX #11: Helper untuk escape karakter HTML berbahaya (anti XSS)
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, '&amp;')
@@ -740,19 +833,13 @@
             .replace(/'/g, '&#039;');
     }
 
-    // =============================================
-    // [DIMODIFIKASI] checkAvailability
-    // FIX #1:  mengembalikan boolean (true = lanjut, false = berhenti)
-    // FIX #4:  guard fullDatesLoaded agar tidak lolos saat data belum siap
-    // FIX #6:  query dua collection (reservations + reservation_requests)
-    // FIX #7:  capacity fallback ke 0 jika undefined
-    // FIX #11: escape HTML untuk loc.name agar aman dari XSS
-    // FIX #12: spinner selalu diganti saat error
-    // =============================================
     async function checkAvailability() {
+        // FIX #6: set guard agar tidak bisa spam panggil
+        if (availabilityLoading) return false;
+        availabilityLoading = true;
+
         const dateVal = document.getElementById('inputDate').value;
 
-        // FIX #4: Cegah race condition — data fullDates belum dimuat
         if (!fullDatesLoaded) {
             await Swal.fire({
                 icon: 'info',
@@ -760,10 +847,10 @@
                 text: 'Sedang memuat data tanggal, silahkan coba lagi.',
                 confirmButtonColor: 'var(--primary)'
             });
-            return false; // FIX #1: kembalikan false
+            availabilityLoading = false; // FIX #6: selalu reset
+            return false;
         }
 
-        // FIX #1: Cek tanggal penuh, kembalikan false jika ya
         if (fullDates[dateVal] === true) {
             await Swal.fire({
                 icon: 'warning',
@@ -771,7 +858,8 @@
                 text: 'Kuota reservasi pada tanggal ini sudah penuh. Silahkan pilih tanggal lain atau datang langsung.',
                 confirmButtonColor: 'var(--primary)'
             });
-            return false; // FIX #1: hentikan flow
+            availabilityLoading = false;
+            return false;
         }
 
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
@@ -779,7 +867,6 @@
         container.innerHTML = '<div class="spinner" style="margin:20px auto;"></div>';
 
         try {
-            // FIX #6: Query KEDUA collection agar pending reservasi ikut dihitung
             const [snapConfirmed, snapPending] = await Promise.all([
                 db.collection('reservations').where('date', '==', dateVal).get(),
                 db.collection('reservation_requests').where('date', '==', dateVal).get()
@@ -797,13 +884,24 @@
                 }
             };
             snapConfirmed.forEach(doc => processDoc(doc.data()));
-            snapPending.forEach(doc => processDoc(doc.data())); // FIX #6
+            snapPending.forEach(doc => processDoc(doc.data()));
+
+            if (typeof diagLog === 'function') {
+                diagLog('ok', 'Firestore OK | confirmed=' + snapConfirmed.size +
+                    ' | pending=' + snapPending.size +
+                    ' | usageMap=' + JSON.stringify(usageMap).slice(0, 80));
+            }
 
             container.innerHTML = '';
             locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
                 const locNameLower = loc.name.toLowerCase();
                 const used = usageMap[loc.name] || 0;
-                const capacity = loc.capacity || 0; // FIX #7: fallback ke 0
+
+                // FIX #3: capacity default 50 agar tidak semua tampil penuh jika admin lupa isi
+                const capacity = (loc.capacity !== undefined && loc.capacity !== null)
+                    ? parseInt(loc.capacity)
+                    : 50;
+
                 let remaining = capacity - used;
                 let isFull = remaining < paxVal;
                 let customError = "";
@@ -813,20 +911,36 @@
                         locNameLower.includes("lantai 1 tengah") || 
                         locNameLower.includes("lantai 1 belakang")) {
                         isFull = true;
-                        remaining = 0; 
+                        remaining = 0;
                     }
                 }
                 
-                if(locNameLower.includes("full blok") && paxVal < 200) { 
-                    isFull = true; 
-                    customError = "Min. 200 Orang"; 
+                if(locNameLower.includes("full blok") && paxVal < 200) {
+                    isFull = true;
+                    customError = "Min. 200 Orang";
                 }
                 
-                let capClass = "cap-safe";
-                if(remaining <= 0) capClass = "cap-full";
-                
+                let capClass = remaining <= 0 ? "cap-full" : "cap-safe";
+
+                // FIX #8: tampilkan "Tidak Cukup" jika sisa ada tapi kurang dari jumlah tamu
+                let capLabel;
+                if (remaining <= 0) {
+                    capLabel = 'PENUH';
+                } else if (remaining < paxVal) {
+                    capLabel = `Tidak Cukup (sisa ${remaining})`;
+                    capClass = "cap-full";
+                } else {
+                    capLabel = `Sisa ${remaining}`;
+                }
+
                 const imageUrl = loc.imageUrl || defaultImage;
-                const safeName = escapeHtml(loc.name); // FIX #11: sanitasi XSS
+
+                // FIX #1: safeName HANYA untuk tampilan HTML
+                // selectedLocationName & onclick tetap pakai nama ASLI (loc.name)
+                const safeName = escapeHtml(loc.name);
+
+                // FIX #1: escape tanda kutip tunggal pada nama asli untuk atribut onclick
+                const safeRawName = loc.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
                 const div = document.createElement('div');
                 div.className = `location-option ${isFull ? 'disabled' : ''}`;
@@ -839,49 +953,71 @@
                     </div>
                     <div class="loc-content">
                         <span class="loc-name">${safeName}</span>
-                        <span class="cap-badge ${capClass}">${remaining<=0?'PENUH':`Sisa ${remaining}`}</span>
-                        <button class="btn-loc-view" onclick="openImage(event,'${imageUrl}','${safeName}')">
+                        <span class="cap-badge ${capClass}">${capLabel}</span>
+                        <button type="button" class="btn-loc-view" onclick="openImage(event,'${imageUrl}','${safeName}')">
                             <i class="fas fa-images"></i> Lihat Foto
                         </button>
                     </div>
-                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer;" onclick="selectLocation('${safeName}', this)"></div>
+                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer;" onclick="selectLocation('${safeRawName}', this)"></div>
                 `;
                 container.appendChild(div);
             });
 
-            return true; // FIX #1: semua OK, lanjutkan ke step 2
+            availabilityLoading = false; // FIX #6: selesai, buka kunci
+            return true;
         } catch(e) {
             console.error(e);
-            // FIX #12: spinner selalu terganti saat error, tidak stuck
-            container.innerHTML = '<p style="text-align:center; color:red;"><i class="fas fa-exclamation-circle"></i> Gagal memuat data. Coba lagi.</p>';
-            return false; // FIX #1: jangan lanjut jika error
+            // Log ke diagnostik agar error Firestore terlihat jelas
+            if (typeof diagLog === 'function') {
+                diagLog('err', 'checkAvailability catch: ' + e.code + ' | ' + e.message);
+            }
+            container.innerHTML = '';
+            availabilityLoading = false;
+
+            // Deteksi error permission Firestore
+            const isPermission = e.code === 'permission-denied' ||
+                (e.message && e.message.toLowerCase().includes('permission'));
+
+            if (isPermission) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Akses Ditolak',
+                    html: 'Firestore Security Rules memblokir pembacaan data reservasi.<br><br>' +
+                          '<b>Solusi:</b> Buka Firebase Console → Firestore → Rules, ' +
+                          'lalu izinkan akses read pada collection <code>reservations</code> ' +
+                          'dan <code>reservation_requests</code>.',
+                    confirmButtonColor: 'var(--primary)'
+                });
+            } else {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Memuat Data',
+                    text: 'Error: ' + (e.message || e.code || 'Unknown') + '. Periksa koneksi internet Anda.',
+                    confirmButtonColor: 'var(--primary)'
+                });
+            }
+            return false;
         }
     }
 
+    // FIX #1: selectLocation menerima nama ASLI dari database
+    // onclick sudah meloloskan nama mentah (safeRawName), bukan escaped HTML
     function selectLocation(name, el) {
         selectedLocationName = name;
         document.querySelectorAll('.location-option').forEach(e => e.classList.remove('selected'));
         el.closest('.location-option').classList.add('selected');
     }
 
-    // =============================================
-    // [DIMODIFIKASI] submitReservation
-    // FIX #4: guard fullDatesLoaded
-    // FIX #5: normalisasi nomor HP yang aman (+62, 62, 08...)
-    // =============================================
-
-    // FIX #5: fungsi normalisasi nomor HP yang benar untuk semua format
     function normalizePhone(phone) {
-        let p = phone.replace(/\D/g, ''); // hapus semua non-digit
-        if (p.startsWith('0')) p = '62' + p.slice(1);       // 08xxx → 628xxx
-        if (!p.startsWith('62')) p = '62' + p;              // tanpa kode negara → tambahkan
+        let p = phone.replace(/\D/g, '');
+        if (p.startsWith('0')) p = '62' + p.slice(1);
+        if (!p.startsWith('62')) p = '62' + p;
         return p;
     }
 
     async function submitReservation() {
         const dateVal = document.getElementById('inputDate').value;
 
-        // FIX #4: Pastikan data fullDates sudah loaded
         if (!fullDatesLoaded) {
             await Swal.fire({
                 icon: 'info',
@@ -892,7 +1028,6 @@
             return;
         }
 
-        // FIX #1 lanjutan: proteksi bypass di layer submit
         if (fullDates[dateVal] === true) {
             await Swal.fire({
                 icon: 'error',
@@ -903,45 +1038,112 @@
             return;
         }
 
+        // Nonaktifkan tombol submit saat proses berjalan
+        const btnNext = document.getElementById('btnNext');
+        btnNext.disabled = true;
         Swal.showLoading();
+
         try {
+            const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
+
+            // Cek kapasitas terkini sebelum submit
+            const [snapConfirmed, snapPending] = await Promise.all([
+                db.collection('reservations').where('date', '==', dateVal).get(),
+                db.collection('reservation_requests').where('date', '==', dateVal).get()
+            ]);
+
+            const usageMap = {};
+            const countUsage = (d) => {
+                if (d.tempat) usageMap[d.tempat] = (usageMap[d.tempat] || 0) + (parseInt(d.jumlah) || 0);
+            };
+            snapConfirmed.forEach(doc => countUsage(doc.data()));
+            snapPending.forEach(doc => countUsage(doc.data()));
+
+            const chosenLoc = locationsData.find(l => l.name === selectedLocationName);
+            if (!chosenLoc) throw new Error('Lokasi tidak ditemukan.');
+
+            const capacity = (chosenLoc.capacity !== undefined && chosenLoc.capacity !== null)
+                ? parseInt(chosenLoc.capacity)
+                : 50;
+
+            const used = usageMap[selectedLocationName] || 0;
+            const remaining = capacity - used;
+
+            if (remaining < paxVal) {
+                throw new Error(`KAPASITAS_PENUH:Tempat "${selectedLocationName}" sudah tidak tersedia untuk ${paxVal} orang (sisa ${remaining}). Silahkan pilih tempat lain.`);
+            }
+
             await db.collection('reservation_requests').add({
                 date: dateVal,
                 jam: document.getElementById('inputTime').value,
-                jumlah: parseInt(document.getElementById('inputPax').value),
+                jumlah: paxVal,
                 tempat: selectedLocationName,
                 nama: document.getElementById('inputName').value,
-                nomorHp: normalizePhone(document.getElementById('inputPhone').value), // FIX #5
+                nomorHp: normalizePhone(document.getElementById('inputPhone').value),
                 tambahan: document.getElementById('inputNote').value,
-                menus: Object.entries(selectedMenus).map(([k,v]) => ({name:k, quantity:v})),
+                menus: Object.entries(selectedMenus).map(([k, v]) => ({ name: k, quantity: v })),
                 status: 'pending',
-                via: 'Web App V8',
+                via: 'Web App V9',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            Swal.fire({ icon: 'success', title: 'Terkirim!', text: 'Admin akan menghubungi WhatsApp Anda.', confirmButtonColor: 'var(--primary)' }).then(() => window.location.reload());
-        } catch(e) { Swal.fire('Error', 'Gagal koneksi.', 'error'); }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Terkirim!',
+                text: 'Admin akan menghubungi WhatsApp Anda.',
+                confirmButtonColor: 'var(--primary)'
+            }).then(() => window.location.reload());
+
+        } catch(e) {
+            // FIX #9: selalu re-enable tombol saat error
+            btnNext.disabled = false;
+
+            // Tampilkan pesan khusus jika overbooking terdeteksi
+            if (e.message && e.message.startsWith('KAPASITAS_PENUH:')) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tempat Sudah Penuh',
+                    text: e.message.replace('KAPASITAS_PENUH:', ''),
+                    confirmButtonColor: 'var(--primary)'
+                }).then(() => {
+                    // Kembalikan ke step 2 agar user pilih tempat lain
+                    currentStep = 2;
+                    selectedLocationName = "";
+                    updateUIState();
+                    availabilityLoading = false;
+                    checkAvailability().catch(() => {});
+                });
+            } else {
+                console.error('submitReservation error:', e);
+                Swal.fire('Error', 'Gagal koneksi. Silahkan coba lagi.', 'error');
+            }
+        }
     }
 
-    // FIX #2: event dideklarasikan sebagai parameter eksplisit
-    // agar tidak crash di browser strict mode
-    function openImage(event, url, caption) { 
-        event.stopPropagation(); 
-        document.getElementById('imgModal').style.display = 'flex'; 
-        document.getElementById('modalImg').src = url; 
-        document.getElementById('modalCaption').textContent = caption; 
+    function openImage(event, url, caption) {
+        event.stopPropagation();
+        document.getElementById('imgModal').style.display = 'flex';
+        document.getElementById('modalImg').src = url;
+        document.getElementById('modalCaption').textContent = caption;
     }
+
     function closeImage() { document.getElementById('imgModal').style.display = 'none'; }
 
-    // ===============================================
-    // ADMIN FUNCTIONS (NEW BYPASS LOGIC)
-    // ===============================================
-
+    // FIX #7: simpan referensi listener agar tidak terbuat duplikat
+    // setiap kali openAdmin() dipanggil
     function openAdmin() {
       document.getElementById('adminPanel').style.display = 'block';
-      auth.onAuthStateChanged(user => {
+      if (!adminAuthListener) {
+        adminAuthListener = auth.onAuthStateChanged(user => {
+          if(user) showAdminDashboard();
+          else showAdminLogin();
+        });
+      } else {
+        // listener sudah ada — cukup cek state auth sekarang
+        const user = auth.currentUser;
         if(user) showAdminDashboard();
         else showAdminLogin();
-      });
+      }
     }
 
     function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
@@ -983,7 +1185,7 @@
                  </div>
                  <div class="upload-controls">
                     <input type="file" id="file-${loc.id}" accept="image/*" class="file-input">
-                    <button class="btn-upload-save" onclick="handleFileUpload('${loc.id}')">
+                    <button type="button" id="btn-upload-${loc.id}" class="btn-upload-save" onclick="handleFileUpload('${loc.id}')">
                        <i class="fas fa-save"></i> Simpan Foto
                     </button>
                  </div>
@@ -996,32 +1198,22 @@
       }
     }
 
-    // --- LOGIKA UPLOAD BARU (TANPA FIREBASE STORAGE) ---
     async function handleFileUpload(locId) {
         try {
             const fileInput = document.getElementById(`file-${locId}`);
             const file = fileInput.files[0];
             
-            if(!file) {
-                Swal.fire('Peringatan', 'Pilih file foto dulu!', 'warning');
-                return;
-            }
+            if(!file) { Swal.fire('Peringatan', 'Pilih file foto dulu!', 'warning'); return; }
+            if (!file.type.match('image.*')) { Swal.fire('Format Salah', 'Harus file gambar (jpg/png).', 'error'); return; }
 
-            if (!file.type.match('image.*')) {
-                Swal.fire('Format Salah', 'Harus file gambar (jpg/png).', 'error');
-                return;
-            }
-
-            const btn = document.querySelector(`button[onclick="handleFileUpload('${locId}')"]`);
+            const btn = document.getElementById(`btn-upload-${locId}`);
             const oldText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             btn.disabled = true;
 
             const compressedBase64 = await compressImage(file);
 
-            await db.collection('locations').doc(locId).update({
-                imageUrl: compressedBase64
-            });
+            await db.collection('locations').doc(locId).update({ imageUrl: compressedBase64 });
 
             document.getElementById(`preview-${locId}`).src = compressedBase64;
             Swal.fire('Berhasil!', 'Foto berhasil disimpan ke Database.', 'success');
@@ -1032,8 +1224,7 @@
         } catch (e) {
             console.error(e);
             Swal.fire('Gagal', 'Terjadi kesalahan: ' + e.message, 'error');
-            
-            const btn = document.querySelector(`button[onclick="handleFileUpload('${locId}')"]`);
+            const btn = document.getElementById(`btn-upload-${locId}`);
             if(btn) { btn.innerHTML = '<i class="fas fa-save"></i> Simpan Foto'; btn.disabled = false; }
         }
     }
@@ -1049,7 +1240,6 @@
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 600;
                     const scaleSize = MAX_WIDTH / img.width;
-                    
                     if (img.width > MAX_WIDTH) {
                         canvas.width = MAX_WIDTH;
                         canvas.height = img.height * scaleSize;
@@ -1057,20 +1247,196 @@
                         canvas.width = img.width;
                         canvas.height = img.height;
                     }
-                    
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                    
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                    resolve(dataUrl);
-                }
-                img.onerror = (err) => reject(new Error("File gambar rusak"));
-            }
-            reader.onerror = (err) => reject(new Error("Gagal membaca file"));
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+                img.onerror = () => reject(new Error("File gambar rusak"));
+            };
+            reader.onerror = () => reject(new Error("Gagal membaca file"));
         });
     }
 
+
+    // ============================================================
+    // DIAGNOSTIC REPORTER
+    // Mencatat semua error, klik tombol, dan status fungsi kritis
+    // ============================================================
+    const diagLogs = [];
+
+    function diagLog(type, msg) {
+      const time = new Date().toTimeString().slice(0,8);
+      const entry = { time, type, msg };
+      diagLogs.push(entry);
+
+      // Tampilkan di box
+      const el = document.getElementById('diagLog');
+      if (!el) return;
+      const classMap = { ok:'log-ok', warn:'log-warn', err:'log-err', info:'log-info', sep:'log-sep' };
+      const span = document.createElement('span');
+      span.className = classMap[type] || 'log-info';
+      span.textContent = `[${time}] ${msg}\n`;
+      el.appendChild(span);
+      el.scrollTop = el.scrollHeight;
+
+      // Auto-buka box saat ada error
+      if (type === 'err') {
+        document.getElementById('diagBox').style.display = 'block';
+      }
+    }
+
+    function diagToggle() {
+      const box = document.getElementById('diagBox');
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function diagClear() {
+      diagLogs.length = 0;
+      document.getElementById('diagLog').innerHTML = '<span class="log-info">Log dikosongkan.\n</span>';
+    }
+
+    function diagCopy() {
+      // Format laporan lengkap untuk dikirim ke developer
+      const ua = navigator.userAgent;
+      const lines = [
+        '=== DIAGNOSTIC REPORT ===',
+        'Waktu   : ' + new Date().toLocaleString('id-ID'),
+        'Browser : ' + ua,
+        'URL     : ' + location.href,
+        'Step    : ' + (typeof currentStep !== 'undefined' ? currentStep : 'N/A'),
+        'FirebaseLoaded: ' + (typeof firebase !== 'undefined'),
+        'DBReady : ' + (typeof db !== 'undefined'),
+        'fullDatesLoaded: ' + (typeof fullDatesLoaded !== 'undefined' ? fullDatesLoaded : 'N/A'),
+        'locationsData: ' + (typeof locationsData !== 'undefined' ? locationsData.length + ' item' : 'N/A'),
+        '--- LOG ---',
+        ...diagLogs.map(e => `[${e.time}][${e.type.toUpperCase()}] ${e.msg}`),
+        '=== END ==='
+      ];
+      const text = lines.join('\n');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => { diagLog('ok', '✓ Report berhasil di-copy ke clipboard'); })
+          .catch(() => { diagFallbackCopy(text); });
+      } else {
+        diagFallbackCopy(text);
+      }
+    }
+
+    function diagFallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        diagLog('ok', '✓ Report di-copy (fallback)');
+      } catch(e) {
+        diagLog('err', '✗ Gagal copy. Salin manual dari sini:\n' + text);
+      }
+      document.body.removeChild(ta);
+    }
+
+    // --- Tangkap SEMUA error JS global ---
+    window.onerror = function(msg, src, line, col, err) {
+      diagLog('err', 'JS Error: ' + msg + ' | ' + (src||'') + ':' + line);
+      return false;
+    };
+    window.onunhandledrejection = function(e) {
+      const reason = e.reason ? (e.reason.message || String(e.reason)) : 'Unknown rejection';
+      diagLog('err', 'Unhandled Promise: ' + reason);
+    };
+
+    // --- Patch nextStep untuk mencatat setiap klik ---
+    const _origNextStep = nextStep;
+    nextStep = async function() {
+      diagLog('info', '▶ nextStep() dipanggil | step=' + currentStep +
+        ' | date=' + (document.getElementById('inputDate').value || 'kosong') +
+        ' | time=' + (document.getElementById('inputTime').value || 'kosong'));
+      try {
+        await _origNextStep.apply(this, arguments);
+        diagLog('ok', '✓ nextStep() selesai | step sekarang=' + currentStep);
+      } catch(e) {
+        diagLog('err', '✗ nextStep() error: ' + e.message);
+        throw e;
+      }
+    };
+
+    // --- Patch checkAvailability ---
+    const _origCheck = checkAvailability;
+    checkAvailability = async function() {
+      const date = document.getElementById('inputDate').value;
+      diagLog('info', '🔍 checkAvailability() | date=' + date +
+        ' | fullDatesLoaded=' + fullDatesLoaded +
+        ' | availabilityLoading=' + availabilityLoading);
+      try {
+        const result = await _origCheck.apply(this, arguments);
+        diagLog(result ? 'ok' : 'warn', '  → hasil: ' + result +
+          ' | locationsData.length=' + locationsData.length);
+        return result;
+      } catch(e) {
+        diagLog('err', '  → checkAvailability() throw: ' + e.message);
+        throw e;
+      }
+    };
+
+    // --- Patch submitReservation ---
+    const _origSubmit = submitReservation;
+    submitReservation = async function() {
+      diagLog('info', '📤 submitReservation() | lokasi=' + selectedLocationName);
+      try {
+        await _origSubmit.apply(this, arguments);
+        diagLog('ok', '✓ submitReservation() selesai');
+      } catch(e) {
+        diagLog('err', '✗ submitReservation() error: ' + e.message);
+        throw e;
+      }
+    };
+
+    // --- Patch loadData ---
+    const _origLoad = loadData;
+    loadData = async function() {
+      diagLog('info', '📦 loadData() mulai');
+      try {
+        await _origLoad.apply(this, arguments);
+        diagLog('ok', '✓ loadData() selesai | locations=' + locationsData.length + ' | menus=' + Object.keys(menusData).length);
+      } catch(e) {
+        diagLog('err', '✗ loadData() error: ' + e.message);
+        throw e;
+      }
+    };
+
+    // --- Catat status Firebase saat halaman siap ---
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        diagLog('sep', '────────────────────');
+        diagLog('info', '🚀 Halaman siap');
+        diagLog('info', 'Firebase: ' + (typeof firebase !== 'undefined' ? '✓' : '✗ TIDAK DIMUAT'));
+        diagLog('info', 'Firestore db: ' + (typeof db !== 'undefined' ? '✓' : '✗ GAGAL'));
+        diagLog('info', 'Auth: ' + (typeof auth !== 'undefined' ? '✓' : '✗ GAGAL'));
+        diagLog('info', 'Swal: ' + (typeof Swal !== 'undefined' ? '✓' : '✗ GAGAL'));
+        diagLog('sep', '────────────────────');
+        diagLog('info', 'Ketuk ⚠ (pojok kanan bawah) untuk buka/tutup laporan ini');
+        diagLog('info', 'Ketuk [Copy] lalu kirim hasilnya untuk debugging');
+      }, 1500); // tunggu setelah DOMContentLoaded lain selesai
+    });
+
   </script>
 
+  <!-- ── DIAGNOSTIC REPORTER ── -->
+
+<button id="diagToggle" onclick="diagToggle()" title="Error Reporter">⚠</button>
+
+  <div id="diagBox">
+    <div class="diag-header">
+      <span class="diag-title">🔍 ERROR REPORTER</span>
+      <div class="diag-actions">
+        <button onclick="diagCopy()">📋 Copy</button>
+        <button class="diag-clear" onclick="diagClear()">🗑 Clear</button>
+        <button class="diag-clear" onclick="diagToggle()">✕</button>
+      </div>
+    </div>
+    <div id="diagLog"><span class="log-info">Menunggu aktivitas...</span></div>
+  </div>
 </body>
 </html>
