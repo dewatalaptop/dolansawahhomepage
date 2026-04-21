@@ -1,170 +1,868 @@
 <!DOCTYPE html>
+
 <html lang="id">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reservasi Mandiri - Dolan Sawah</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-    <style>
-        :root {
-            --primary: #2a9d8f; --primary-dark: #264653; --secondary: #e9c46a; 
-            --accent: #f4a261; --danger: #e76f51; --light: #f8f9fa; --dark: #343a40;
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f5f5f5;
-            color: var(--dark);
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        header { text-align: center; margin-bottom: 25px; }
-        header h1 { color: var(--primary-dark); }
-        .step { margin-bottom: 30px; }
-        .step h2 {
-            font-size: 1.2rem;
-            color: var(--primary);
-            border-bottom: 2px solid var(--secondary);
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1rem;
-            box-sizing: border-box;
-            margin-top: 5px;
-        }
-        label { font-weight: 500; display: block; margin-bottom: 10px; }
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 15px;
-            transition: background-color 0.3s;
-        }
-        button:hover { background-color: var(--primary-dark); }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
-        button.secondary { background-color: #6c757d; font-size: 0.9rem; padding: 8px 12px; }
-        button.danger { background-color: var(--danger); }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Viewer Reservasi Dolan Sawah (Photo View)</title>
 
-        #availability-container .location {
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .location h3 { margin: 0 0 10px 0; }
-        .time-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; }
-        .time-slot {
-            padding: 8px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .time-slot:hover { background-color: #f0f0f0; }
-        .time-slot.selected { background-color: var(--primary); color: white; border-color: var(--primary-dark); font-weight: 600; }
-        .time-slot.disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; text-decoration: line-through; }
-        
-        .menu-selection-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-        .menu-selection-row .menu-select { flex: 3; margin-top:0; }
-        .menu-selection-row .quantity-input { flex: 1; margin-top:0; }
-        .menu-selection-row .remove-btn { flex: 0 0 auto; padding: 8px 12px; margin-top: 0; }
-        
-        .hidden { display: none; }
-        .loader { text-align: center; padding: 20px; }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 0 auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        #confirmation-message {
-            text-align: center;
-            padding: 20px;
-            background-color: #e8f5e9;
-            border-left: 5px solid #4caf50;
-            margin-top: 20px;
-        }
-        .error-message { color: var(--danger); font-size: 0.85rem; margin-top: 5px; }
-    </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <style>
+/* ============================================
+   iOS 26 LIQUID GLASS — Dolan Sawah RSVP
+   ============================================ */
+
+:root {
+  --primary: #2a9d8f;
+  --primary-dark: #1a3a35;
+  --secondary: #e9c46a;
+  --highlight: #d35400;
+  --danger: #c0392b;
+  --danger-light: #fadbd8;
+  --success: #27ae60;
+  --warning: #f39c12;
+  --bg-body: transparent;
+  --bg-card: rgba(255,255,255,0.18);
+  --text-main: #1a2e2a;
+  --text-muted: #4a6660;
+  --glass-bg: rgba(255,255,255,0.22);
+  --glass-bg-strong: rgba(255,255,255,0.32);
+  --glass-border: rgba(255,255,255,0.55);
+  --glass-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  --glass-blur: blur(24px);
+  --glass-blur-heavy: blur(40px);
+  --radius-xl: 28px;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* ── BODY & BACKGROUND ── */
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  margin: 0;
+  color: var(--text-main);
+  overflow-x: hidden;
+  padding-bottom: 90px;
+  min-height: 100vh;
+  background-image: url('https://firebasestorage.googleapis.com/v0/b/slidemonitor.firebasestorage.app/o/uploads_v4%2Fslide_1776779700036_IMG_9957.jpeg?alt=media&token=1a798786-0348-4148-86ed-adaa81885177');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  position: relative;
+}
+
+/* Warm golden overlay — sesuai suasana foto */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 200, 120, 0.12) 0%,
+    rgba(240, 180, 80, 0.08) 50%,
+    rgba(200, 160, 60, 0.06) 100%
+  );
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Soft warm sun bloom */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 100% 55% at 50% -5%,
+    rgba(255, 200, 80, 0.35) 0%,
+    rgba(255, 170, 60, 0.10) 45%,
+    transparent 70%
+  );
+  z-index: 0;
+  pointer-events: none;
+  animation: sunShimmer 7s ease-in-out infinite alternate;
+}
+
+@keyframes sunShimmer {
+  0%   { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 1;   transform: scale(1.04) translateY(3px); }
+}
+
+/* ── HEADER — orange muda ── */
+header {
+  position: relative;
+  z-index: 100;
+  background: rgba(210, 100, 30, 0.48);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border-bottom: 1px solid rgba(255,200,150,0.35);
+  border-bottom-left-radius: 32px;
+  border-bottom-right-radius: 32px;
+  box-shadow:
+    0 1px 0 rgba(255,220,180,0.4) inset,
+    0 12px 40px rgba(180,80,0,0.2);
+  padding: 22px 24px 32px;
+}
+
+.header-branding h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  letter-spacing: -0.3px;
+}
+
+.header-branding small {
+  opacity: 0.85;
+  font-size: 0.82rem;
+  margin-top: 5px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.9);
+  display: block;
+  letter-spacing: 0.2px;
+}
+
+/* ── MAIN CONTAINER ── */
+.main-container {
+  max-width: 800px;
+  margin: -28px auto 0;
+  padding: 0 16px;
+  position: relative;
+  z-index: 10;
+}
+
+/* ── INFO CARD ── */
+@keyframes gentle-wobble {
+  0%   { transform: translateX(0); }
+  15%  { transform: translateX(-2px) rotate(-1.5deg); }
+  30%  { transform: translateX(2px) rotate(1.5deg); }
+  45%  { transform: translateX(-2px) rotate(-1deg); }
+  60%  { transform: translateX(1.5px) rotate(0.8deg); }
+  75%  { transform: translateX(-0.8px); }
+  100% { transform: translateX(0); }
+}
+
+.info-card {
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.6) inset,
+    var(--glass-shadow);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  animation: gentle-wobble 4s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.info-icon {
+  background: rgba(220, 110, 30, 0.22);
+  backdrop-filter: blur(10px);
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: #a04010;
+  font-size: 1.2rem;
+  border: 1px solid rgba(255,180,100,0.5);
+  box-shadow: 0 2px 8px rgba(200,100,30,0.18);
+}
+
+.info-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+.info-content p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #3a5550;
+  line-height: 1.55;
+}
+
+/* ── CALENDAR WRAPPER ── */
+.calendar-wrapper {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 22px 18px 18px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.55) inset,
+    var(--glass-shadow);
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.month-year {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0e3028;
+  text-shadow: 0 1px 3px rgba(255,255,255,0.4);
+  letter-spacing: -0.5px;
+}
+
+.calendar-nav { display: flex; gap: 8px; }
+
+.calendar-nav button {
+  background: rgba(255,255,255,0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.6);
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: #0e3028;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.7) inset,
+    0 4px 12px rgba(0,0,0,0.12);
+  font-size: 0.85rem;
+}
+.calendar-nav button:hover { transform: scale(1.12); background: rgba(255,255,255,0.55); }
+.calendar-nav button:active { transform: scale(0.93); }
+
+/* ── WEEKDAYS ── */
+.calendar-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(20, 70, 60, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+}
+
+/* ── CALENDAR GRID ── */
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+/* ── DAY CELL base ── */
+.day-cell {
+  aspect-ratio: 1/1;
+  background: rgba(255,255,255,0.28);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  border: 1px solid rgba(255,255,255,0.55);
+  border-radius: var(--radius-md);
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 6px;
+  overflow: hidden;
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.7) inset,
+    0 3px 8px rgba(0,0,0,0.08);
+}
+
+/* Inner top shimmer line */
+.day-cell::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  border-radius: 1px;
+}
+
+.day-cell:hover {
+  transform: translateY(-3px) scale(1.06);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.8) inset,
+    0 10px 20px rgba(0,0,0,0.15);
+  background: rgba(255,255,255,0.42);
+}
+.day-cell:active { transform: scale(0.93); }
+
+.day-num {
+  font-weight: 700;
+  font-size: 0.95rem;
+  z-index: 2;
+  line-height: 1;
+  color: #0e3028;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+}
+
+/* ── HAS RESERVATION ── */
+.day-cell.has-res {
+  background: rgba(42, 180, 155, 0.22);
+  border: 1px solid rgba(42, 200, 170, 0.5);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.7) inset,
+    0 4px 12px rgba(42,157,143,0.18);
+}
+.day-cell.has-res .day-num { color: #0d3d30; }
+
+/* ── IS FULL ── */
+.day-cell.is-full {
+  background: rgba(220, 60, 60, 0.38) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 100, 100, 0.55) !important;
+  box-shadow:
+    0 1px 0 rgba(255,200,200,0.5) inset,
+    0 4px 14px rgba(192, 57, 43, 0.28) !important;
+}
+.day-cell.is-full .day-num { color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
+.day-cell.is-full .res-count { background: rgba(255,255,255,0.88) !important; color: var(--danger) !important; font-weight: 800 !important; }
+.day-cell.is-full::after { display: none; }
+
+/* ── TODAY — golden glow ── */
+.day-cell.today {
+  background: linear-gradient(145deg, #ffd25a, #ffb830) !important;
+  border: 1.5px solid rgba(255, 200, 60, 0.9) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.7) inset,
+    0 0 18px rgba(255, 200, 0, 0.55),
+    0 6px 18px rgba(200, 130, 0, 0.25) !important;
+}
+.day-cell.today .day-num { color: #5a3800 !important; font-weight: 800 !important; text-shadow: 0 1px 2px rgba(255,255,255,0.4) !important; }
+.day-cell.today .res-count { background: rgba(255,255,255,0.9) !important; color: #c47800 !important; border: 1px solid rgba(200,150,0,0.3); }
+
+/* ── RES INDICATOR ── */
+.res-indicator {
+  margin-top: auto;
+  margin-bottom: 5px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  width: 100%;
+}
+
+.res-count {
+  font-size: 0.62rem;
+  color: #0e3028;
+  font-weight: 700;
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(6px);
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* ── LEGEND ── */
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+  font-size: 0.73rem;
+  color: rgba(20, 60, 50, 0.85);
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(255,255,255,0.35);
+  padding-top: 14px;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+}
+
+.dot {
+  width: 12px; height: 12px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+/* ── BOTTOM LINK ── */
+.main-container > div:last-child a {
+  background: rgba(255,255,255,0.28) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255,255,255,0.55) !important;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.7) inset,
+    0 4px 16px rgba(0,0,0,0.12) !important;
+  color: #0e3028 !important;
+  font-weight: 600 !important;
+  border-radius: 30px;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.main-container > div:last-child a:hover { transform: translateY(-2px); background: rgba(255,255,255,0.42) !important; }
+
+/* Text readability */
+h2, .month-year, .weekday { text-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.day-num { text-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+
+/* ── INFO POPUP OVERLAY ── */
+.info-popup-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  z-index: 2500;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+
+.info-popup-content {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(30px);
+  width: 100%; max-width: 400px;
+  border-radius: var(--radius-xl);
+  padding: 32px 26px; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.8) inset;
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-top: 5px solid var(--danger);
+}
+
+.info-popup-icon { font-size: 3.2rem; color: var(--danger); margin-bottom: 16px; }
+.info-popup-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 10px; color: var(--text-main); }
+.info-popup-text { font-size: 0.88rem; color: #555; line-height: 1.65; margin-bottom: 26px; }
+
+.info-popup-btn {
+  background: var(--danger); color: white; border: none;
+  padding: 14px 30px; border-radius: 50px; font-weight: 700;
+  cursor: pointer; font-size: 0.95rem; width: 100%;
+  box-shadow: 0 6px 20px rgba(192, 57, 43, 0.35);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.info-popup-btn:active { transform: scale(0.96); }
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.78) translateY(20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── DETAIL OVERLAY ── */
+.detail-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 1000; display: none; align-items: flex-end; justify-content: center;
+}
+.detail-overlay.active { display: flex; animation: fadeIn 0.3s; }
+
+.detail-sheet {
+  background: rgba(245, 248, 245, 0.95);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  width: 100%; max-width: 600px; height: 90vh;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  display: flex; flex-direction: column; overflow: hidden;
+  animation: slideUpBig 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.2), 0 -1px 0 rgba(255,255,255,0.8) inset;
+  border-top: 1px solid rgba(255,255,255,0.7);
+  position: relative;
+}
+
+/* Drag handle */
+.detail-sheet::before {
+  content: "";
+  display: block;
+  width: 36px; height: 5px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 3px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
+.detail-sheet.red-mode .sheet-header { border-bottom: 2px solid var(--danger); }
+.detail-sheet.red-mode h3 { color: var(--danger) !important; }
+
+.pulsing-badge {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  background: var(--danger); color: white;
+  padding: 10px 25px; border-radius: 30px;
+  font-weight: 700; font-size: 0.9rem;
+  box-shadow: 0 4px 20px rgba(192, 57, 43, 0.5);
+  animation: pulse-red 2s infinite;
+  z-index: 100; pointer-events: none;
+  display: none; white-space: nowrap;
+  border: 2px solid white;
+}
+.detail-sheet.red-mode .pulsing-badge { display: block; }
+
+@keyframes pulse-red {
+  0%  { transform: translateX(-50%) scale(1); box-shadow: 0 0 0 0 rgba(192,57,43,0.7); }
+  70% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 0 15px rgba(192,57,43,0); }
+  100%{ transform: translateX(-50%) scale(1); box-shadow: 0 0 0 0 rgba(192,57,43,0); }
+}
+
+@keyframes slideUpBig { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.sheet-header {
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 12px 20px 14px;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,0.07);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  z-index: 10; flex-shrink: 0;
+}
+
+.btn-sheet-back {
+  background: rgba(200, 90, 20, 0.88);
+  backdrop-filter: blur(10px);
+  color: white; border: none;
+  padding: 9px 18px; border-radius: 22px;
+  font-size: 0.85rem; cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 12px rgba(180,80,0,0.3);
+  font-weight: 600;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-sheet-back:active { transform: scale(0.93); }
+
+.sheet-content {
+  flex: 1; overflow-y: auto;
+  padding: 20px 16px;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 80px;
+}
+
+#locGrid { display: flex; flex-direction: column; gap: 20px; padding-bottom: 80px; }
+
+/* ── LOCATION CARDS ── */
+.loc-card {
+  background: rgba(255,255,255,0.9);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+  border: 1px solid rgba(255,255,255,0.85);
+  transform: translateZ(0);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  flex-shrink: 0; min-height: auto;
+}
+.loc-card:hover { transform: translateY(-2px); }
+
+.loc-header {
+  height: 140px; min-height: 140px;
+  position: relative;
+  background-size: cover; background-position: center;
+  display: flex; align-items: flex-end;
+  cursor: pointer;
+}
+
+.loc-title {
+  background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+  width: 100%; padding: 14px 16px; color: white;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  pointer-events: none;
+}
+.loc-name { font-weight: 700; font-size: 1.0rem; text-shadow: 0 2px 4px rgba(0,0,0,0.6); white-space: normal; max-width: 70%; line-height: 1.2; }
+.loc-badge { font-size: 0.75rem; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.4); font-weight: 600; white-space: nowrap; }
+
+.btn-view-photo {
+  position: absolute; top: 12px; right: 12px;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.6);
+  color: white; font-size: 1.05rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 20;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  pointer-events: auto;
+}
+.btn-view-photo:hover { background: white; color: var(--primary); transform: scale(1.12); }
+
+/* ── IMAGE MODAL ── */
+.img-modal-overlay {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  z-index: 3000;
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; opacity: 0; transition: opacity 0.3s ease;
+}
+.img-modal-overlay.show { opacity: 1; }
+
+.img-modal-content {
+  max-width: 95%; max-height: 70vh;
+  border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  transform: scale(0.88); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  object-fit: contain;
+}
+.img-modal-overlay.show .img-modal-content { transform: scale(1); }
+
+.img-caption { color: white; margin-top: 16px; font-weight: 600; font-size: 1.05rem; text-align: center; }
+
+.close-img-modal {
+  position: absolute; top: 20px; right: 20px;
+  color: white; font-size: 1.8rem; cursor: pointer;
+  background: rgba(255,255,255,0.15); width: 48px; height: 48px;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(10px);
+}
+.close-img-modal:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
+
+.btn-exit-fullscreen {
+  margin-top: 20px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: white; padding: 11px 28px; border-radius: 30px;
+  cursor: pointer; font-size: 0.9rem;
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s ease; font-weight: 500;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-exit-fullscreen:hover { background: rgba(255,255,255,0.25); }
+
+/* ── CAPACITY BAR ── */
+.capacity-bar-container { width: 100%; height: 5px; background: #eee; position: relative; }
+.capacity-bar-fill { height: 100%; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 0 3px 3px 0; }
+.bar-green  { background: linear-gradient(90deg, #27ae60, #52e07c); }
+.bar-yellow { background: linear-gradient(90deg, #f39c12, #ffd460); }
+.bar-red    { background: linear-gradient(90deg, #c0392b, #ff6b6b); }
+
+/* ── TOGGLE BUTTON ── */
+.btn-toggle-loc {
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.95); border: none;
+  color: var(--primary); font-weight: 600; cursor: pointer;
+  font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.2s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-toggle-loc:active { background: #f5f5f5; }
+.btn-toggle-loc.disabled { color: #aaa; cursor: default; }
+
+.loc-body { display: none; background: #fff; padding: 0; border-top: 1px solid #f0f0f0; animation: slideDown 0.25s ease; }
+@keyframes slideDown { from {opacity:0; transform:translateY(-8px);} to {opacity:1; transform:translateY(0);} }
+
+/* ── RES ITEMS ── */
+.res-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: flex-start; }
+.res-item:last-child { border-bottom: none; }
+.res-info strong { display: block; font-size: 0.98rem; color: var(--text-main); margin-bottom: 4px; font-weight: 700; }
+.res-info small { color: #888; font-size: 0.78rem; display: block; }
+
+.menu-detail-text {
+  margin-top: 7px; font-size: 0.74rem; color: #555;
+  background: #f8f9fa; padding: 8px 12px; border-radius: 10px;
+  border-left: 3px solid var(--secondary); display: inline-block; width: 100%;
+}
+
+.res-qty {
+  background: rgba(42, 157, 143, 0.12); color: var(--primary-dark); padding: 6px 12px;
+  border-radius: 10px; font-weight: 800; font-size: 0.88rem; margin-left: 10px;
+  min-width: 44px; text-align: center; border: 1px solid rgba(42,157,143,0.2);
+}
+
+/* ── ADMIN — tombol disembunyikan, akses via ketuk header 5x ── */
+.floating-admin {
+  display: none !important;
+}
+
+.admin-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 2000; display: none; align-items: center; justify-content: center;
+}
+.admin-overlay.show { display: flex; }
+
+.admin-modal {
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  padding: 28px; width: 85%; max-width: 350px;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 1px 0 rgba(255,255,255,0.8) inset;
+  animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255,255,255,0.7);
+}
+
+.btn-block {
+  width: 100%; padding: 12px; border: none; border-radius: 14px;
+  font-weight: 700; cursor: pointer; margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: transform 0.15s ease;
+}
+.btn-block:active { transform: scale(0.96); }
+
+.form-input {
+  width: 100%; padding: 13px 14px; margin-bottom: 12px;
+  border: 1.5px solid rgba(0,0,0,0.1); border-radius: 14px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: rgba(255,255,255,0.8);
+  transition: border-color 0.2s; font-size: 0.9rem;
+}
+.form-input:focus { outline: none; border-color: var(--primary); }
+
+/* Header tap feedback */
+header.tap-flash {
+  animation: headerFlash 0.18s ease;
+}
+@keyframes headerFlash {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(1.35); }
+  100% { filter: brightness(1); }
+}
+.sheet-content::-webkit-scrollbar { width: 4px; }
+.sheet-content::-webkit-scrollbar-track { background: transparent; }
+.sheet-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+  </style>
+
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Reservasi Tempat</h1>
-            <p>Silakan isi form di bawah untuk melakukan reservasi</p>
-        </header>
+  <header>
+    <div class="header-branding">
+      <h2><i class="fas fa-search-location"></i> Cek Ketersediaan Tempat (Reservasi)</h2>
+      <small>Dolan Sawah RSVP System</small>
+    </div>
+  </header>
 
-        <div id="reservation-form-section">
-            <div class="step">
-                <h2>Langkah 1: Pilih Tanggal</h2>
-                <label for="reservation-date">Tanggal Reservasi:</label>
-                <input type="date" id="reservation-date">
-            </div>
+  <div class="main-container">
 
-            <div id="step-2" class="step hidden">
-                <h2>Langkah 2: Pilih Tempat & Waktu</h2>
-                <div id="availability-loader" class="loader hidden"><div class="spinner"></div><p>Mengecek ketersediaan...</p></div>
-                <div id="availability-container"></div>
-            </div>
+```
+<div class="info-card">
+    <div class="info-icon">
+        <i class="fas fa-info-circle"></i>
+    </div>
+    <div class="info-content">
+        <h4>Info Reservasi & Reguler</h4>
+        <p>Ketersediaan di kalender ini khusus untuk <b>Tempat Reservasi</b>. Pengunjung Reguler (datang langsung) tetap bisa memilih <b>Tempat Reguler</b> yang tersedia di lokasi.</p>
+    </div>
+</div>
 
-            <div id="step-3" class="step hidden">
-                <h2>Langkah 3: Isi Data Anda</h2>
-                <label for="customer-name">Nama:</label>
-                <input type="text" id="customer-name" placeholder="Masukkan nama lengkap Anda" required>
-                
-                <label for="customer-phone">Nomor HP (WhatsApp):</label>
-                <input type="tel" id="customer-phone" placeholder="Contoh: 08123456789" required>
-                
-                <label for="customer-pax">Jumlah Orang:</label>
-                <input type="number" id="customer-pax" min="1" placeholder="Jumlah peserta" required>
-            </div>
-
-            <div id="step-4" class="step hidden">
-                <h2>Langkah 4: Pilih Menu Pesanan</h2>
-                <div id="menu-container">
-                    </div>
-                <button type="button" class="secondary" onclick="addMenuSelectionRow()">Tambah Paket</button>
-                <p id="menu-error" class="error-message"></p>
-            </div>
-
-            <div id="step-5" class="step hidden">
-                <button id="submit-reservation-btn" onclick="submitReservation()">Reservasi Sekarang</button>
-            </div>
-        </div>
-
-        <div id="confirmation-section" class="hidden">
-             <div id="confirmation-message">
-                <h3>Terima Kasih!</h3>
-                <p>Reservasi Anda telah kami terima dan sedang diproses. Status saat ini adalah <strong>Menunggu Pembayaran DP</strong>.</p>
-                <p>Silakan lakukan pembayaran DP ke [Nomor Rekening/QRIS Anda di sini].</p>
-                <p>Admin kami akan segera menghubungi Anda melalui WhatsApp untuk konfirmasi lebih lanjut.</p>
-             </div>
-        </div>
+<div class="calendar-wrapper">
+    <div class="calendar-header">
+      <div class="month-year" id="monthYear">Loading...</div>
+      <div class="calendar-nav">
+        <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+        <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+      </div>
     </div>
 
-<script>
+    <div class="calendar-grid-header">
+        <div class="weekday">Min</div><div class="weekday">Sen</div><div class="weekday">Sel</div>
+        <div class="weekday">Rab</div><div class="weekday">Kam</div><div class="weekday">Jum</div><div class="weekday">Sab</div>
+    </div>
+    
+    <div class="calendar-days" id="calendar"></div>
+    
+    <div class="legend">
+        <div style="display:flex; gap:5px; align-items:center;"><span class="dot" style="background:#ffd25a; border:1px solid rgba(200,150,0,0.4);"></span> Hari Ini</div>
+        <div style="display:flex; gap:5px; align-items:center;"><span class="dot" style="background:rgba(42,180,155,0.5); border:1px solid rgba(42,200,170,0.5);"></span> Ada Reservasi</div>
+        <div style="display:flex; gap:5px; align-items:center;"><span class="dot" style="background:rgba(220,60,60,0.45); border:1px solid rgba(255,100,100,0.5);"></span> Reservasi Penuh</div>
+    </div>
+</div>
+
+<div style="margin-top: 25px; text-align: center;">
+    <a href="https://www.dolansawah.my.id" style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none; padding: 12px 24px; display: inline-flex; align-items: center; gap: 8px;">
+         <i class="fas fa-external-link-alt"></i> Buka Website Utama
+    </a>
+</div>
+```
+
+  </div>
+
+  <div class="floating-admin" id="adminBtn"><i class="fas fa-lock"></i></div>
+
+  <div class="detail-overlay" id="detailOverlay">
+      <div class="detail-sheet" id="detailSheet">
+          <div class="pulsing-badge">Tempat non reservasi tersedia</div>
+          <div class="sheet-header">
+              <button onclick="closeDetail()" class="btn-sheet-back">
+                  <i class="fas fa-arrow-left"></i> Kembali
+              </button>
+              <div style="text-align: right;">
+                  <h3 id="sheetDate" style="margin:0; color:var(--primary-dark); font-size:1rem;">Detail</h3>
+                  <span id="sheetStats" style="font-size:0.75rem; color:#666;">...</span>
+              </div>
+          </div>
+          <div class="sheet-content" id="locGrid"></div>
+      </div>
+  </div>
+
+  <div class="info-popup-overlay" id="fullWarningPopup">
+      <div class="info-popup-content">
+          <div class="info-popup-icon"><i class="fas fa-exclamation-circle"></i></div>
+          <div class="info-popup-title">Tempat masih tersedia untuk walk in</div>
+          <div class="info-popup-text">
+              Tempat Masih Tersedia! Namun Kuota Reservasi untuk tanggal ini sudah penuh. Anda bisa langsung menuju resto untuk memilih menu langsung di ruang prasmanan. Tim kami akan membantu memilihkan tempat terbaik.
+          </div>
+          <button class="info-popup-btn" onclick="continueToDetail()">Keluar & Lihat Detail</button>
+      </div>
+  </div>
+
+  <div class="img-modal-overlay" id="imgModal">
+      <span class="close-img-modal" onclick="closeImgModal()">&times;</span>
+      <img class="img-modal-content" id="imgTarget">
+      <div class="img-caption" id="imgCaption"></div>
+      <button class="btn-exit-fullscreen" onclick="closeImgModal()">
+          <i class="fas fa-times-circle"></i> Tutup / Exit
+      </button>
+  </div>
+
+  <div class="admin-overlay" id="adminOverlay">
+      <div class="admin-modal" id="adminModal">
+          <h3 style="margin-top:0; text-align:center; color:var(--primary-dark); margin-bottom:20px;"><i class="fas fa-shield-alt"></i> Kontrol Manual</h3>
+          <div id="loginForm">
+              <input type="email" id="adminEmail" class="form-input" placeholder="Email Admin">
+              <input type="password" id="adminPass" class="form-input" placeholder="Password">
+              <button class="btn-block" style="background:var(--primary); color:white;" id="btnLoginAction">Masuk</button>
+              <button class="btn-block" onclick="closeAdmin()" style="background:#f0f0f0; color:#666;">Batal</button>
+          </div>
+          <div id="adminControls" style="display:none;">
+              <p style="font-size:0.85rem; color:#666; text-align:center; margin-bottom:15px; line-height:1.5;">Tandai tanggal ini sebagai "Reservasi Penuh".</p>
+              <input type="date" id="dateSelector" class="form-input">
+              <div style="display:flex; gap:10px; margin-bottom:20px;">
+                  <button class="btn-block" id="markFullBtn" style="background:var(--danger); color:white; flex:1;"><i class="fas fa-ban"></i> SET PENUH</button>
+                  <button class="btn-block" id="markAvailableBtn" style="background:var(--secondary); color:white; flex:1;"><i class="fas fa-check"></i> SET BUKA</button>
+              </div>
+              <button class="btn-block" onclick="firebase.auth().signOut()" style="background:#f1f2f6; color:#555; margin-top:15px;">Logout</button>
+          </div>
+      </div>
+  </div>
+
+  <script>
     const firebaseConfig = {
-      // !!! PENTING: SALIN KONFIGURASI FIREBASE ANDA DI SINI !!!
-      apiKey: "AIzaSyA_...",
+      apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
       authDomain: "reservasi-dolan-sawah.firebaseapp.com",
       projectId: "reservasi-dolan-sawah",
       storageBucket: "reservasi-dolan-sawah.appspot.com",
@@ -174,231 +872,276 @@
     
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const auth = firebase.auth();
 
-    let allLocations = {};
-    let allMenus = {}; // <-- BARU: Untuk menyimpan data master menu
-    let selectedDate = null;
-    let selectedLocation = null;
-    let selectedTime = null;
+    let locationImages = {};
+    const defaultImage = "https://via.placeholder.com/300x200?text=Lokasi";
+    const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let allReservations = {}; 
+    let locationsConfig = {};
+    let dateStatus = {};
+    let unsubscribeRes = null;
+    let unsubscribeStatus = null;
+    let pendingDetailData = null;
 
-    const dateInput = document.getElementById('reservation-date');
-    const step2 = document.getElementById('step-2');
-    const step3 = document.getElementById('step-3');
-    const step4 = document.getElementById('step-4');
-    const step5 = document.getElementById('step-5');
-    const availabilityLoader = document.getElementById('availability-loader');
-    const availabilityContainer = document.getElementById('availability-container');
-
-    window.onload = function() {
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.setAttribute('min', today);
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadLocations(); 
+        setupRealtimeListeners();
+        setupAdminLogic();
         
-        fetchLocations();
-        fetchMenus(); // <-- BARU: Panggil fungsi untuk mengambil data menu
+        document.getElementById('prevMonth').addEventListener('click', () => { currentMonth--; if(currentMonth < 0) { currentMonth=11; currentYear--; } setupRealtimeListeners(); });
+        document.getElementById('nextMonth').addEventListener('click', () => { currentMonth++; if(currentMonth > 11) { currentMonth=0; currentYear++; } setupRealtimeListeners(); });
+    });
 
-        dateInput.addEventListener('change', handleDateSelection);
-    };
-
-    async function fetchLocations() {
+    async function loadLocations() {
         try {
-            const snapshot = await db.collection('locations').get();
-            snapshot.forEach(doc => {
-                allLocations[doc.id] = { id: doc.id, ...doc.data() };
+            let snap = await db.collection("locations").get();
+            if (snap.empty) { snap = await db.collection("Locations").get(); }
+            locationsConfig = {};
+            locationImages = {};
+            snap.forEach(doc => {
+                const data = doc.data();
+                const name = data.name;
+                locationsConfig[name] = data.capacity;
+                locationImages[name] = data.imageUrl || defaultImage;
             });
-        } catch (error) {
-            console.error("Error memuat lokasi: ", error);
-            availabilityContainer.innerHTML = "<p style='color:red;'>Gagal memuat data tempat.</p>";
-        }
+        } catch(e) { console.log("Gagal load lokasi/gambar", e); }
     }
 
-    // <-- FUNGSI BARU: Untuk mengambil data menu dari Firestore -->
-    async function fetchMenus() {
-        try {
-            const snapshot = await db.collection('menus').get();
-            snapshot.forEach(doc => {
-                allMenus[doc.id] = { id: doc.id, ...doc.data() };
+    function setupRealtimeListeners() {
+        if(unsubscribeRes) unsubscribeRes();
+        if(unsubscribeStatus) unsubscribeStatus();
+        const mStr = String(currentMonth + 1).padStart(2, '0');
+        const start = `${currentYear}-${mStr}-01`;
+        const end = `${currentYear}-${mStr}-31`;
+        document.getElementById('calendar').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#999;">Memuat Data...</div>';
+        document.getElementById('monthYear').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+        unsubscribeRes = db.collection("reservations")
+            .where('date', '>=', start).where('date', '<=', end)
+            .onSnapshot(snapshot => {
+                allReservations = {};
+                snapshot.forEach(doc => {
+                    const r = doc.data();
+                    if(!allReservations[r.date]) allReservations[r.date] = [];
+                    allReservations[r.date].push(r);
+                });
+                renderCalendar();
             });
-        } catch (error) {
-            console.error("Error memuat menu: ", error);
-            // Anda bisa tambahkan pesan error di bagian menu jika perlu
-        }
+        unsubscribeStatus = db.collection("date_status")
+             .where('date', '>=', start).where('date', '<=', end)
+             .onSnapshot(snapshot => {
+                 dateStatus = {};
+                 snapshot.forEach(doc => { dateStatus[doc.data().date] = doc.data().isFull; });
+                 renderCalendar();
+             });
     }
 
-    async function handleDateSelection() {
-        selectedDate = dateInput.value;
-        if (!selectedDate) return;
-
-        resetSelection();
-        step2.classList.remove('hidden');
-        availabilityLoader.classList.remove('hidden');
-
-        try {
-            const reservationsOnDate = [];
-            const snapshot = await db.collection('reservations').where('date', '==', selectedDate).get();
-            snapshot.forEach(doc => {
-                reservationsOnDate.push(doc.data());
-            });
-            
-            const timeSlots = [];
-            for (let hour = 10; hour <= 21; hour++) {
-                timeSlots.push(`${String(hour).padStart(2, '0')}:00`);
+    function renderCalendar() {
+        const cal = document.getElementById('calendar');
+        cal.innerHTML = '';
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const today = new Date();
+        for(let i=0; i<firstDay; i++) cal.innerHTML += `<div></div>`;
+        for(let i=1; i<=daysInMonth; i++) {
+            const el = document.createElement('div');
+            el.className = 'day-cell';
+            const mStr = String(currentMonth + 1).padStart(2, '0');
+            const dStr = String(i).padStart(2, '0');
+            const dateKey = `${currentYear}-${mStr}-${dStr}`;
+            const list = allReservations[dateKey] || [];
+            const count = list.length;
+            const total = list.reduce((s,r) => s + (parseInt(r.jumlah)||0), 0);
+            const isManualFull = dateStatus[dateKey] === true;
+            if(isManualFull) {
+                el.classList.add('is-full');
+                el.innerHTML = `<span class="day-num">${i}</span><div class="res-indicator"><div class="res-count">${total > 0 ? total : 'FULL'}</div></div>`;
+            } else if(i === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+                el.classList.add('today');
+                el.innerHTML = `<span class="day-num">${i}</span>${count > 0 ? `<div class="res-indicator"><div class="res-count">${total}</div></div>` : ''}`;
+            } else if(count > 0) {
+                el.classList.add('has-res');
+                el.innerHTML = `<span class="day-num">${i}</span><div class="res-indicator"><div class="res-count">${total}</div></div>`;
+            } else {
+                el.innerHTML = `<span class="day-num">${i}</span>`;
             }
-            
-            renderAvailability(reservationsOnDate, timeSlots);
-        } catch (error) {
-            console.error("Error mengecek ketersediaan: ", error);
-            availabilityContainer.innerHTML = "<p style='color:red;'>Terjadi kesalahan saat memeriksa ketersediaan.</p>";
-        } finally {
-            availabilityLoader.classList.add('hidden');
+            el.onclick = () => {
+                if(isManualFull) { showFullWarning(i, list); } else { openDetail(i, list, false); }
+            };
+            cal.appendChild(el);
         }
     }
 
-    function renderAvailability(reservations, timeSlots) {
-        availabilityContainer.innerHTML = '';
-        if (Object.keys(allLocations).length === 0) {
-            availabilityContainer.innerHTML = "<p>Data tempat tidak ditemukan.</p>"; return;
-        }
-
-        for (const locId in allLocations) {
-            const location = allLocations[locId];
-            let locationHTML = `<div class="location"><h3>${location.name} (Kapasitas: ${location.capacity} org)</h3><div class="time-slots">`;
-
-            timeSlots.forEach(time => {
-                const isBooked = reservations.some(res => res.tempat === location.name && res.jam === time);
-                locationHTML += isBooked 
-                    ? `<div class="time-slot disabled">${time}</div>`
-                    : `<div class="time-slot" onclick="selectTimeSlot(this, '${location.name}', '${time}')">${time}</div>`;
-            });
-
-            locationHTML += `</div></div>`;
-            availabilityContainer.innerHTML += locationHTML;
-        }
+    function showFullWarning(day, list) {
+        pendingDetailData = { day: day, list: list };
+        document.getElementById('fullWarningPopup').style.display = 'flex';
     }
 
-    function selectTimeSlot(element, locationName, time) {
-        document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
-        element.classList.add('selected');
+    function continueToDetail() {
+        document.getElementById('fullWarningPopup').style.display = 'none';
+        if(pendingDetailData) { openDetail(pendingDetailData.day, pendingDetailData.list, true); }
+    }
 
-        selectedLocation = locationName;
-        selectedTime = time;
+    function openDetail(day, list, isFullMode = false) {
+        const detailSheet = document.getElementById('detailSheet');
+        const overlay = document.getElementById('detailOverlay');
+        if (isFullMode) { detailSheet.classList.add('red-mode'); } else { detailSheet.classList.remove('red-mode'); }
+        overlay.classList.add('active');
+        document.getElementById('sheetDate').textContent = `${day} ${monthNames[currentMonth]} ${currentYear}`;
+        const totalGuests = list.reduce((s,r) => s + (parseInt(r.jumlah)||0), 0);
+        document.getElementById('sheetStats').textContent = `${list.length} Grup / ${totalGuests} Tamu`;
+        const grid = document.getElementById('locGrid');
+        grid.innerHTML = '';
+        const grouped = {};
+        list.forEach(r => {
+            let l = r.tempat || 'Lainnya';
+            if (l.toLowerCase() === 'meeting room') l = 'Meeting Room';
+            if(!grouped[l]) grouped[l] = [];
+            grouped[l].push(r);
+        });
+        const allKnownLocations = new Set([...Object.keys(locationImages), ...Object.keys(locationsConfig)]);
+        const allLocations = Array.from(allKnownLocations).sort();
+        allLocations.forEach(loc => {
+            const items = grouped[loc] || [];
+            const img = locationImages[loc] || defaultImage;
+            const cap = locationsConfig[loc] || 100;
+            const curr = items.reduce((s,r)=>s+(parseInt(r.jumlah)||0),0);
+            let percent = cap > 0 ? (curr / cap) * 100 : 0;
+            if(percent > 100) percent = 100;
+            let barColor = 'bar-green';
+            if (percent >= 90) barColor = 'bar-red';
+            else if (percent >= 50) barColor = 'bar-yellow';
+            let htmlItems = '';
+            if(items.length > 0) {
+                items.sort((a,b)=> (a.jam||'').localeCompare(b.jam||'')).forEach(r => {
+                    let menuText = '';
+                    if(r.menus && Array.isArray(r.menus) && r.menus.length > 0) {
+                        menuText = `<div class="menu-detail-text">${r.menus.map(m => m.quantity + 'x ' + m.name).join('<br>')}</div>`;
+                    } else if (r.menu) {
+                        menuText = `<div class="menu-detail-text">${r.menu}</div>`;
+                    }
+                    const safePhone = r.nomorHp && r.nomorHp.length > 4 ? r.nomorHp.slice(0, -3) + 'xxx' : (r.nomorHp || '');
+                    htmlItems += `
+                        <div class="res-item">
+                            <div class="res-info">
+                                <strong>${r.nama}</strong>
+                                <small><i class="far fa-clock"></i> ${r.jam} WIB ${safePhone ? ' • <i class="fab fa-whatsapp"></i> ' + safePhone : ''}</small>
+                                ${menuText}
+                                ${r.tambahan ? `<div style="color:var(--highlight); font-size:0.75rem; margin-top:3px; font-style:italic;">Note: ${r.tambahan}</div>` : ''}
+                            </div>
+                            <div class="res-qty">${r.jumlah}</div>
+                        </div>`;
+                });
+            } else {
+                htmlItems = `<div style="padding:20px; text-align:center; color:#aaa; font-size:0.85rem;">Belum ada reservasi. Tempat ini kosong.</div>`;
+            }
+            const btnText = items.length > 0 ? `Lihat ${items.length} Reservasi` : 'Masih Kosong';
+            const btnClass = items.length > 0 ? '' : 'disabled';
+            const onclickAttr = items.length > 0 ? 'onclick="toggleAccordion(this)"' : '';
+            const iconHtml = items.length > 0 ? '<i class="fas fa-chevron-down"></i>' : '<i class="fas fa-check-circle" style="color:var(--success);"></i>';
+            const card = document.createElement('div');
+            card.className = 'loc-card';
+            const safeLocName = loc.replace(/'/g, "\\'");
+            card.innerHTML = `
+                <div class="loc-header" style="background-image:url('${img}')" onclick="viewPhoto('${img}', '${safeLocName}')">
+                    <button class="btn-view-photo"><i class="fas fa-eye"></i></button>
+                    <div class="loc-title">
+                        <span class="loc-name">${loc}</span>
+                        <span class="loc-badge">${curr} / ${cap} Org</span>
+                    </div>
+                </div>
+                <div class="capacity-bar-container">
+                    <div class="capacity-bar-fill ${barColor}" style="width: ${percent}%;"></div>
+                </div>
+                <button class="btn-toggle-loc ${btnClass}" ${onclickAttr}>
+                    <span>${btnText}</span>${iconHtml}
+                </button>
+                <div class="loc-body">${htmlItems}</div>`;
+            grid.appendChild(card);
+        });
+    }
 
-        step3.classList.remove('hidden');
-        step4.classList.remove('hidden'); // <-- BARU: Tampilkan langkah pilih menu
-        step5.classList.remove('hidden'); // <-- BARU: Tampilkan tombol submit
+    function viewPhoto(url, caption) {
+        const modal = document.getElementById('imgModal');
+        document.getElementById('imgTarget').src = url;
+        document.getElementById('imgCaption').textContent = caption;
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+    }
 
-        const locationData = Object.values(allLocations).find(loc => loc.name === locationName);
-        if(locationData) {
-            document.getElementById('customer-pax').setAttribute('max', locationData.capacity);
-        }
+    function closeImgModal() {
+        const modal = document.getElementById('imgModal');
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 300);
+    }
 
-        // <-- BARU: Tambahkan satu baris menu secara otomatis
-        if (document.getElementById('menu-container').childElementCount === 0) {
-            addMenuSelectionRow();
+    document.getElementById('imgModal').addEventListener('click', (e) => { if(e.target.id === 'imgModal') closeImgModal(); });
+
+    window.toggleAccordion = function(btn) {
+        const body = btn.nextElementSibling;
+        const icon = btn.querySelector('.fa-chevron-down, .fa-chevron-up');
+        if(body.style.display === 'block') {
+            body.style.display = 'none';
+            if(icon) icon.className = 'fas fa-chevron-down';
+            btn.style.background = '';
+        } else {
+            body.style.display = 'block';
+            if(icon) icon.className = 'fas fa-chevron-up';
+            btn.style.background = '#f9f9f9';
         }
     }
     
-    function resetSelection() {
-        availabilityContainer.innerHTML = '';
-        step3.classList.add('hidden');
-        step4.classList.add('hidden'); // <-- BARU
-        step5.classList.add('hidden'); // <-- BARU
-        document.getElementById('menu-container').innerHTML = ''; // <-- BARU
-        selectedLocation = null;
-        selectedTime = null;
-    }
+    function closeDetail() { document.getElementById('detailOverlay').classList.remove('active'); }
+    
+    function setupAdminLogic() {
+        const overlay = document.getElementById('adminOverlay');
+        const modal = document.getElementById('adminModal');
+        const open = () => { overlay.classList.add('show'); modal.classList.add('show'); };
+        window.closeAdmin = () => { overlay.classList.remove('show'); modal.classList.remove('show'); };
+        overlay.onclick = (e) => { if(e.target === overlay) window.closeAdmin(); };
 
-    // <-- FUNGSI BARU: Untuk menambahkan baris pilihan menu secara dinamis -->
-    function addMenuSelectionRow() {
-        const container = document.getElementById('menu-container');
-        const newRow = document.createElement('div');
-        newRow.className = 'menu-selection-row';
-        
-        let menuOptionsHTML = '<option value="">Pilih Paket...</option>';
-        for (const menuId in allMenus) {
-            menuOptionsHTML += `<option value="${menuId}">${menuId}</option>`;
-        }
-        
-        newRow.innerHTML = `
-            <select class="menu-select">${menuOptionsHTML}</select>
-            <input type="number" class="quantity-input" value="1" min="1" placeholder="Jumlah">
-            <button type="button" class="danger remove-btn" onclick="this.parentElement.remove()">X</button>
-        `;
-        container.appendChild(newRow);
-    }
-
-    async function submitReservation() {
-        const name = document.getElementById('customer-name').value.trim();
-        const phone = document.getElementById('customer-phone').value.trim();
-        const pax = parseInt(document.getElementById('customer-pax').value);
-
-        if (!selectedDate || !selectedLocation || !selectedTime || !name || !phone || !pax) {
-            alert("Harap lengkapi semua data dari Langkah 1 hingga 3."); return;
-        }
-        
-        const locationData = Object.values(allLocations).find(loc => loc.name === selectedLocation);
-        if (pax > locationData.capacity) {
-            alert(`Jumlah orang (${pax}) melebihi kapasitas tempat (${locationData.capacity}).`); return;
-        }
-
-        // <-- VALIDASI BARU: Kumpulkan dan validasi data menu -->
-        const selectedMenus = [];
-        const menuRows = document.querySelectorAll('.menu-selection-row');
-        let menuIsValid = true;
-        
-        if (menuRows.length === 0) {
-            document.getElementById('menu-error').textContent = 'Anda harus memilih minimal satu paket menu.';
-            menuIsValid = false;
-        } else {
-             document.getElementById('menu-error').textContent = '';
-        }
-
-        menuRows.forEach(row => {
-            const menuName = row.querySelector('.menu-select').value;
-            const quantity = parseInt(row.querySelector('.quantity-input').value);
-            if (!menuName || !quantity || quantity < 1) {
-                menuIsValid = false;
+        // Ketuk header 5x untuk buka admin
+        let tapCount = 0;
+        let tapTimer = null;
+        const headerEl = document.querySelector('header');
+        headerEl.addEventListener('click', () => {
+            tapCount++;
+            // Visual flash feedback tiap ketukan
+            headerEl.classList.remove('tap-flash');
+            void headerEl.offsetWidth; // reflow to restart animation
+            headerEl.classList.add('tap-flash');
+            clearTimeout(tapTimer);
+            if (tapCount >= 5) {
+                tapCount = 0;
+                open();
             } else {
-                selectedMenus.push({ name: menuName, quantity: quantity });
+                tapTimer = setTimeout(() => { tapCount = 0; }, 1800);
             }
         });
-
-        if (!menuIsValid) {
-            document.getElementById('menu-error').textContent = 'Pastikan semua paket menu telah dipilih dan jumlahnya valid.';
-            return;
-        }
-        // <-- Akhir dari validasi menu -->
-
-
-        const submitButton = document.getElementById('submit-reservation-btn');
-        submitButton.disabled = true;
-        submitButton.textContent = "Memproses...";
-
-        try {
-            const newReservation = {
-                nama: name,
-                nomorHp: phone,
-                jumlah: pax,
-                date: selectedDate,
-                jam: selectedTime,
-                tempat: selectedLocation,
-                status: "pending_payment",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                menus: selectedMenus // <-- BARU: Simpan data menu yang dipilih
-            };
-
-            await db.collection('reservations').add(newReservation);
-
-            document.getElementById('reservation-form-section').classList.add('hidden');
-            document.getElementById('confirmation-section').classList.remove('hidden');
-
-        } catch (error) {
-            console.error("Gagal menyimpan reservasi: ", error);
-            alert("Terjadi kesalahan. Gagal menyimpan reservasi Anda. Silakan coba lagi.");
-            submitButton.disabled = false;
-            submitButton.textContent = "Reservasi Sekarang";
-        }
+        auth.onAuthStateChanged(user => {
+            document.getElementById('loginForm').style.display = user ? 'none' : 'block';
+            document.getElementById('adminControls').style.display = user ? 'block' : 'none';
+        });
+        document.getElementById('btnLoginAction').onclick = () => {
+            const e = document.getElementById('adminEmail').value;
+            const p = document.getElementById('adminPass').value;
+            auth.signInWithEmailAndPassword(e, p).catch(err => alert("Login Gagal: " + err.message));
+        };
+        const updateStatus = async (isFull) => {
+            const d = document.getElementById('dateSelector').value;
+            if(!d) return alert("Pilih tanggal dulu");
+            try {
+                await db.collection("date_status").doc(d).set({ date: d, isFull: isFull }, { merge: true });
+                alert("Status Berhasil Diupdate!");
+            } catch(e) { alert("Error: " + e.message); }
+        };
+        document.getElementById('markFullBtn').onclick = () => updateStatus(true);
+        document.getElementById('markAvailableBtn').onclick = () => updateStatus(false);
     }
-</script>
+  </script>
 
 </body>
 </html>
