@@ -4,321 +4,193 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Viewer Reservasi Dolan Sawah (Photo View)</title>
+  <title>Viewer Reservasi Dolan Sawah</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
   <style>
-/* ============================================
-   iOS 26 LIQUID GLASS — True Parallax BG
-   ============================================ */
-
 :root {
   --primary: #2a9d8f;
   --primary-dark: #1a3a35;
   --secondary: #e9c46a;
   --highlight: #d35400;
   --danger: #c0392b;
-  --danger-light: #fadbd8;
   --success: #27ae60;
-  --warning: #f39c12;
-  --glass-bg: rgba(255,255,255,0.18);
-  --glass-bg-strong: rgba(255,255,255,0.28);
-  --glass-border: rgba(255,255,255,0.52);
-  --glass-border-inner: rgba(255,255,255,0.72);
-  --glass-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  --cell-bg: rgba(255,255,255,0.28);
+  --cell-bg-res: rgba(42,180,155,0.22);
+  --cell-border: rgba(255,255,255,0.55);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.12);
   --radius-xl: 28px;
-  --radius-lg: 20px;
+  --radius-lg: 18px;
   --radius-md: 14px;
   --text-main: #1a2e2a;
-  --text-muted: #4a6660;
 }
 
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ─────────────────────────────────────────
-   BACKGROUND LAYER — fixed pseudo-element
-   Ini trick agar iOS Safari juga fixed.
-   ───────────────────────────────────────── */
-html {
-  height: 100%;
-}
+html, body { height: 100%; }
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   margin: 0;
   color: var(--text-main);
   overflow-x: hidden;
-  padding-bottom: 100px;
-  min-height: 100%;
-  background: transparent;
-  position: relative;
-}
-
-/* Layer 1 — foto background, benar-benar fixed */
-#bg-layer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -3;
+  padding-bottom: 80px;
+  background-color: #2d6a5f;
   background-image: url('https://firebasestorage.googleapis.com/v0/b/slidemonitor.firebasestorage.app/o/uploads_v4%2Fslide_1776779700036_IMG_9957.jpeg?alt=media&token=1a798786-0348-4148-86ed-adaa81885177');
   background-size: cover;
   background-position: center top;
-  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
-/* Layer 2 — warm golden overlay, fixed */
-#bg-overlay {
+body::before {
+  content: '';
   position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  z-index: -2;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 200, 100, 0.14) 0%,
-    rgba(240, 170, 60,  0.08) 50%,
-    rgba(180, 130, 40,  0.05) 100%
-  );
+  inset: 0;
+  background: radial-gradient(ellipse 120% 50% at 50% -5%, rgba(255,195,75,0.30) 0%, transparent 65%),
+              linear-gradient(180deg, rgba(255,195,90,0.10) 0%, transparent 100%);
   pointer-events: none;
+  z-index: 0;
 }
 
-/* Layer 3 — sun bloom radial, fixed + animated */
-#bg-sun {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  z-index: -1;
-  background: radial-gradient(
-    ellipse 110% 55% at 50% -5%,
-    rgba(255, 200, 80, 0.38) 0%,
-    rgba(255, 170, 60, 0.12) 45%,
-    transparent 70%
-  );
-  pointer-events: none;
-  animation: sunShimmer 7s ease-in-out infinite alternate;
-}
-
-@keyframes sunShimmer {
-  0%   { opacity: 0.78; transform: scale(1); }
-  100% { opacity: 1;    transform: scale(1.04) translateY(4px); }
-}
-
-/* ─────────────────────────────────────────
-   HEADER — liquid glass orange
-   ───────────────────────────────────────── */
+/* ── HEADER ── */
 header {
   position: relative;
   z-index: 100;
-  /* Glassmorphism murni: warna + blur + batas */
-  background: rgba(210, 95, 25, 0.42);
-  backdrop-filter: blur(48px) saturate(200%) brightness(1.08);
-  -webkit-backdrop-filter: blur(48px) saturate(200%) brightness(1.08);
-  border-bottom: 1px solid rgba(255, 195, 140, 0.38);
-  border-bottom-left-radius: 32px;
-  border-bottom-right-radius: 32px;
-  /* Inner top highlight — simulasi specular iOS */
-  box-shadow:
-    0 1px 0 rgba(255, 230, 190, 0.5) inset,
-    0 -1px 0 rgba(255,255,255,0.12) inset,
-    0 14px 48px rgba(160, 65, 0, 0.22);
-  padding: 22px 24px 32px;
+  background: rgba(205,90,20,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,185,120,0.32);
+  border-bottom-left-radius: 28px;
+  border-bottom-right-radius: 28px;
+  box-shadow: 0 12px 32px rgba(140,55,0,0.20);
+  padding: 20px 22px 30px;
 }
 
 .header-branding h2 {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   font-weight: 700;
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #ffffff;
-  text-shadow: 0 1px 5px rgba(0,0,0,0.28);
-  letter-spacing: -0.3px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.25);
 }
 
 .header-branding small {
-  opacity: 0.88;
-  font-size: 0.82rem;
-  margin-top: 5px;
-  font-weight: 400;
-  color: rgba(255,255,255,0.92);
+  font-size: 0.78rem;
+  margin-top: 4px;
+  color: rgba(255,255,255,0.88);
   display: block;
-  letter-spacing: 0.2px;
 }
 
-/* ─────────────────────────────────────────
-   MAIN CONTAINER
-   ───────────────────────────────────────── */
+/* ── MAIN CONTAINER ── */
 .main-container {
   max-width: 800px;
-  margin: -28px auto 0;
-  padding: 0 16px;
+  margin: -24px auto 0;
+  padding: 0 14px;
   position: relative;
   z-index: 10;
 }
 
-/* ─────────────────────────────────────────
-   INFO CARD — glass panel
-   ───────────────────────────────────────── */
-@keyframes gentle-wobble {
-  0%   { transform: translateX(0); }
-  15%  { transform: translateX(-2px) rotate(-1.4deg); }
-  30%  { transform: translateX(2px)  rotate(1.4deg); }
-  50%  { transform: translateX(-1.5px) rotate(-0.8deg); }
-  70%  { transform: translateX(1px)  rotate(0.5deg); }
-  100% { transform: translateX(0); }
-}
-
+/* ── INFO CARD ── */
 .info-card {
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(32px) saturate(180%) brightness(1.05);
-  -webkit-backdrop-filter: blur(32px) saturate(180%) brightness(1.05);
-  border: 1px solid var(--glass-border);
-  border-top: 1px solid var(--glass-border-inner);
+  background: rgba(255,255,255,0.88);
+  border: 1px solid rgba(255,255,255,0.72);
   border-radius: var(--radius-xl);
-  padding: 16px 20px;
-  margin-bottom: 18px;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.65) inset,
-    var(--glass-shadow);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-md);
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  animation: gentle-wobble 4.5s ease-in-out infinite;
-  transform-origin: center center;
+  gap: 12px;
 }
 
 .info-icon {
-  background: rgba(210, 105, 25, 0.20);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  width: 42px; height: 42px;
+  background: rgba(210,105,25,0.14);
+  width: 40px; height: 40px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   color: #a04010;
-  font-size: 1.2rem;
-  border: 1px solid rgba(255,180,100,0.5);
-  box-shadow: 0 2px 8px rgba(200,100,30,0.16);
+  font-size: 1.1rem;
+  border: 1px solid rgba(210,105,25,0.22);
 }
 
-.info-content h4 {
-  margin: 0 0 4px 0;
-  font-size: 0.95rem;
-  color: var(--primary-dark);
-  font-weight: 700;
-}
+.info-content h4 { margin: 0 0 3px; font-size: 0.92rem; color: var(--primary-dark); font-weight: 700; }
+.info-content p  { margin: 0; font-size: 0.78rem; color: #3a5550; line-height: 1.5; }
 
-.info-content p {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #3a5550;
-  line-height: 1.55;
-}
-
-/* ─────────────────────────────────────────
-   CALENDAR WRAPPER — glass panel utama
-   ───────────────────────────────────────── */
+/* ── CALENDAR WRAPPER ── */
 .calendar-wrapper {
-  background: var(--glass-bg);
-  backdrop-filter: blur(40px) saturate(180%) brightness(1.04);
-  -webkit-backdrop-filter: blur(40px) saturate(180%) brightness(1.04);
-  border: 1px solid var(--glass-border);
-  border-top: 1px solid var(--glass-border-inner);
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.50);
   border-radius: var(--radius-xl);
-  padding: 22px 18px 18px;
-  box-shadow:
-    0 1.5px 0 rgba(255,255,255,0.6) inset,
-    var(--glass-shadow);
+  padding: 20px 16px 16px;
+  box-shadow: var(--shadow-md);
 }
 
 .calendar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .month-year {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #0e3028;
-  text-shadow: 0 1px 4px rgba(255,255,255,0.45);
-  letter-spacing: -0.5px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 5px rgba(0,0,0,0.28);
 }
 
 .calendar-nav { display: flex; gap: 8px; }
 
 .calendar-nav button {
-  background: rgba(255,255,255,0.30);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  border: 1px solid rgba(255,255,255,0.58);
-  width: 38px; height: 38px;
+  background: rgba(255,255,255,0.26);
+  border: 1px solid rgba(255,255,255,0.52);
+  width: 36px; height: 36px;
   border-radius: 50%;
   cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-  color: #0e3028;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.72) inset,
-    0 4px 14px rgba(0,0,0,0.10);
-  font-size: 0.85rem;
+  color: #fff;
+  font-size: 0.8rem;
+  transition: transform 0.15s ease, background 0.15s ease;
 }
-.calendar-nav button:hover {
-  transform: scale(1.12);
-  background: rgba(255,255,255,0.52);
-}
-.calendar-nav button:active { transform: scale(0.92); }
+.calendar-nav button:active { transform: scale(0.88); }
 
-/* ── WEEKDAYS ── */
 .calendar-grid-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .weekday {
   text-align: center;
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 700;
-  color: rgba(20, 70, 60, 0.72);
+  color: rgba(255,255,255,0.75);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(255,255,255,0.5);
 }
 
-/* ─────────────────────────────────────────
-   CALENDAR GRID & DAY CELLS
-   Kunci iOS 26: setiap cell punya backdrop-filter
-   sendiri → terlihat "memblur" background statis
-   ───────────────────────────────────────── */
+/* ── CALENDAR CELLS ── */
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
+  gap: 4px;
 }
 
 .day-cell {
   aspect-ratio: 1/1;
-  /* Glass transparan — background statis "tembus" */
-  background: rgba(255,255,255,0.22);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-  border: 1px solid rgba(255,255,255,0.52);
-  border-top: 1px solid rgba(255,255,255,0.72);
+  background: var(--cell-bg);
+  border: 1px solid var(--cell-border);
   border-radius: var(--radius-md);
   position: relative;
   cursor: pointer;
@@ -326,532 +198,496 @@ header {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 6px;
+  padding-top: 5px;
   overflow: hidden;
-  transition:
-    transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.22s ease,
-    background 0.22s ease,
-    backdrop-filter 0.22s ease;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.68) inset,
-    0 3px 10px rgba(0,0,0,0.07);
+  transition: transform 0.15s ease;
 }
-
-/* Specular highlight — garis putih tipis di atas */
-.day-cell::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 12%; right: 12%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.92), transparent);
-  border-radius: 1px;
-  pointer-events: none;
-}
-
-.day-cell:hover {
-  transform: translateY(-3px) scale(1.06);
-  background: rgba(255,255,255,0.38);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.8) inset,
-    0 10px 24px rgba(0,0,0,0.14);
-}
-.day-cell:active { transform: scale(0.92); }
+.day-cell:active { transform: scale(0.90); }
 
 .day-num {
   font-weight: 700;
-  font-size: 0.95rem;
-  z-index: 2;
+  font-size: 0.90rem;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.28);
   line-height: 1;
-  color: #0e3028;
-  text-shadow: 0 1px 2px rgba(255,255,255,0.55);
+  z-index: 1;
 }
 
-/* ── HAS RESERVATION ── */
-.day-cell.has-res {
-  background: rgba(42, 180, 155, 0.20);
-  backdrop-filter: blur(16px) saturate(170%);
-  -webkit-backdrop-filter: blur(16px) saturate(170%);
-  border: 1px solid rgba(42, 200, 170, 0.48);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.68) inset,
-    0 4px 14px rgba(42,157,143,0.16);
-}
-.day-cell.has-res .day-num { color: #0d3d30; }
+.day-cell.has-res { background: var(--cell-bg-res); border-color: rgba(42,200,170,0.45); }
 
-/* ── IS FULL ── */
-.day-cell.is-full {
-  background: rgba(215, 55, 55, 0.36) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border: 1px solid rgba(255, 100, 100, 0.52) !important;
-  box-shadow:
-    0 1px 0 rgba(255,200,200,0.52) inset,
-    0 5px 18px rgba(192, 57, 43, 0.26) !important;
-}
-.day-cell.is-full .day-num {
-  color: #fff !important;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.35) !important;
-}
-.day-cell.is-full .res-count {
-  background: rgba(255,255,255,0.88) !important;
-  color: var(--danger) !important;
-  font-weight: 800 !important;
-}
-.day-cell.is-full::after { display: none; }
+.day-cell.is-full { background: rgba(200,48,42,0.68) !important; border-color: rgba(255,100,100,0.52) !important; }
+.day-cell.is-full .day-num { color: #fff !important; }
+.day-cell.is-full .res-count { background: rgba(255,255,255,0.92) !important; color: var(--danger) !important; font-weight: 700 !important; }
 
-/* ── TODAY — golden glow ── */
-.day-cell.today {
-  background: linear-gradient(145deg, rgba(255,215,80,0.85), rgba(255,185,40,0.85)) !important;
-  backdrop-filter: blur(18px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(180%) !important;
-  border: 1.5px solid rgba(255, 205, 65, 0.90) !important;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.72) inset,
-    0 0 20px rgba(255, 200, 0, 0.52),
-    0 6px 18px rgba(200, 130, 0, 0.22) !important;
-}
-.day-cell.today .day-num {
-  color: #5a3800 !important;
-  font-weight: 800 !important;
-  text-shadow: 0 1px 2px rgba(255,255,255,0.4) !important;
-}
-.day-cell.today .res-count {
-  background: rgba(255,255,255,0.92) !important;
-  color: #c47800 !important;
-  border: 1px solid rgba(200,150,0,0.3);
-}
+.day-cell.today { background: rgba(255,210,60,0.90) !important; border: 1.5px solid rgba(255,198,45,0.92) !important; box-shadow: 0 0 12px rgba(255,195,0,0.40) !important; }
+.day-cell.today .day-num { color: #5a3800 !important; font-weight: 700 !important; }
+.day-cell.today .res-count { background: rgba(255,255,255,0.94) !important; color: #c47800 !important; }
 
-/* ── RES INDICATOR ── */
-.res-indicator {
-  margin-top: auto;
-  margin-bottom: 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  width: 100%;
-}
+.res-indicator { margin-top: auto; margin-bottom: 4px; width: 100%; display: flex; justify-content: center; }
+.res-count { font-size: 0.58rem; font-weight: 700; background: rgba(255,255,255,0.82); color: #0e3028; padding: 1px 5px; border-radius: 6px; }
 
-.res-count {
-  font-size: 0.62rem;
-  color: #0e3028;
-  font-weight: 700;
-  background: rgba(255,255,255,0.76);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 2px 6px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.5);
-}
-
-/* ── LEGEND ── */
 .legend {
   display: flex;
   justify-content: center;
-  gap: 14px;
-  margin-top: 20px;
-  font-size: 0.73rem;
-  color: rgba(20, 60, 50, 0.85);
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.88);
   flex-wrap: wrap;
-  border-top: 1px solid rgba(255,255,255,0.35);
-  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.25);
+  padding-top: 12px;
   font-weight: 500;
-  text-shadow: 0 1px 2px rgba(255,255,255,0.5);
 }
+.dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; border: 1px solid rgba(255,255,255,0.45); flex-shrink: 0; }
 
-.dot {
-  width: 12px; height: 12px;
-  border-radius: 4px;
-  display: inline-block;
-  border: 1px solid rgba(255,255,255,0.5);
+/* ── SKELETON ── */
+.skeleton-day {
+  aspect-ratio: 1/1;
+  background: rgba(255,255,255,0.16);
+  border-radius: var(--radius-md);
+  animation: skelFade 1s ease-in-out infinite alternate;
 }
+@keyframes skelFade { from { opacity: 0.4; } to { opacity: 0.9; } }
 
 /* ── BOTTOM LINK ── */
-.main-container > div:last-child a {
-  background: rgba(255,255,255,0.22) !important;
-  backdrop-filter: blur(18px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(150%) !important;
-  border: 1px solid rgba(255,255,255,0.52) !important;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.68) inset,
-    0 4px 18px rgba(0,0,0,0.10) !important;
-  color: #0e3028 !important;
-  font-weight: 600 !important;
-  border-radius: 30px;
-  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.main-container > div:last-child a:hover {
-  transform: translateY(-2px);
-  background: rgba(255,255,255,0.40) !important;
+.link-website {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.88);
+  font-size: 0.88rem;
+  text-decoration: none;
+  padding: 11px 22px;
+  border-radius: 28px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.38);
 }
 
-/* ─────────────────────────────────────────
-   INFO POPUP OVERLAY
-   ───────────────────────────────────────── */
+/* ── INFO POPUP ── */
 .info-popup-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.50);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   z-index: 2500;
   display: none; align-items: center; justify-content: center;
   padding: 20px;
 }
 
 .info-popup-content {
-  background: rgba(255,255,255,0.90);
-  backdrop-filter: blur(36px) saturate(180%);
-  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  background: #fff;
   width: 100%; max-width: 400px;
   border-radius: var(--radius-xl);
-  padding: 32px 26px; text-align: center;
-  box-shadow:
-    0 20px 60px rgba(0,0,0,0.22),
-    0 1px 0 rgba(255,255,255,0.82) inset;
-  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  border: 1px solid rgba(255,255,255,0.62);
+  padding: 28px 22px;
+  text-align: center;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.20);
   border-top: 5px solid var(--danger);
+  animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
-.info-popup-icon { font-size: 3.2rem; color: var(--danger); margin-bottom: 16px; }
-.info-popup-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 10px; color: var(--text-main); }
-.info-popup-text { font-size: 0.88rem; color: #555; line-height: 1.65; margin-bottom: 26px; }
-
+.info-popup-icon { font-size: 2.8rem; color: var(--danger); margin-bottom: 12px; }
+.info-popup-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 9px; }
+.info-popup-text { font-size: 0.84rem; color: #555; line-height: 1.58; margin-bottom: 22px; }
 .info-popup-btn {
   background: var(--danger); color: white; border: none;
-  padding: 14px 30px; border-radius: 50px; font-weight: 700;
-  cursor: pointer; font-size: 0.95rem; width: 100%;
-  box-shadow: 0 6px 20px rgba(192, 57, 43, 0.35);
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding: 13px 28px; border-radius: 50px; font-weight: 700;
+  cursor: pointer; font-size: 0.90rem; width: 100%;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.info-popup-btn:active { transform: scale(0.96); }
 
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.78) translateY(20px); }
+  from { opacity: 0; transform: scale(0.82) translateY(16px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* ─────────────────────────────────────────
-   DETAIL OVERLAY — bottom sheet
-   ───────────────────────────────────────── */
+/* ── DETAIL OVERLAY ── */
 .detail-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.40);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  z-index: 1000; display: none; align-items: flex-end; justify-content: center;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.48);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
 }
-.detail-overlay.active { display: flex; animation: fadeIn 0.3s; }
+.detail-overlay.active {
+  display: flex;
+  animation: fadeIn 0.22s ease;
+}
 
 .detail-sheet {
-  background: rgba(240, 245, 242, 0.92);
-  backdrop-filter: blur(48px) saturate(200%) brightness(1.05);
-  -webkit-backdrop-filter: blur(48px) saturate(200%) brightness(1.05);
-  width: 100%; max-width: 600px; height: 90vh;
-  border-top-left-radius: 28px;
-  border-top-right-radius: 28px;
-  display: flex; flex-direction: column; overflow: hidden;
-  animation: slideUpBig 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-  box-shadow:
-    0 -10px 50px rgba(0,0,0,0.18),
-    0 -1px 0 rgba(255,255,255,0.82) inset;
-  border-top: 1px solid rgba(255,255,255,0.72);
+  background: #f0f4f2;
+  width: 100%; max-width: 600px;
+  height: 90vh;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.30s cubic-bezier(0.32, 0.72, 0, 1);
+  box-shadow: 0 -6px 36px rgba(0,0,0,0.16);
   position: relative;
 }
 
-.detail-sheet::before {
-  content: "";
-  display: block;
-  width: 36px; height: 5px;
+.sheet-handle {
+  width: 32px; height: 4px;
   background: rgba(0,0,0,0.14);
   border-radius: 3px;
-  margin: 10px auto 0;
+  margin: 9px auto 0;
   flex-shrink: 0;
 }
 
 .detail-sheet.red-mode .sheet-header { border-bottom: 2px solid var(--danger); }
-.detail-sheet.red-mode h3 { color: var(--danger) !important; }
+.detail-sheet.red-mode .sheet-date { color: var(--danger) !important; }
 
 .pulsing-badge {
-  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
   background: var(--danger); color: white;
-  padding: 10px 25px; border-radius: 30px;
-  font-weight: 700; font-size: 0.9rem;
-  box-shadow: 0 4px 20px rgba(192, 57, 43, 0.5);
-  animation: pulse-red 2s infinite;
+  padding: 8px 20px; border-radius: 28px;
+  font-weight: 700; font-size: 0.86rem;
+  box-shadow: 0 3px 14px rgba(192,57,43,0.40);
+  animation: pulseFade 2s ease-in-out infinite;
   z-index: 100; pointer-events: none;
   display: none; white-space: nowrap;
   border: 2px solid white;
 }
 .detail-sheet.red-mode .pulsing-badge { display: block; }
 
-@keyframes pulse-red {
-  0%  { transform: translateX(-50%) scale(1);    box-shadow: 0 0 0 0 rgba(192,57,43,0.7); }
-  70% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 0 15px rgba(192,57,43,0); }
-  100%{ transform: translateX(-50%) scale(1);    box-shadow: 0 0 0 0 rgba(192,57,43,0); }
-}
-
-@keyframes slideUpBig { from { transform: translateY(100%); } to { transform: translateY(0); } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulseFade { 0%,100% { opacity: 1; } 50% { opacity: 0.68; } }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
 
 .sheet-header {
-  background: rgba(255,255,255,0.72);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  padding: 12px 20px 14px;
-  display: flex; justify-content: space-between; align-items: center;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 2px 14px rgba(0,0,0,0.04);
-  z-index: 10; flex-shrink: 0;
-}
-
-.btn-sheet-back {
-  background: rgba(195, 85, 15, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: white; border: none;
-  padding: 9px 18px; border-radius: 22px;
-  font-size: 0.85rem; cursor: pointer;
-  display: flex; align-items: center; gap: 8px;
-  box-shadow: 0 4px 14px rgba(175,75,0,0.28);
-  font-weight: 600;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.btn-sheet-back:active { transform: scale(0.93); }
-
-.sheet-content {
-  flex: 1; overflow-y: auto;
-  padding: 20px 16px;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 80px;
-}
-
-#locGrid { display: flex; flex-direction: column; gap: 20px; padding-bottom: 80px; }
-
-/* ─────────────────────────────────────────
-   LOCATION CARDS
-   ───────────────────────────────────────── */
-.loc-card {
-  background: rgba(255,255,255,0.88);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.9) inset;
-  border: 1px solid rgba(255,255,255,0.82);
-  transform: translateZ(0);
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: #fff;
+  padding: 10px 16px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
   flex-shrink: 0;
 }
-.loc-card:hover { transform: translateY(-2px); }
 
-.loc-header {
-  height: 140px; min-height: 140px;
-  position: relative;
-  background-size: cover; background-position: center;
-  display: flex; align-items: flex-end;
-  cursor: pointer;
+.btn-back {
+  background: #c8500a;
+  color: white; border: none;
+  padding: 8px 16px; border-radius: 20px;
+  font-size: 0.82rem; cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.loc-title {
-  background: linear-gradient(to top, rgba(0,0,0,0.82), transparent);
-  width: 100%; padding: 14px 16px; color: white;
-  display: flex; justify-content: space-between; align-items: flex-end;
+.sheet-date { margin: 0; font-size: 0.98rem; font-weight: 700; color: var(--primary-dark); }
+.sheet-stats { font-size: 0.72rem; color: #888; }
+
+.sheet-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 16px 14px 80px;
+}
+
+#locGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ════════════════════════════════════════════
+   LOC-CARD — Layout Bullet-proof
+   Kunci: foto pakai <img> element dengan
+   wrapper div height:140px yang eksplisit,
+   bukan background-image yang bisa collapse
+   ════════════════════════════════════════════ */
+.loc-card {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid #e4ece9;
+  /* TIDAK pakai display:flex agar height foto tidak collapse */
+  overflow: hidden;
+}
+
+/* Wrapper foto — height eksplisit di px, tidak bisa collapse */
+.loc-photo-wrap {
+  display: block;       /* block, BUKAN flex */
+  position: relative;
+  width: 100%;
+  height: 140px;        /* Fix 140px — tidak bisa collapse */
+  overflow: hidden;
+  background-color: #bed0cc;
+  /* Shimmer animasi saat loading */
+  background-image: linear-gradient(90deg, #bed0cc 25%, #adc0bb 50%, #bed0cc 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.loc-photo-wrap.img-loaded {
+  background-image: none;
+  animation: none;
+  background-color: #222;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* Foto sebagai <img> — bukan background-image
+   Ini yang paling andal: img punya intrinsic height
+   dan tidak terpengaruh oleh flex container parent */
+.loc-photo-img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+.loc-photo-img.show { opacity: 1; }
+
+/* Gradient gelap di bawah foto untuk teks */
+.loc-photo-grad {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.08) 55%, transparent 100%);
   pointer-events: none;
 }
-.loc-name { font-weight: 700; font-size: 1.0rem; text-shadow: 0 2px 5px rgba(0,0,0,0.6); white-space: normal; max-width: 70%; line-height: 1.2; }
+
+/* Nama & badge di pojok bawah foto */
+.loc-photo-info {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 8px 12px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.loc-name {
+  font-weight: 700;
+  font-size: 0.93rem;
+  color: #fff;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.65);
+  max-width: 65%;
+  line-height: 1.22;
+}
+
 .loc-badge {
-  font-size: 0.75rem;
-  background: rgba(255,255,255,0.18);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.38);
-  font-weight: 600;
+  font-size: 0.68rem;
+  background: rgba(0,0,0,0.42);
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.25);
+  font-weight: 700;
   white-space: nowrap;
 }
 
+/* Tombol expand foto — pojok kanan atas */
 .btn-view-photo {
-  position: absolute; top: 12px; right: 12px;
-  width: 38px; height: 38px; border-radius: 50%;
-  background: rgba(255,255,255,0.20);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.58);
-  color: white; font-size: 1.05rem;
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.38);
+  border: 1px solid rgba(255,255,255,0.40);
+  color: white;
+  font-size: 0.82rem;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; z-index: 20;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-  pointer-events: auto;
+  cursor: pointer;
+  z-index: 10;
+  /* pointer-events: auto adalah default, tidak perlu ditulis */
 }
-.btn-view-photo:hover { background: white; color: var(--primary); transform: scale(1.12); }
-
-/* ── IMAGE MODAL ── */
-.img-modal-overlay {
-  position: fixed; top:0; left:0; width:100%; height:100%;
-  background: rgba(0,0,0,0.90);
-  backdrop-filter: blur(36px) saturate(140%);
-  -webkit-backdrop-filter: blur(36px) saturate(140%);
-  z-index: 3000;
-  display: none; align-items: center; justify-content: center;
-  flex-direction: column; opacity: 0; transition: opacity 0.3s ease;
-}
-.img-modal-overlay.show { opacity: 1; }
-
-.img-modal-content {
-  max-width: 95%; max-height: 70vh;
-  border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-  transform: scale(0.88); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  object-fit: contain;
-}
-.img-modal-overlay.show .img-modal-content { transform: scale(1); }
-
-.img-caption { color: white; margin-top: 16px; font-weight: 600; font-size: 1.05rem; text-align: center; }
-
-.close-img-modal {
-  position: absolute; top: 20px; right: 20px;
-  color: white; font-size: 1.8rem; cursor: pointer;
-  background: rgba(255,255,255,0.14);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  width: 48px; height: 48px;
-  border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-  border: 1px solid rgba(255,255,255,0.25);
-}
-.close-img-modal:hover { background: rgba(255,255,255,0.28); transform: scale(1.1); }
-
-.btn-exit-fullscreen {
-  margin-top: 20px;
-  background: rgba(255,255,255,0.14);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.32);
-  color: white; padding: 11px 28px; border-radius: 30px;
-  cursor: pointer; font-size: 0.9rem;
-  display: flex; align-items: center; gap: 8px;
-  transition: all 0.2s ease; font-weight: 500;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.btn-exit-fullscreen:hover { background: rgba(255,255,255,0.24); }
+.btn-view-photo:active { background: rgba(255,255,255,0.88); color: var(--primary); }
 
 /* ── CAPACITY BAR ── */
-.capacity-bar-container { width: 100%; height: 5px; background: #eee; position: relative; }
-.capacity-bar-fill { height: 100%; transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 0 3px 3px 0; }
+.capacity-bar-wrap {
+  display: block;
+  width: 100%;
+  height: 4px;
+  background: #eee;
+}
+.capacity-bar-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  transition: width 0.55s ease;
+}
 .bar-green  { background: linear-gradient(90deg, #27ae60, #52e07c); }
 .bar-yellow { background: linear-gradient(90deg, #f39c12, #ffd460); }
 .bar-red    { background: linear-gradient(90deg, #c0392b, #ff6b6b); }
 
-/* ── TOGGLE BUTTON ── */
-.btn-toggle-loc {
-  width: 100%; padding: 14px 16px;
-  background: rgba(255,255,255,0.94); border: none;
-  color: var(--primary); font-weight: 600; cursor: pointer;
-  font-size: 0.88rem; display: flex; align-items: center; justify-content: space-between;
-  transition: background 0.2s;
+/* ── TOMBOL ACCORDION ── */
+.btn-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 13px 14px;
+  background: #fff;
+  border: none;
+  border-top: 1px solid #efefef;
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
   font-family: 'Plus Jakarta Sans', sans-serif;
+  text-align: left;
+  transition: background 0.14s ease;
 }
-.btn-toggle-loc:active { background: #f4f4f4; }
-.btn-toggle-loc.disabled { color: #aaa; cursor: default; }
+.btn-toggle.is-empty { color: #b0b0b0; cursor: default; pointer-events: none; }
+.btn-toggle:not(.is-empty):active { background: #f4f4f4; }
 
+.toggle-icon { flex-shrink: 0; margin-left: 8px; }
+
+/* ── ISI ACCORDION ── */
 .loc-body {
-  display: none; background: #fff; padding: 0;
+  display: none;
+  background: #fff;
   border-top: 1px solid #f0f0f0;
-  animation: slideDown 0.25s ease;
+  /* Animasi expand */
 }
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+.loc-body.open { display: block; }
 
-/* ── RES ITEMS ── */
-.res-item { padding: 14px 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: flex-start; }
+/* ── ITEM RESERVASI ── */
+.res-item {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f2f2f2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
 .res-item:last-child { border-bottom: none; }
-.res-info strong { display: block; font-size: 0.98rem; color: var(--text-main); margin-bottom: 4px; font-weight: 700; }
-.res-info small { color: #888; font-size: 0.78rem; display: block; }
+.res-info strong { display: block; font-size: 0.93rem; color: var(--text-main); margin-bottom: 3px; font-weight: 700; }
+.res-info small  { color: #999; font-size: 0.74rem; display: block; }
 
 .menu-detail-text {
-  margin-top: 7px; font-size: 0.74rem; color: #555;
-  background: #f8f9fa; padding: 8px 12px; border-radius: 10px;
-  border-left: 3px solid var(--secondary); display: inline-block; width: 100%;
+  margin-top: 5px; font-size: 0.72rem; color: #555;
+  background: #f8f9fa; padding: 6px 10px; border-radius: 8px;
+  border-left: 3px solid var(--secondary); display: block;
 }
 
 .res-qty {
-  background: rgba(42, 157, 143, 0.11); color: var(--primary-dark); padding: 6px 12px;
-  border-radius: 10px; font-weight: 800; font-size: 0.88rem; margin-left: 10px;
-  min-width: 44px; text-align: center; border: 1px solid rgba(42,157,143,0.18);
+  background: rgba(42,157,143,0.10);
+  color: var(--primary-dark);
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.86rem;
+  margin-left: 10px;
+  min-width: 40px;
+  text-align: center;
+  border: 1px solid rgba(42,157,143,0.18);
+  flex-shrink: 0;
+}
+
+.empty-loc {
+  padding: 18px;
+  text-align: center;
+  color: #c0c0c0;
+  font-size: 0.82rem;
+}
+
+/* ── IMAGE MODAL ── */
+.img-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.94);
+  z-index: 3000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.img-modal-overlay.show { opacity: 1; }
+
+.img-modal-content {
+  max-width: 95%; max-height: 66vh;
+  border-radius: 12px;
+  object-fit: contain;
+  transform: scale(0.86);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.img-modal-overlay.show .img-modal-content { transform: scale(1); }
+
+.img-caption { color: white; margin-top: 12px; font-weight: 700; font-size: 0.98rem; text-align: center; }
+
+.close-img {
+  position: absolute; top: 16px; right: 16px;
+  color: white; font-size: 1.6rem; cursor: pointer;
+  background: rgba(255,255,255,0.14);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.22);
+}
+
+.btn-close-modal {
+  margin-top: 16px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.28);
+  color: white; padding: 10px 24px; border-radius: 26px;
+  cursor: pointer; font-size: 0.86rem;
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* ── ADMIN ── */
 .floating-admin { display: none !important; }
 
 .admin-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.48);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.52);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   z-index: 2000; display: none; align-items: center; justify-content: center;
 }
 .admin-overlay.show { display: flex; }
 
 .admin-modal {
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(36px) saturate(180%);
-  -webkit-backdrop-filter: blur(36px) saturate(180%);
-  padding: 28px; width: 85%; max-width: 350px;
+  background: #fff;
+  padding: 24px; width: 85%; max-width: 340px;
   border-radius: var(--radius-xl);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.82) inset;
-  animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  border: 1px solid rgba(255,255,255,0.68);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.18);
+  animation: popIn 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .btn-block {
-  width: 100%; padding: 12px; border: none; border-radius: 14px;
-  font-weight: 700; cursor: pointer; margin-bottom: 10px;
+  width: 100%; padding: 11px; border: none; border-radius: 12px;
+  font-weight: 700; cursor: pointer; margin-bottom: 8px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  transition: transform 0.15s ease;
 }
-.btn-block:active { transform: scale(0.96); }
+.btn-block:active { opacity: 0.82; }
 
 .form-input {
-  width: 100%; padding: 13px 14px; margin-bottom: 12px;
-  border: 1.5px solid rgba(0,0,0,0.10); border-radius: 14px;
+  width: 100%; padding: 11px 13px; margin-bottom: 10px;
+  border: 1.5px solid #ddd; border-radius: 12px;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background: rgba(255,255,255,0.80);
-  transition: border-color 0.2s; font-size: 0.9rem;
+  background: #fff;
+  font-size: 0.88rem;
 }
 .form-input:focus { outline: none; border-color: var(--primary); }
 
-/* Header tap flash */
-header.tap-flash { animation: headerFlash 0.18s ease; }
-@keyframes headerFlash {
-  0%   { filter: brightness(1); }
-  50%  { filter: brightness(1.4); }
-  100% { filter: brightness(1); }
-}
+header.tap-flash { animation: headerFlash 0.15s ease; }
+@keyframes headerFlash { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
 
-/* Scrollbar */
-.sheet-content::-webkit-scrollbar { width: 4px; }
-.sheet-content::-webkit-scrollbar-track { background: transparent; }
-.sheet-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.14); border-radius: 4px; }
+.sheet-content::-webkit-scrollbar { width: 3px; }
+.sheet-content::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 4px; }
   </style>
 
 </head>
 <body>
 
-  <!-- Fixed background layers — tidak ikut scroll -->
-
-  <div id="bg-layer"></div>
-  <div id="bg-overlay"></div>
-  <div id="bg-sun"></div>
-
-  <header>
+  <header id="mainHeader">
     <div class="header-branding">
       <h2><i class="fas fa-search-location"></i> Cek Ketersediaan Tempat (Reservasi)</h2>
       <small>Dolan Sawah RSVP System</small>
@@ -862,9 +698,7 @@ header.tap-flash { animation: headerFlash 0.18s ease; }
 
 ```
 <div class="info-card">
-  <div class="info-icon">
-    <i class="fas fa-info-circle"></i>
-  </div>
+  <div class="info-icon"><i class="fas fa-info-circle"></i></div>
   <div class="info-content">
     <h4>Info Reservasi &amp; Reguler</h4>
     <p>Ketersediaan di kalender ini khusus untuk <b>Tempat Reservasi</b>. Pengunjung Reguler (datang langsung) tetap bisa memilih <b>Tempat Reguler</b> yang tersedia di lokasi.</p>
@@ -873,398 +707,525 @@ header.tap-flash { animation: headerFlash 0.18s ease; }
 
 <div class="calendar-wrapper">
   <div class="calendar-header">
-    <div class="month-year" id="monthYear">Loading...</div>
+    <div class="month-year" id="monthYear">Memuat...</div>
     <div class="calendar-nav">
-      <button id="prevMonth"><i class="fas fa-chevron-left"></i></button>
-      <button id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+      <button id="prevMonth" aria-label="Bulan sebelumnya"><i class="fas fa-chevron-left"></i></button>
+      <button id="nextMonth" aria-label="Bulan berikutnya"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>
-
   <div class="calendar-grid-header">
-    <div class="weekday">Min</div><div class="weekday">Sen</div><div class="weekday">Sel</div>
-    <div class="weekday">Rab</div><div class="weekday">Kam</div><div class="weekday">Jum</div><div class="weekday">Sab</div>
+    <div class="weekday">Min</div><div class="weekday">Sen</div>
+    <div class="weekday">Sel</div><div class="weekday">Rab</div>
+    <div class="weekday">Kam</div><div class="weekday">Jum</div>
+    <div class="weekday">Sab</div>
   </div>
-
   <div class="calendar-days" id="calendar"></div>
-
   <div class="legend">
-    <div style="display:flex; gap:5px; align-items:center;"><span class="dot" style="background:rgba(255,215,80,0.85); border:1px solid rgba(200,150,0,0.4);"></span> Hari Ini</div>
-    <div style="display:flex; gap:5px; align-items:center;"><span class="dot" style="background:rgba(42,180,155,0.45); border:1px solid rgba(42,200,170,0.5);"></span> Ada Reservasi</div>
-    <div style="display:flex; gap:5px; align-items:center;"><span class="dot" style="background:rgba(215,55,55,0.42); border:1px solid rgba(255,100,100,0.5);"></span> Reservasi Penuh</div>
+    <div style="display:flex;gap:4px;align-items:center;"><span class="dot" style="background:rgba(255,210,60,0.90);"></span> Hari Ini</div>
+    <div style="display:flex;gap:4px;align-items:center;"><span class="dot" style="background:rgba(42,180,155,0.45);"></span> Ada Reservasi</div>
+    <div style="display:flex;gap:4px;align-items:center;"><span class="dot" style="background:rgba(200,48,42,0.68);"></span> Reservasi Penuh</div>
   </div>
 </div>
 
-<div style="margin-top: 25px; text-align: center;">
-  <a href="https://www.dolansawah.my.id" style="color: var(--text-muted); font-size: 0.9rem; text-decoration: none; padding: 12px 24px; display: inline-flex; align-items: center; gap: 8px;">
+<div style="margin-top:20px;text-align:center;">
+  <a href="https://www.dolansawah.my.id" class="link-website">
     <i class="fas fa-external-link-alt"></i> Buka Website Utama
   </a>
 </div>
 ```
 
-  </div><!-- /.main-container -->
+  </div>
 
   <div class="floating-admin" id="adminBtn"><i class="fas fa-lock"></i></div>
+
+  <!-- Detail Sheet -->
 
   <div class="detail-overlay" id="detailOverlay">
     <div class="detail-sheet" id="detailSheet">
       <div class="pulsing-badge">Tempat non reservasi tersedia</div>
+      <div class="sheet-handle"></div>
       <div class="sheet-header">
-        <button onclick="closeDetail()" class="btn-sheet-back">
+        <button class="btn-back" id="btnBack">
           <i class="fas fa-arrow-left"></i> Kembali
         </button>
-        <div style="text-align: right;">
-          <h3 id="sheetDate" style="margin:0; color:var(--primary-dark); font-size:1rem;">Detail</h3>
-          <span id="sheetStats" style="font-size:0.75rem; color:#666;">...</span>
+        <div style="text-align:right;">
+          <p class="sheet-date" id="sheetDate">Detail</p>
+          <span class="sheet-stats" id="sheetStats">...</span>
         </div>
       </div>
-      <div class="sheet-content" id="locGrid"></div>
+      <div class="sheet-content">
+        <div id="locGrid"></div>
+      </div>
     </div>
   </div>
+
+  <!-- Warning Popup -->
 
   <div class="info-popup-overlay" id="fullWarningPopup">
     <div class="info-popup-content">
       <div class="info-popup-icon"><i class="fas fa-exclamation-circle"></i></div>
       <div class="info-popup-title">Tempat masih tersedia untuk walk in</div>
       <div class="info-popup-text">
-        Tempat Masih Tersedia! Namun Kuota Reservasi untuk tanggal ini sudah penuh. Anda bisa langsung menuju resto untuk memilih menu langsung di ruang prasmanan. Tim kami akan membantu memilihkan tempat terbaik.
+        Tempat Masih Tersedia! Namun Kuota Reservasi untuk tanggal ini sudah penuh.
+        Anda bisa langsung menuju resto untuk memilih menu langsung di ruang prasmanan.
+        Tim kami akan membantu memilihkan tempat terbaik.
       </div>
-      <button class="info-popup-btn" onclick="continueToDetail()">Keluar &amp; Lihat Detail</button>
+      <button class="info-popup-btn" id="btnContinueDetail">Keluar &amp; Lihat Detail</button>
     </div>
   </div>
 
+  <!-- Image Modal -->
+
   <div class="img-modal-overlay" id="imgModal">
-    <span class="close-img-modal" onclick="closeImgModal()">&times;</span>
+    <span class="close-img" id="btnCloseImg">&times;</span>
     <img class="img-modal-content" id="imgTarget" alt="">
     <div class="img-caption" id="imgCaption"></div>
-    <button class="btn-exit-fullscreen" onclick="closeImgModal()">
+    <button class="btn-close-modal" id="btnCloseModal">
       <i class="fas fa-times-circle"></i> Tutup / Exit
     </button>
   </div>
 
+  <!-- Admin -->
+
   <div class="admin-overlay" id="adminOverlay">
-    <div class="admin-modal" id="adminModal">
-      <h3 style="margin-top:0; text-align:center; color:var(--primary-dark); margin-bottom:20px;"><i class="fas fa-shield-alt"></i> Kontrol Manual</h3>
+    <div class="admin-modal">
+      <h3 style="margin-top:0;text-align:center;color:var(--primary-dark);margin-bottom:16px;">
+        <i class="fas fa-shield-alt"></i> Kontrol Manual
+      </h3>
       <div id="loginForm">
-        <input type="email" id="adminEmail" class="form-input" placeholder="Email Admin">
-        <input type="password" id="adminPass" class="form-input" placeholder="Password">
-        <button class="btn-block" style="background:var(--primary); color:white;" id="btnLoginAction">Masuk</button>
-        <button class="btn-block" onclick="closeAdmin()" style="background:#f0f0f0; color:#666;">Batal</button>
+        <input type="email" id="adminEmail" class="form-input" placeholder="Email Admin" autocomplete="email">
+        <input type="password" id="adminPass" class="form-input" placeholder="Password" autocomplete="current-password">
+        <button class="btn-block" style="background:var(--primary);color:white;" id="btnLoginAction">Masuk</button>
+        <button class="btn-block" id="btnCancelAdmin" style="background:#f0f0f0;color:#666;">Batal</button>
       </div>
       <div id="adminControls" style="display:none;">
-        <p style="font-size:0.85rem; color:#666; text-align:center; margin-bottom:15px; line-height:1.5;">Tandai tanggal ini sebagai "Reservasi Penuh".</p>
+        <p style="font-size:0.82rem;color:#666;text-align:center;margin-bottom:12px;line-height:1.5;">Tandai tanggal ini sebagai "Reservasi Penuh".</p>
         <input type="date" id="dateSelector" class="form-input">
-        <div style="display:flex; gap:10px; margin-bottom:20px;">
-          <button class="btn-block" id="markFullBtn" style="background:var(--danger); color:white; flex:1;"><i class="fas fa-ban"></i> SET PENUH</button>
-          <button class="btn-block" id="markAvailableBtn" style="background:var(--secondary); color:white; flex:1;"><i class="fas fa-check"></i> SET BUKA</button>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <button class="btn-block" id="markFullBtn" style="background:var(--danger);color:white;flex:1;"><i class="fas fa-ban"></i> SET PENUH</button>
+          <button class="btn-block" id="markAvailableBtn" style="background:var(--secondary);color:#333;flex:1;"><i class="fas fa-check"></i> SET BUKA</button>
         </div>
-        <button class="btn-block" onclick="firebase.auth().signOut()" style="background:#f1f2f6; color:#555; margin-top:15px;">Logout</button>
+        <button class="btn-block" id="btnLogout" style="background:#f1f2f6;color:#555;">Logout</button>
       </div>
     </div>
   </div>
 
+  <!-- Firebase di akhir body — tidak blocking render -->
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
-      authDomain: "reservasi-dolan-sawah.firebaseapp.com",
-      projectId: "reservasi-dolan-sawah",
-      storageBucket: "reservasi-dolan-sawah.appspot.com",
-      messagingSenderId: "213151400721",
-      appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
-    };
+  firebase.initializeApp({
+    apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
+    authDomain: "reservasi-dolan-sawah.firebaseapp.com",
+    projectId: "reservasi-dolan-sawah",
+    storageBucket: "reservasi-dolan-sawah.appspot.com",
+    messagingSenderId: "213151400721",
+    appId: "1:213151400721:web:e51b0d8cdd24206cf682b0"
+  });
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
+  const db   = firebase.firestore();
+  const auth = firebase.auth();
+  db.enablePersistence({ synchronizeTabs: false }).catch(() => {});
 
-    let locationImages = {};
-    const defaultImage = "https://via.placeholder.com/300x200?text=Lokasi";
-    const monthNames = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  const DEFAULT_IMG = "https://via.placeholder.com/300x200?text=Lokasi";
+  const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
-    let currentMonth = new Date().getMonth();
-    let currentYear  = new Date().getFullYear();
-    let allReservations = {};
-    let locationsConfig = {};
-    let dateStatus = {};
-    let unsubscribeRes = null;
-    let unsubscribeStatus = null;
-    let pendingDetailData = null;
+  let curMonth   = new Date().getMonth();
+  let curYear    = new Date().getFullYear();
+  let allRes     = {};
+  let locCap     = {};
+  let locImg     = {};
+  let dateStat   = {};
+  let unsubRes   = null;
+  let unsubStat  = null;
+  let pendingDay = null;
+  let navLock    = false;
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      await loadLocations();
-      setupRealtimeListeners();
-      setupAdminLogic();
+  // ── DOM refs ──
+  const $ = id => document.getElementById(id);
 
-      document.getElementById('prevMonth').addEventListener('click', () => {
-        currentMonth--;
-        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-        setupRealtimeListeners();
+  // ── Boot ──
+  loadLocations().then(() => startListeners());
+  bindUI();
+
+  // ─────────────────────────────────────────
+  async function loadLocations() {
+    try {
+      let snap = await db.collection("locations").get();
+      if (snap.empty) snap = await db.collection("Locations").get();
+      snap.forEach(doc => {
+        const d = doc.data();
+        if (!d.name) return;
+        locCap[d.name] = d.capacity || 100;
+        locImg[d.name] = d.imageUrl  || DEFAULT_IMG;
       });
-      document.getElementById('nextMonth').addEventListener('click', () => {
-        currentMonth++;
-        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-        setupRealtimeListeners();
-      });
-    });
+    } catch(e) { console.warn("loadLocations:", e); }
+  }
 
-    async function loadLocations() {
-      try {
-        let snap = await db.collection("locations").get();
-        if (snap.empty) snap = await db.collection("Locations").get();
-        locationsConfig = {};
-        locationImages = {};
+  // ─────────────────────────────────────────
+  function startListeners() {
+    if (unsubRes)  unsubRes();
+    if (unsubStat) unsubStat();
+
+    const m     = String(curMonth + 1).padStart(2, '0');
+    const start = `${curYear}-${m}-01`;
+    const end   = `${curYear}-${m}-31`;
+
+    $('monthYear').textContent = `${MONTHS[curMonth]} ${curYear}`;
+    renderSkeleton();
+
+    unsubRes = db.collection("reservations")
+      .where('date', '>=', start).where('date', '<=', end)
+      .onSnapshot(snap => {
+        allRes = {};
         snap.forEach(doc => {
-          const data = doc.data();
-          const name = data.name;
-          locationsConfig[name] = data.capacity;
-          locationImages[name] = data.imageUrl || defaultImage;
+          const r = doc.data();
+          if (!allRes[r.date]) allRes[r.date] = [];
+          allRes[r.date].push(r);
         });
-      } catch(e) { console.log("Gagal load lokasi/gambar", e); }
-    }
+        renderCalendar();
+      }, e => console.warn(e));
 
-    function setupRealtimeListeners() {
-      if (unsubscribeRes)    unsubscribeRes();
-      if (unsubscribeStatus) unsubscribeStatus();
-      const mStr  = String(currentMonth + 1).padStart(2, '0');
-      const start = `${currentYear}-${mStr}-01`;
-      const end   = `${currentYear}-${mStr}-31`;
-      document.getElementById('calendar').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px; color:#999;">Memuat Data...</div>';
-      document.getElementById('monthYear').textContent = `${monthNames[currentMonth]} ${currentYear}`;
+    unsubStat = db.collection("date_status")
+      .where('date', '>=', start).where('date', '<=', end)
+      .onSnapshot(snap => {
+        dateStat = {};
+        snap.forEach(doc => { dateStat[doc.data().date] = doc.data().isFull; });
+        renderCalendar();
+      }, e => console.warn(e));
+  }
 
-      unsubscribeRes = db.collection("reservations")
-        .where('date', '>=', start).where('date', '<=', end)
-        .onSnapshot(snapshot => {
-          allReservations = {};
-          snapshot.forEach(doc => {
-            const r = doc.data();
-            if (!allReservations[r.date]) allReservations[r.date] = [];
-            allReservations[r.date].push(r);
-          });
-          renderCalendar();
-        });
+  // ─────────────────────────────────────────
+  function renderSkeleton() {
+    const first = new Date(curYear, curMonth, 1).getDay();
+    const days  = new Date(curYear, curMonth + 1, 0).getDate();
+    let html = '';
+    for (let i = 0; i < first; i++) html += '<div></div>';
+    for (let i = 0; i < days;  i++) html += '<div class="skeleton-day"></div>';
+    $('calendar').innerHTML = html;
+  }
 
-      unsubscribeStatus = db.collection("date_status")
-        .where('date', '>=', start).where('date', '<=', end)
-        .onSnapshot(snapshot => {
-          dateStatus = {};
-          snapshot.forEach(doc => { dateStatus[doc.data().date] = doc.data().isFull; });
-          renderCalendar();
-        });
-    }
+  // ─────────────────────────────────────────
+  function renderCalendar() {
+    const cal   = $('calendar');
+    const first = new Date(curYear, curMonth, 1).getDay();
+    const days  = new Date(curYear, curMonth + 1, 0).getDate();
+    const today = new Date();
+    const frag  = document.createDocumentFragment();
 
-    function renderCalendar() {
-      const cal = document.getElementById('calendar');
-      cal.innerHTML = '';
-      const firstDay    = new Date(currentYear, currentMonth, 1).getDay();
-      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-      const today = new Date();
+    for (let i = 0; i < first; i++) frag.appendChild(document.createElement('div'));
 
-      for (let i = 0; i < firstDay; i++) cal.innerHTML += '<div></div>';
+    for (let d = 1; d <= days; d++) {
+      const m    = String(curMonth + 1).padStart(2, '0');
+      const dd   = String(d).padStart(2, '0');
+      const key  = `${curYear}-${m}-${dd}`;
+      const list = allRes[key] || [];
+      const tot  = list.reduce((s, r) => s + (parseInt(r.jumlah) || 0), 0);
+      const full = dateStat[key] === true;
+      const isT  = d === today.getDate() && curMonth === today.getMonth() && curYear === today.getFullYear();
 
-      for (let i = 1; i <= daysInMonth; i++) {
-        const el   = document.createElement('div');
-        el.className = 'day-cell';
-        const mStr   = String(currentMonth + 1).padStart(2, '0');
-        const dStr   = String(i).padStart(2, '0');
-        const dateKey = `${currentYear}-${mStr}-${dStr}`;
-        const list  = allReservations[dateKey] || [];
-        const count = list.length;
-        const total = list.reduce((s, r) => s + (parseInt(r.jumlah) || 0), 0);
-        const isManualFull = dateStatus[dateKey] === true;
+      const el = document.createElement('div');
+      el.className = 'day-cell';
+      let html = `<span class="day-num">${d}</span>`;
 
-        if (isManualFull) {
-          el.classList.add('is-full');
-          el.innerHTML = `<span class="day-num">${i}</span><div class="res-indicator"><div class="res-count">${total > 0 ? total : 'FULL'}</div></div>`;
-        } else if (i === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
-          el.classList.add('today');
-          el.innerHTML = `<span class="day-num">${i}</span>${count > 0 ? `<div class="res-indicator"><div class="res-count">${total}</div></div>` : ''}`;
-        } else if (count > 0) {
-          el.classList.add('has-res');
-          el.innerHTML = `<span class="day-num">${i}</span><div class="res-indicator"><div class="res-count">${total}</div></div>`;
-        } else {
-          el.innerHTML = `<span class="day-num">${i}</span>`;
-        }
-
-        el.onclick = () => {
-          if (isManualFull) showFullWarning(i, list);
-          else openDetail(i, list, false);
-        };
-        cal.appendChild(el);
+      if (full) {
+        el.classList.add('is-full');
+        html += `<div class="res-indicator"><div class="res-count">${tot > 0 ? tot : 'FULL'}</div></div>`;
+      } else if (isT) {
+        el.classList.add('today');
+        if (list.length) html += `<div class="res-indicator"><div class="res-count">${tot}</div></div>`;
+      } else if (list.length) {
+        el.classList.add('has-res');
+        html += `<div class="res-indicator"><div class="res-count">${tot}</div></div>`;
       }
+
+      el.innerHTML = html;
+
+      ;(function(day, lst, isFull) {
+        el.addEventListener('click', () => {
+          if (isFull) { pendingDay = { day, lst }; $('fullWarningPopup').style.display = 'flex'; }
+          else openDetail(day, lst, false);
+        }, { passive: true });
+      })(d, list, full);
+
+      frag.appendChild(el);
     }
 
-    function showFullWarning(day, list) {
-      pendingDetailData = { day, list };
-      document.getElementById('fullWarningPopup').style.display = 'flex';
-    }
+    cal.innerHTML = '';
+    cal.appendChild(frag);
+  }
 
-    function continueToDetail() {
-      document.getElementById('fullWarningPopup').style.display = 'none';
-      if (pendingDetailData) openDetail(pendingDetailData.day, pendingDetailData.list, true);
-    }
+  // ─────────────────────────────────────────
+  function openDetail(day, list, redMode) {
+    const sheet = $('detailSheet');
+    redMode ? sheet.classList.add('red-mode') : sheet.classList.remove('red-mode');
+    $('detailOverlay').classList.add('active');
+    $('sheetDate').textContent  = `${day} ${MONTHS[curMonth]} ${curYear}`;
+    $('sheetStats').textContent = `${list.length} Grup / ${list.reduce((s,r)=>s+(parseInt(r.jumlah)||0),0)} Tamu`;
 
-    function openDetail(day, list, isFullMode = false) {
-      const detailSheet = document.getElementById('detailSheet');
-      const overlay = document.getElementById('detailOverlay');
-      isFullMode ? detailSheet.classList.add('red-mode') : detailSheet.classList.remove('red-mode');
-      overlay.classList.add('active');
-      document.getElementById('sheetDate').textContent = `${day} ${monthNames[currentMonth]} ${currentYear}`;
-      const totalGuests = list.reduce((s, r) => s + (parseInt(r.jumlah) || 0), 0);
-      document.getElementById('sheetStats').textContent = `${list.length} Grup / ${totalGuests} Tamu`;
-
-      const grid = document.getElementById('locGrid');
-      grid.innerHTML = '';
-
-      const grouped = {};
-      list.forEach(r => {
-        let l = r.tempat || 'Lainnya';
-        if (l.toLowerCase() === 'meeting room') l = 'Meeting Room';
-        if (!grouped[l]) grouped[l] = [];
-        grouped[l].push(r);
-      });
-
-      const allKnownLocations = new Set([...Object.keys(locationImages), ...Object.keys(locationsConfig)]);
-      const allLocations = Array.from(allKnownLocations).sort();
-
-      allLocations.forEach(loc => {
-        const items   = grouped[loc] || [];
-        const img     = locationImages[loc] || defaultImage;
-        const cap     = locationsConfig[loc] || 100;
-        const curr    = items.reduce((s, r) => s + (parseInt(r.jumlah) || 0), 0);
-        let percent   = cap > 0 ? (curr / cap) * 100 : 0;
-        if (percent > 100) percent = 100;
-        let barColor  = percent >= 90 ? 'bar-red' : percent >= 50 ? 'bar-yellow' : 'bar-green';
-
-        let htmlItems = '';
-        if (items.length > 0) {
-          items.sort((a, b) => (a.jam || '').localeCompare(b.jam || '')).forEach(r => {
-            let menuText = '';
-            if (r.menus && Array.isArray(r.menus) && r.menus.length > 0) {
-              menuText = `<div class="menu-detail-text">${r.menus.map(m => m.quantity + 'x ' + m.name).join('<br>')}</div>`;
-            } else if (r.menu) {
-              menuText = `<div class="menu-detail-text">${r.menu}</div>`;
-            }
-            const safePhone = r.nomorHp && r.nomorHp.length > 4 ? r.nomorHp.slice(0, -3) + 'xxx' : (r.nomorHp || '');
-            htmlItems += `
-              <div class="res-item">
-                <div class="res-info">
-                  <strong>${r.nama}</strong>
-                  <small><i class="far fa-clock"></i> ${r.jam} WIB${safePhone ? ' &bull; <i class="fab fa-whatsapp"></i> ' + safePhone : ''}</small>
-                  ${menuText}
-                  ${r.tambahan ? `<div style="color:var(--highlight); font-size:0.75rem; margin-top:3px; font-style:italic;">Note: ${r.tambahan}</div>` : ''}
-                </div>
-                <div class="res-qty">${r.jumlah}</div>
-              </div>`;
-          });
-        } else {
-          htmlItems = '<div style="padding:20px; text-align:center; color:#aaa; font-size:0.85rem;">Belum ada reservasi. Tempat ini kosong.</div>';
-        }
-
-        const btnText  = items.length > 0 ? `Lihat ${items.length} Reservasi` : 'Masih Kosong';
-        const btnClass = items.length > 0 ? '' : 'disabled';
-        const onclickAttr = items.length > 0 ? 'onclick="toggleAccordion(this)"' : '';
-        const iconHtml = items.length > 0 ? '<i class="fas fa-chevron-down"></i>' : '<i class="fas fa-check-circle" style="color:var(--success);"></i>';
-
-        const card = document.createElement('div');
-        card.className = 'loc-card';
-        const safeLocName = loc.replace(/'/g, "\\'");
-        card.innerHTML = `
-          <div class="loc-header" style="background-image:url('${img}')" onclick="viewPhoto('${img}', '${safeLocName}')">
-            <button class="btn-view-photo"><i class="fas fa-eye"></i></button>
-            <div class="loc-title">
-              <span class="loc-name">${loc}</span>
-              <span class="loc-badge">${curr} / ${cap} Org</span>
-            </div>
-          </div>
-          <div class="capacity-bar-container">
-            <div class="capacity-bar-fill ${barColor}" style="width:${percent}%;"></div>
-          </div>
-          <button class="btn-toggle-loc ${btnClass}" ${onclickAttr}>
-            <span>${btnText}</span>${iconHtml}
-          </button>
-          <div class="loc-body">${htmlItems}</div>`;
-        grid.appendChild(card);
-      });
-    }
-
-    function viewPhoto(url, caption) {
-      const modal = document.getElementById('imgModal');
-      document.getElementById('imgTarget').src  = url;
-      document.getElementById('imgCaption').textContent = caption;
-      modal.style.display = 'flex';
-      setTimeout(() => modal.classList.add('show'), 10);
-    }
-
-    function closeImgModal() {
-      const modal = document.getElementById('imgModal');
-      modal.classList.remove('show');
-      setTimeout(() => { modal.style.display = 'none'; }, 300);
-    }
-
-    document.getElementById('imgModal').addEventListener('click', e => {
-      if (e.target.id === 'imgModal') closeImgModal();
+    // Kelompokkan reservasi per lokasi
+    const grouped = {};
+    list.forEach(r => {
+      let loc = (r.tempat || 'Lainnya').trim();
+      if (loc.toLowerCase() === 'meeting room') loc = 'Meeting Room';
+      if (!grouped[loc]) grouped[loc] = [];
+      grouped[loc].push(r);
     });
 
-    window.toggleAccordion = function(btn) {
-      const body = btn.nextElementSibling;
-      const icon = btn.querySelector('.fa-chevron-down, .fa-chevron-up');
-      if (body.style.display === 'block') {
-        body.style.display = 'none';
-        if (icon) icon.className = 'fas fa-chevron-down';
-        btn.style.background = '';
+    const allLocs = Array.from(new Set([...Object.keys(locImg), ...Object.keys(locCap)])).sort();
+    const frag    = document.createDocumentFragment();
+    const imgQueue = []; // antrian gambar untuk load
+
+    allLocs.forEach(loc => {
+      const items  = grouped[loc] || [];
+      const img    = locImg[loc] || DEFAULT_IMG;
+      const cap    = locCap[loc] || 100;
+      const curr   = items.reduce((s, r) => s + (parseInt(r.jumlah) || 0), 0);
+      const pct    = Math.min(cap > 0 ? (curr / cap) * 100 : 0, 100);
+      const barCls = pct >= 90 ? 'bar-red' : pct >= 50 ? 'bar-yellow' : 'bar-green';
+
+      // ── HTML isi reservasi ──
+      let bodyHTML = '';
+      if (items.length > 0) {
+        items.sort((a,b) => (a.jam||'').localeCompare(b.jam||'')).forEach(r => {
+          let mHTML = '';
+          if (r.menus && r.menus.length) {
+            mHTML = `<div class="menu-detail-text">${r.menus.map(m => m.quantity+'x '+m.name).join('<br>')}</div>`;
+          } else if (r.menu) {
+            mHTML = `<div class="menu-detail-text">${r.menu}</div>`;
+          }
+          const ph = r.nomorHp && r.nomorHp.length > 4 ? r.nomorHp.slice(0,-3)+'xxx' : (r.nomorHp||'');
+          bodyHTML += `
+            <div class="res-item">
+              <div class="res-info">
+                <strong>${r.nama}</strong>
+                <small><i class="far fa-clock"></i> ${r.jam} WIB${ph ? ' &bull; <i class="fab fa-whatsapp"></i> '+ph : ''}</small>
+                ${mHTML}
+                ${r.tambahan ? `<div style="color:var(--highlight);font-size:0.72rem;margin-top:3px;font-style:italic;">Note: ${r.tambahan}</div>` : ''}
+              </div>
+              <div class="res-qty">${r.jumlah}</div>
+            </div>`;
+        });
       } else {
-        body.style.display = 'block';
-        if (icon) icon.className = 'fas fa-chevron-up';
-        btn.style.background = '#f9f9f9';
+        bodyHTML = '<div class="empty-loc">Belum ada reservasi. Tempat ini kosong.</div>';
       }
+
+      // ── Buat card element secara DOM (bukan innerHTML) ──
+      // untuk menghindari masalah event binding di string HTML
+      const card = document.createElement('div');
+      card.className = 'loc-card';
+
+      // -- Foto wrapper (BLOCK element, height fix 140px) --
+      const photoWrap = document.createElement('div');
+      photoWrap.className = 'loc-photo-wrap';
+
+      const photoImg = document.createElement('img');
+      photoImg.className = 'loc-photo-img';
+      photoImg.alt = loc;
+      // TIDAK set src sekarang — di-lazy-load setelah DOM attached
+
+      const grad = document.createElement('div');
+      grad.className = 'loc-photo-grad';
+
+      const info = document.createElement('div');
+      info.className = 'loc-photo-info';
+      info.innerHTML = `<span class="loc-name">${loc}</span><span class="loc-badge">${curr}/${cap} Org</span>`;
+
+      const viewBtn = document.createElement('button');
+      viewBtn.className = 'btn-view-photo';
+      viewBtn.type = 'button';
+      viewBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
+
+      // Closure untuk capture URL & nama lokasi
+      ;(function(imgUrl, locName) {
+        viewBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          const modal = $('imgModal');
+          $('imgTarget').src = imgUrl;
+          $('imgCaption').textContent = locName;
+          modal.style.display = 'flex';
+          requestAnimationFrame(() => modal.classList.add('show'));
+        }, { passive: true });
+      })(img, loc);
+
+      photoWrap.appendChild(photoImg);
+      photoWrap.appendChild(grad);
+      photoWrap.appendChild(info);
+      photoWrap.appendChild(viewBtn);
+
+      // -- Capacity bar --
+      const barWrap = document.createElement('div');
+      barWrap.className = 'capacity-bar-wrap';
+      const barFill = document.createElement('div');
+      barFill.className = `capacity-bar-fill ${barCls}`;
+      barFill.style.width = '0%';
+      barFill.dataset.pct = pct;
+      barWrap.appendChild(barFill);
+
+      // -- Toggle button --
+      const empty = items.length === 0;
+      const toggleBtn = document.createElement('button');
+      toggleBtn.type = 'button';
+      toggleBtn.className = 'btn-toggle' + (empty ? ' is-empty' : '');
+      toggleBtn.innerHTML = empty
+        ? `<span>Masih Kosong</span><i class="fas fa-check-circle toggle-icon" style="color:var(--success)"></i>`
+        : `<span>Lihat ${items.length} Reservasi</span><i class="fas fa-chevron-down toggle-icon"></i>`;
+
+      // -- Body accordion --
+      const body = document.createElement('div');
+      body.className = 'loc-body';
+      body.innerHTML = bodyHTML;
+
+      // Event accordion
+      if (!empty) {
+        toggleBtn.addEventListener('click', () => {
+          const isOpen = body.classList.contains('open');
+          body.classList.toggle('open', !isOpen);
+          const icon = toggleBtn.querySelector('.toggle-icon');
+          if (icon) icon.className = (isOpen ? 'fas fa-chevron-down' : 'fas fa-chevron-up') + ' toggle-icon';
+          toggleBtn.style.background = isOpen ? '#fff' : '#f8f8f8';
+        }, { passive: true });
+      }
+
+      card.appendChild(photoWrap);
+      card.appendChild(barWrap);
+      card.appendChild(toggleBtn);
+      card.appendChild(body);
+
+      frag.appendChild(card);
+
+      // Simpan referensi untuk lazy load setelah DOM attached
+      imgQueue.push({ el: photoImg, wrap: photoWrap, src: img });
+    });
+
+    $('locGrid').innerHTML = '';
+    $('locGrid').appendChild(frag);
+
+    // Setelah DOM attached, jalankan lazy load & animasi bar
+    requestAnimationFrame(() => {
+      lazyLoad(imgQueue);
+      $('locGrid').querySelectorAll('.capacity-bar-fill[data-pct]').forEach(b => {
+        requestAnimationFrame(() => { b.style.width = parseFloat(b.dataset.pct) + '%'; });
+      });
+    });
+  }
+
+  // ─────────────────────────────────────────
+  // LAZY LOAD — pakai IntersectionObserver dengan rootMargin besar
+  // agar gambar sudah mulai load sebelum terlihat
+  function lazyLoad(queue) {
+    if (!queue.length) return;
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const img  = entry.target;
+          const wrap = img._photoWrap;
+          img.onload  = () => { img.classList.add('show'); if (wrap) wrap.classList.add('img-loaded'); };
+          img.onerror = () => { img.src = DEFAULT_IMG; img.classList.add('show'); };
+          img.src = img._lazySrc;
+          obs.unobserve(img);
+        });
+      }, {
+        root: $('locGrid').closest('.sheet-content'), // observe dalam scroll container
+        rootMargin: '300px',  // load 300px sebelum terlihat
+        threshold: 0
+      });
+
+      queue.forEach(({ el, wrap, src }) => {
+        el._lazySrc    = src;
+        el._photoWrap  = wrap;
+        observer.observe(el);
+      });
+    } else {
+      // Fallback langsung
+      queue.forEach(({ el, wrap, src }) => {
+        el.onload  = () => { el.classList.add('show'); if (wrap) wrap.classList.add('img-loaded'); };
+        el.onerror = () => { el.src = DEFAULT_IMG; el.classList.add('show'); };
+        el.src = src;
+      });
+    }
+  }
+
+  // ─────────────────────────────────────────
+  function bindUI() {
+    // Nav kalender
+    $('prevMonth').addEventListener('click', () => {
+      if (navLock) return; navLock = true; setTimeout(()=>{navLock=false;}, 350);
+      if (--curMonth < 0) { curMonth = 11; curYear--; }
+      startListeners();
+    }, { passive: true });
+
+    $('nextMonth').addEventListener('click', () => {
+      if (navLock) return; navLock = true; setTimeout(()=>{navLock=false;}, 350);
+      if (++curMonth > 11) { curMonth = 0; curYear++; }
+      startListeners();
+    }, { passive: true });
+
+    // Kembali
+    $('btnBack').addEventListener('click', () => $('detailOverlay').classList.remove('active'), { passive: true });
+    $('detailOverlay').addEventListener('click', e => { if (e.target === $('detailOverlay')) $('detailOverlay').classList.remove('active'); }, { passive: true });
+
+    // Warning popup
+    $('btnContinueDetail').addEventListener('click', () => {
+      $('fullWarningPopup').style.display = 'none';
+      if (pendingDay) openDetail(pendingDay.day, pendingDay.lst, true);
+    }, { passive: true });
+
+    // Image modal close
+    const closeModal = () => {
+      const m = $('imgModal');
+      m.classList.remove('show');
+      setTimeout(() => { m.style.display = 'none'; }, 240);
+    };
+    $('btnCloseImg').addEventListener('click',    closeModal, { passive: true });
+    $('btnCloseModal').addEventListener('click',  closeModal, { passive: true });
+    $('imgModal').addEventListener('click', e => { if (e.target === $('imgModal')) closeModal(); }, { passive: true });
+
+    // Admin: 5x tap header
+    let taps = 0, tapT = null;
+    $('mainHeader').addEventListener('click', () => {
+      taps++;
+      const h = $('mainHeader');
+      h.classList.remove('tap-flash'); void h.offsetWidth; h.classList.add('tap-flash');
+      clearTimeout(tapT);
+      if (taps >= 5) { taps = 0; $('adminOverlay').classList.add('show'); }
+      else tapT = setTimeout(() => { taps = 0; }, 1800);
+    }, { passive: true });
+
+    $('adminOverlay').addEventListener('click', e => { if (e.target === $('adminOverlay')) $('adminOverlay').classList.remove('show'); }, { passive: true });
+    $('btnCancelAdmin').addEventListener('click', () => $('adminOverlay').classList.remove('show'), { passive: true });
+
+    $('btnLoginAction').addEventListener('click', () => {
+      auth.signInWithEmailAndPassword($('adminEmail').value, $('adminPass').value)
+          .catch(e => alert("Login Gagal: " + e.message));
+    });
+
+    $('btnLogout').addEventListener('click', () => auth.signOut());
+
+    auth.onAuthStateChanged(user => {
+      $('loginForm').style.display     = user ? 'none'  : 'block';
+      $('adminControls').style.display = user ? 'block' : 'none';
+    });
+
+    const setStatus = async (isFull) => {
+      const d = $('dateSelector').value;
+      if (!d) return alert("Pilih tanggal dulu");
+      try {
+        await db.collection("date_status").doc(d).set({ date: d, isFull }, { merge: true });
+        alert("Status berhasil diupdate!");
+      } catch(e) { alert("Error: " + e.message); }
     };
 
-    function closeDetail() {
-      document.getElementById('detailOverlay').classList.remove('active');
-    }
-
-    function setupAdminLogic() {
-      const overlay = document.getElementById('adminOverlay');
-      const modal   = document.getElementById('adminModal');
-      const open    = () => { overlay.classList.add('show'); modal.classList.add('show'); };
-      window.closeAdmin = () => { overlay.classList.remove('show'); modal.classList.remove('show'); };
-      overlay.onclick = e => { if (e.target === overlay) window.closeAdmin(); };
-
-      let tapCount = 0;
-      let tapTimer = null;
-      const headerEl = document.querySelector('header');
-      headerEl.addEventListener('click', () => {
-        tapCount++;
-        headerEl.classList.remove('tap-flash');
-        void headerEl.offsetWidth;
-        headerEl.classList.add('tap-flash');
-        clearTimeout(tapTimer);
-        if (tapCount >= 5) { tapCount = 0; open(); }
-        else tapTimer = setTimeout(() => { tapCount = 0; }, 1800);
-      });
-
-      auth.onAuthStateChanged(user => {
-        document.getElementById('loginForm').style.display     = user ? 'none'  : 'block';
-        document.getElementById('adminControls').style.display = user ? 'block' : 'none';
-      });
-
-      document.getElementById('btnLoginAction').onclick = () => {
-        const e = document.getElementById('adminEmail').value;
-        const p = document.getElementById('adminPass').value;
-        auth.signInWithEmailAndPassword(e, p).catch(err => alert("Login Gagal: " + err.message));
-      };
-
-      const updateStatus = async isFull => {
-        const d = document.getElementById('dateSelector').value;
-        if (!d) return alert("Pilih tanggal dulu");
-        try {
-          await db.collection("date_status").doc(d).set({ date: d, isFull }, { merge: true });
-          alert("Status Berhasil Diupdate!");
-        } catch(e) { alert("Error: " + e.message); }
-      };
-
-      document.getElementById('markFullBtn').onclick      = () => updateStatus(true);
-      document.getElementById('markAvailableBtn').onclick = () => updateStatus(false);
-    }
+    $('markFullBtn').addEventListener('click',      () => setStatus(true));
+    $('markAvailableBtn').addEventListener('click', () => setStatus(false));
+  }
   </script>
 
 </body>
