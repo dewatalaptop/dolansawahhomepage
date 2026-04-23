@@ -811,23 +811,24 @@
             const docSnap = await getDoc(doc(db, 'website_data', 'master_config_v4'));
             if (docSnap.exists()) {
                 globalConfig = docSnap.data();
-                // Back-fill any missing keys
-                if (!globalConfig.menuPopups)     globalConfig.menuPopups     = defaultData.menuPopups;
-                if (!globalConfig.general)        globalConfig.general        = defaultData.general;
-                if (!globalConfig.reservationMenu)globalConfig.reservationMenu= defaultData.reservationMenu;
-                if (!globalConfig.regularMenu)    globalConfig.regularMenu    = defaultData.regularMenu;
-                if (!globalConfig.slideshow)      globalConfig.slideshow      = defaultData.slideshow;
-                if (!globalConfig.jeepPackages)   globalConfig.jeepPackages   = defaultData.jeepPackages;
-                if (!globalConfig.gallery)        globalConfig.gallery        = defaultData.gallery;
+                // Back-fill any missing keys with defaults
+                const keys = ['menuPopups','general','reservationMenu','regularMenu','slideshow','jeepPackages','gallery'];
+                keys.forEach(k => { if (!globalConfig[k]) globalConfig[k] = defaultData[k]; });
             } else {
                 globalConfig = defaultData;
             }
         } catch (e) {
-            console.error('GAGAL MEMUAT DATA:', e);
+            console.error('GAGAL MEMUAT DATA (gunakan default):', e);
             globalConfig = defaultData;
         }
 
-        renderWebsite(globalConfig);
+        // Always render, even on error — globalConfig is guaranteed to be set
+        try {
+            renderWebsite(globalConfig);
+        } catch (renderErr) {
+            console.error('Render error:', renderErr);
+        }
+
         finishLoading();
     }
 
@@ -1133,12 +1134,8 @@
     window.closePopup = ()     => popup.classList.remove('show');
 
     // ── Boot ──────────────────────────────────────────────
-    // Use 'load' event if DOM is already ready, otherwise wait for DOMContentLoaded
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadData);
-    } else {
-        loadData();
-    }
+    // type="module" scripts are ALWAYS deferred — DOM is guaranteed ready here.
+    loadData();
 </script>
 ```
 
