@@ -41,14 +41,7 @@
         --r-inner: 14px;
     }
 
-    /* =========================================
-       RESET & BASE
-       ========================================= */
-    *, *::before, *::after {
-        margin: 0; padding: 0;
-        box-sizing: border-box;
-    }
-
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     html { height: 100%; }
 
     body {
@@ -58,8 +51,6 @@
         line-height: 1.6;
         min-height: 100%;
         overflow-x: hidden;
-
-        /* Fixed sawah background */
         background-image: url('https://firebasestorage.googleapis.com/v0/b/slidemonitor.firebasestorage.app/o/uploads_v4%2Fslide_1776779700036_IMG_9957.jpeg?alt=media&token=1a798786-0348-4148-86ed-adaa81885177');
         background-size: cover;
         background-position: center;
@@ -68,21 +59,12 @@
         transition: background 0.5s ease;
     }
 
-    /* Warm tinted overlay — always on, replaced per theme-class below */
     body::before {
         content: '';
-        position: fixed;
-        inset: 0;
-        background: linear-gradient(155deg,
-            rgba(255, 190, 110, 0.32) 0%,
-            rgba(255, 255, 255, 0.08) 50%,
-            rgba(180, 90, 20, 0.28) 100%);
-        z-index: 0;
-        pointer-events: none;
-        transition: background 0.5s ease;
+        position: fixed; inset: 0;
+        background: linear-gradient(155deg, rgba(255,190,110,0.32) 0%, rgba(255,255,255,0.08) 50%, rgba(180,90,20,0.28) 100%);
+        z-index: 0; pointer-events: none; transition: background 0.5s ease;
     }
-
-    /* Per-page colour tints (replacing old solid gradients) */
     body.theme-home::before   { background: linear-gradient(155deg, rgba(255,152,0,0.30) 0%, rgba(255,255,200,0.10) 100%); }
     body.theme-menu::before   { background: linear-gradient(155deg, rgba(255,100,0,0.35) 0%, rgba(200,50,0,0.22) 100%); }
     body.theme-gallery::before{ background: linear-gradient(155deg, rgba(255,200,80,0.30) 0%, rgba(255,150,80,0.22) 100%); }
@@ -95,155 +77,89 @@
        ========================================= */
     .loading-screen {
         position: fixed; width: 100%; height: 100%;
-        background: rgba(255, 248, 235, 0.80);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        display: flex; justify-content: center;
-        align-items: center; flex-direction: column;
+        background: rgba(255,248,235,0.80);
+        backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+        display: flex; justify-content: center; align-items: center; flex-direction: column;
         z-index: 6000;
     }
-    .loading-screen h2 {
-        color: var(--primary-dark);
-        font-weight: 800;
-        font-size: 1.3rem;
-        margin-bottom: 14px;
+    .loading-screen h2 { color: var(--primary-dark); font-weight: 800; font-size: 1.3rem; margin-bottom: 14px; }
+    .loading-bar { width: 80%; max-width: 300px; height: 8px; background: rgba(255,140,66,0.20); border-radius: 10px; overflow: hidden; margin-top: 10px; border: 1px solid rgba(255,140,66,0.25); }
+    .loading-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--primary-dark)); transition: width 0.3s; border-radius: 10px; }
+    .loading-text { font-size: 1rem; margin-top: 10px; font-weight: 800; color: var(--primary); }
+
+    /* Cache status badge */
+    .cache-badge {
+        font-size: 0.7rem; margin-top: 6px; font-weight: 700;
+        padding: 2px 10px; border-radius: 20px;
+        background: rgba(39,174,96,0.15); color: #1a6e3a;
+        border: 1px solid rgba(39,174,96,0.30);
     }
-    .loading-bar {
-        width: 80%; max-width: 300px; height: 8px;
-        background: rgba(255,140,66,0.20);
-        border-radius: 10px; overflow: hidden;
-        margin-top: 10px;
-        border: 1px solid rgba(255,140,66,0.25);
-    }
-    .loading-fill {
-        width: 0%; height: 100%;
-        background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-        transition: width 0.2s;
-        border-radius: 10px;
-    }
-    .loading-text {
-        font-size: 1rem; margin-top: 10px;
-        font-weight: 800; color: var(--primary);
-    }
+    .cache-badge.fresh { background: rgba(33,150,243,0.12); color: #1565c0; border-color: rgba(33,150,243,0.25); }
 
     /* =========================================
        PAGE CONTENT WRAPPER
        ========================================= */
-    .page-content {
-        display: none;
-        padding: 20px 15px;
-        animation: fadeIn 0.6s cubic-bezier(0.22,1,0.36,1);
-        position: relative; z-index: 1;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-16px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
+    .page-content { display: none; padding: 20px 15px; animation: fadeIn 0.6s cubic-bezier(0.22,1,0.36,1); position: relative; z-index: 1; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
 
     /* =========================================
        HOME PAGE
        ========================================= */
     #page-home .header-gallery {
         width: 100%; position: fixed; top: 0; left: 0; z-index: 1000;
-        /* Liquid glass strip behind header image */
         background: rgba(255,255,255,0.18);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
+        backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
         border-bottom: 1px solid var(--glass-border);
-        box-shadow: 0 6px 24px rgba(120,60,10,0.14);
-        cursor: pointer;
+        box-shadow: 0 6px 24px rgba(120,60,10,0.14); cursor: pointer;
     }
-    #page-home .header-gallery img {
-        width: 100%; height: auto;
-        max-height: 200px; object-fit: cover;
-        display: block;
-    }
+    #page-home .header-gallery img { width: 100%; height: auto; max-height: 200px; object-fit: cover; display: block; }
 
     #page-home .main-container {
         max-width: 800px; margin: 0 auto;
         padding: 220px 20px 100px;
         background: var(--glass-mid);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        border-radius: var(--r-card);
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
-        position: relative;
-        /* top specular line */
+        backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+        border-radius: var(--r-card); border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow); position: relative;
     }
     #page-home .main-container::before {
-        content: '';
-        position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
         background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);
         border-radius: var(--r-card) var(--r-card) 0 0;
     }
 
-    /* ── Slideshow ── */
     .slideshow-container {
-        width: 100%; aspect-ratio: 16 / 9;
-        position: relative; overflow: hidden;
-        border-radius: var(--r-inner);
-        margin-bottom: 22px;
-        box-shadow: 0 6px 20px rgba(120,60,10,0.18),
-                    0 1px 0 rgba(255,255,255,0.5) inset;
+        width: 100%; aspect-ratio: 16 / 9; position: relative; overflow: hidden;
+        border-radius: var(--r-inner); margin-bottom: 22px;
+        box-shadow: 0 6px 20px rgba(120,60,10,0.18), 0 1px 0 rgba(255,255,255,0.5) inset;
         border: 1px solid var(--glass-border);
     }
-    .slide-image {
-        position: absolute; top: 0; left: 0;
-        width: 100%; height: 100%;
-        object-fit: cover; opacity: 0;
-        transition: opacity 1.5s ease-in-out;
-    }
+    .slide-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out; }
     .slide-image.active { opacity: 1; }
-    .frame-overlay {
-        position: absolute; top: 0; left: 0;
-        width: 30%; height: auto; z-index: 20;
-        pointer-events: none;
-    }
+    .frame-overlay { position: absolute; top: 0; left: 0; width: 30%; height: auto; z-index: 20; pointer-events: none; }
     @media (max-width: 480px) { .frame-overlay { width: 40%; } }
 
-    /* ── Menu Cards Grid ── */
-    .menu-grid-container {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 14px; padding: 10px 0; width: 100%;
-    }
+    .menu-grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 10px 0; width: 100%; }
     .menu-card {
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        padding: 20px 10px;
-        border-radius: var(--r-card);
-        text-decoration: none; color: white;
-        box-shadow: 0 6px 20px rgba(120,60,10,0.22),
-                    0 1px 0 rgba(255,255,255,0.35) inset;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 20px 10px; border-radius: var(--r-card); text-decoration: none; color: white;
+        box-shadow: 0 6px 20px rgba(120,60,10,0.22), 0 1px 0 rgba(255,255,255,0.35) inset;
         transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s;
         height: 100%; aspect-ratio: 1.3 / 1; cursor: pointer;
-        border: 1px solid rgba(255,255,255,0.35);
-        position: relative; overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.35); position: relative; overflow: hidden;
     }
-    /* Glass sheen on cards */
-    .menu-card::after {
-        content: '';
-        position: absolute; top: 0; left: 0; right: 0; height: 40%;
-        background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent);
-        pointer-events: none;
-    }
+    .menu-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 40%; background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent); pointer-events: none; }
     .menu-card:active  { transform: scale(0.94); }
-    .menu-card:hover   {
-        transform: translateY(-6px);
-        box-shadow: 0 14px 32px rgba(120,60,10,0.28), 0 1px 0 rgba(255,255,255,0.4) inset;
-    }
+    .menu-card:hover   { transform: translateY(-6px); box-shadow: 0 14px 32px rgba(120,60,10,0.28), 0 1px 0 rgba(255,255,255,0.4) inset; }
     .menu-card svg { width: 36px; height: 36px; margin-bottom: 10px; fill: white; position: relative; z-index: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25)); }
     .menu-card span { font-size: 0.92rem; font-weight: 700; text-align: center; line-height: 1.2; position: relative; z-index: 1; text-shadow: 0 1px 4px rgba(0,0,0,0.25); }
 
-    /* Card colours — now with glass feel */
     .bg-orange { background: linear-gradient(135deg, rgba(255,152,0,0.88), rgba(230,100,0,0.92)); }
     .bg-green  { background: linear-gradient(135deg, rgba(56,176,0,0.82), rgba(30,120,0,0.90)); }
     .bg-blue   { background: linear-gradient(135deg, rgba(33,150,243,0.85), rgba(25,118,210,0.92)); }
 
     .full-width-btn {
-        grid-column: span 2;
-        flex-direction: row; aspect-ratio: auto; padding: 15px;
+        grid-column: span 2; flex-direction: row; aspect-ratio: auto; padding: 15px;
         background: linear-gradient(135deg, rgba(200,30,30,0.90), rgba(180,10,10,0.95));
         border: 2px solid rgba(255,235,59,0.70);
         animation: blink-effect 1.5s infinite alternate;
@@ -254,732 +170,202 @@
         to   { box-shadow: 0 0 22px rgba(255,152,0,0.9), 0 1px 0 rgba(255,255,255,0.3) inset; }
     }
 
-    /* ── Floating WA button ── */
     #page-home .floating-button {
-        display: flex; justify-content: center;
-        align-items: center; gap: 10px;
-        width: 90%; max-width: 320px;
-        padding: 14px; margin: 28px auto 10px;
-        font-size: clamp(1rem, 4vw, 1.05rem);
-        font-weight: 800; text-decoration: none;
+        display: flex; justify-content: center; align-items: center; gap: 10px;
+        width: 90%; max-width: 320px; padding: 14px; margin: 28px auto 10px;
+        font-size: clamp(1rem, 4vw, 1.05rem); font-weight: 800; text-decoration: none;
         color: var(--dark);
         background: linear-gradient(135deg, var(--secondary), #e6a800);
         border-radius: var(--r-btn); border: none; cursor: pointer;
-        box-shadow: 0 6px 22px rgba(255,209,102,0.55),
-                    0 1px 0 rgba(255,255,255,0.5) inset;
-        animation: blink-float 1.5s infinite alternate;
-        font-family: 'Nunito', sans-serif;
+        box-shadow: 0 6px 22px rgba(255,209,102,0.55), 0 1px 0 rgba(255,255,255,0.5) inset;
+        animation: blink-float 1.5s infinite alternate; font-family: 'Nunito', sans-serif;
     }
     #page-home .floating-button svg { width: 24px; height: 24px; }
-    @keyframes blink-float {
-        from { transform: scale(1); }
-        50%  { transform: scale(1.02); }
-        to   { transform: scale(1); }
-    }
+    @keyframes blink-float { from { transform: scale(1); } 50% { transform: scale(1.02); } to { transform: scale(1); } }
 
-    /* ── Floating Home Button ── */
     #floating-home-button {
         position: fixed; bottom: 20px; left: 20px;
         background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white;
-        border-radius: 30px; border: none;
+        color: white; border-radius: 30px; border: none;
         display: none; align-items: center; gap: 8px;
-        padding: 10px 20px; font-weight: 800;
-        font-size: 14px; cursor: pointer;
-        box-shadow: 0 6px 18px rgba(255,140,66,0.45);
-        z-index: 3500; transition: transform 0.2s;
-        font-family: 'Nunito', sans-serif;
-        border: 1px solid rgba(255,255,255,0.35);
+        padding: 10px 20px; font-weight: 800; font-size: 14px; cursor: pointer;
+        box-shadow: 0 6px 18px rgba(255,140,66,0.45); z-index: 3500; transition: transform 0.2s;
+        font-family: 'Nunito', sans-serif; border: 1px solid rgba(255,255,255,0.35);
     }
     #floating-home-button:hover { transform: scale(1.08); }
     #floating-home-button svg { width: 20px; height: 20px; }
 
-    /* ── Member Button ── */
-    @keyframes bounce-button {
-        0%, 100% { transform: translateY(0); }
-        50%       { transform: translateY(-8px); }
-    }
+    @keyframes bounce-button { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
     #floating-member-button {
         position: fixed; bottom: 20px; right: 20px;
         width: 130px; height: 130px;
-        background: transparent; border: none;
-        padding: 0; border-radius: 50%;
+        background: transparent; border: none; padding: 0; border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        cursor: pointer; z-index: 3500;
-        text-decoration: none;
+        cursor: pointer; z-index: 3500; text-decoration: none;
         animation: bounce-button 1.5s infinite ease-in-out;
         filter: drop-shadow(0 6px 14px rgba(0,0,0,0.30));
     }
-    #floating-member-button img {
-        width: 100%; height: 100%;
-        border-radius: 50%; object-fit: cover;
-    }
+    #floating-member-button img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
     /* =========================================
        MENU RESERVASI PAGE
        ========================================= */
     #page-menu .container {
         max-width: 600px; margin: auto;
-        background: var(--glass-mid);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        padding: 24px;
-        border-radius: var(--r-card);
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
-        color: var(--dark);
-        position: relative;
+        background: var(--glass-mid); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+        padding: 24px; border-radius: var(--r-card); border: 1px solid var(--glass-border);
+        box-shadow: var(--glass-shadow); color: var(--dark); position: relative;
     }
-    #page-menu .container::before {
-        content: '';
-        position: absolute; top: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);
-        border-radius: var(--r-card) var(--r-card) 0 0;
-    }
-    #page-menu h1 {
-        font-size: clamp(1.6rem, 5vw, 2rem);
-        color: var(--primary-dark);
-        text-shadow: 0 1px 4px rgba(255,255,255,0.6);
-        margin-bottom: 20px; font-weight: 900;
-    }
-    #page-menu h2 {
-        font-size: clamp(1.1rem, 4vw, 1.35rem);
-        color: var(--primary-dark);
-        margin-top: 28px; margin-bottom: 12px;
-        font-weight: 800;
-    }
-    #page-menu .image-container {
-        display: flex; justify-content: center;
-        margin-bottom: 18px; cursor: pointer;
-    }
-    #page-menu .image-container img {
-        width: 100%; max-width: 100%;
-        border-radius: var(--r-inner);
-        border: 2px solid var(--glass-border);
-        transition: transform 0.3s;
-        box-shadow: var(--glass-shadow-sm);
-    }
+    #page-menu .container::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); border-radius: var(--r-card) var(--r-card) 0 0; }
+    #page-menu h1 { font-size: clamp(1.6rem,5vw,2rem); color: var(--primary-dark); text-shadow: 0 1px 4px rgba(255,255,255,0.6); margin-bottom: 20px; font-weight: 900; }
+    #page-menu h2 { font-size: clamp(1.1rem,4vw,1.35rem); color: var(--primary-dark); margin-top: 28px; margin-bottom: 12px; font-weight: 800; }
+    #page-menu .image-container { display: flex; justify-content: center; margin-bottom: 18px; cursor: pointer; }
+    #page-menu .image-container img { width: 100%; max-width: 100%; border-radius: var(--r-inner); border: 2px solid var(--glass-border); transition: transform 0.3s; box-shadow: var(--glass-shadow-sm); }
     #page-menu .image-container img:hover { transform: scale(1.03); }
 
     /* =========================================
        GALLERY PAGE
        ========================================= */
     #page-gallery .container {
-        max-width: 95%; margin: 20px auto;
-        padding: 22px;
-        background: var(--glass-mid);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        border-radius: var(--r-card);
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
+        max-width: 95%; margin: 20px auto; padding: 22px;
+        background: var(--glass-mid); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur);
+        border-radius: var(--r-card); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
     }
-    #page-gallery .container h1 {
-        color: var(--primary-dark); font-weight: 900;
-        font-size: clamp(1.5rem, 5vw, 2rem);
-        margin-bottom: 6px;
-    }
-    #page-gallery .container > p {
-        color: var(--text-muted); font-weight: 600; margin-bottom: 16px;
-    }
-    #page-gallery .gallery {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 10px; padding: 10px;
-    }
-    #page-gallery .gallery img {
-        width: 100%; height: 100%;
-        object-fit: cover; aspect-ratio: 1 / 1;
-        border-radius: var(--r-inner); cursor: pointer;
-        transition: transform 0.28s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.28s;
-        border: 1.5px solid var(--glass-border);
-        box-shadow: var(--glass-shadow-sm);
-    }
-    #page-gallery .gallery img:hover {
-        transform: scale(1.07);
-        box-shadow: 0 10px 28px rgba(120,60,10,0.22);
-    }
+    #page-gallery .container h1 { color: var(--primary-dark); font-weight: 900; font-size: clamp(1.5rem,5vw,2rem); margin-bottom: 6px; }
+    #page-gallery .container > p { color: var(--text-muted); font-weight: 600; margin-bottom: 16px; }
+    #page-gallery .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; padding: 10px; }
+    #page-gallery .gallery img { width: 100%; height: 100%; object-fit: cover; aspect-ratio: 1/1; border-radius: var(--r-inner); cursor: pointer; transition: transform 0.28s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.28s; border: 1.5px solid var(--glass-border); box-shadow: var(--glass-shadow-sm); }
+    #page-gallery .gallery img:hover { transform: scale(1.07); box-shadow: 0 10px 28px rgba(120,60,10,0.22); }
 
     /* =========================================
        JADWAL PAGE
        ========================================= */
-    #page-jadwal .container {
-        max-width: 500px; margin: 40px auto;
-        padding: 36px 28px;
-        background: var(--glass-mid);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        border-radius: var(--r-card);
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
-    }
-    #page-jadwal h1 {
-        color: var(--primary-dark); font-weight: 900;
-        font-size: clamp(1.4rem, 5vw, 1.8rem); margin-bottom: 20px;
-    }
-    #page-jadwal .schedule {
-        font-size: 1.1rem; font-weight: 700;
-        color: var(--text); line-height: 1.8;
-    }
-    #page-jadwal .footer {
-        margin-top: 24px; font-size: 0.85rem;
-        color: var(--text-muted); font-weight: 600;
-    }
+    #page-jadwal .container { max-width: 500px; margin: 40px auto; padding: 36px 28px; background: var(--glass-mid); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border-radius: var(--r-card); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+    #page-jadwal h1 { color: var(--primary-dark); font-weight: 900; font-size: clamp(1.4rem,5vw,1.8rem); margin-bottom: 20px; }
+    #page-jadwal .schedule { font-size: 1.1rem; font-weight: 700; color: var(--text); line-height: 1.8; }
+    #page-jadwal .footer { margin-top: 24px; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
 
     /* =========================================
        JEEP PAGE
        ========================================= */
-    #page-jeep .container {
-        max-width: 1200px; margin: 0 auto; padding: 20px 15px;
-    }
-    #page-jeep h1 {
-        font-size: clamp(1.8rem, 6vw, 2.6rem);
-        color: var(--secondary);
-        text-transform: uppercase; margin-bottom: 10px;
-        text-shadow: 0 2px 12px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.15);
-        font-weight: 900; letter-spacing: -0.5px;
-    }
-    #page-jeep p.subtitle {
-        font-size: clamp(0.95rem, 3vw, 1.1rem);
-        color: rgba(255,255,255,0.75);
-        margin-bottom: 36px; font-weight: 600;
-    }
-    .jeep-packages-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 22px;
-    }
-    .jeep-package-card {
-        background: rgba(255,255,255,0.08);
-        backdrop-filter: var(--blur-sm);
-        -webkit-backdrop-filter: var(--blur-sm);
-        border: 1px solid rgba(255,255,255,0.22);
-        border-radius: var(--r-card);
-        color: white; cursor: pointer;
-        transition: transform 0.28s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.28s;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.28);
-        overflow: hidden; display: flex; flex-direction: column;
-    }
-    .jeep-package-card:hover {
-        transform: translateY(-10px);
-        background: rgba(255,255,255,0.14);
-        box-shadow: 0 16px 40px rgba(0,0,0,0.38);
-    }
-    .jeep-package-card img {
-        width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
-    }
-    .jeep-package-card .card-content {
-        padding: 20px; text-align: center;
-        flex-grow: 1; display: flex;
-        flex-direction: column; justify-content: center;
-    }
-    .jeep-package-card h3 {
-        color: var(--secondary);
-        margin-bottom: 8px; font-size: 1.2rem; font-weight: 800;
-    }
-    .jeep-package-card span {
-        color: rgba(255,255,255,0.65);
-        font-size: 0.85rem; font-weight: 600;
-    }
+    #page-jeep .container { max-width: 1200px; margin: 0 auto; padding: 20px 15px; }
+    #page-jeep h1 { font-size: clamp(1.8rem,6vw,2.6rem); color: var(--secondary); text-transform: uppercase; margin-bottom: 10px; text-shadow: 0 2px 12px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.15); font-weight: 900; letter-spacing: -0.5px; }
+    #page-jeep p.subtitle { font-size: clamp(0.95rem,3vw,1.1rem); color: rgba(255,255,255,0.75); margin-bottom: 36px; font-weight: 600; }
+    .jeep-packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+    .jeep-package-card { background: rgba(255,255,255,0.08); backdrop-filter: var(--blur-sm); -webkit-backdrop-filter: var(--blur-sm); border: 1px solid rgba(255,255,255,0.22); border-radius: var(--r-card); color: white; cursor: pointer; transition: transform 0.28s cubic-bezier(0.34,1.4,0.64,1), box-shadow 0.28s; box-shadow: 0 6px 24px rgba(0,0,0,0.28); overflow: hidden; display: flex; flex-direction: column; }
+    .jeep-package-card:hover { transform: translateY(-10px); background: rgba(255,255,255,0.14); box-shadow: 0 16px 40px rgba(0,0,0,0.38); }
+    .jeep-package-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; }
+    .jeep-package-card .card-content { padding: 20px; text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+    .jeep-package-card h3 { color: var(--secondary); margin-bottom: 8px; font-size: 1.2rem; font-weight: 800; }
+    .jeep-package-card span { color: rgba(255,255,255,0.65); font-size: 0.85rem; font-weight: 600; }
 
     /* =========================================
        MENU REGULER PAGE
        ========================================= */
-    #page-reguler .menu-container {
-        max-width: 800px; margin: 0 auto; padding-bottom: 90px;
-    }
-    #page-reguler h1 {
-        color: var(--primary-dark); margin-bottom: 24px;
-        font-size: clamp(1.7rem, 6vw, 2.3rem);
-        font-weight: 900;
-        text-shadow: 0 1px 4px rgba(255,255,255,0.5);
-    }
-    #page-reguler > p {
-        color: var(--text-muted); font-size: 0.85rem;
-        font-weight: 600; margin-top: 16px;
-    }
-    #page-reguler .menu-category {
-        background: var(--glass-mid);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        border: 1px solid var(--glass-border);
-        border-radius: var(--r-card);
-        box-shadow: var(--glass-shadow);
-        margin-bottom: 24px; padding: 20px;
-        text-align: left; overflow: hidden;
-        position: relative;
-    }
-    #page-reguler .menu-category::before {
-        content: '';
-        position: absolute; top: 0; left: 0; right: 0; height: 1px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent);
-    }
-    #page-reguler .category-title {
-        color: var(--primary-dark);
-        padding-bottom: 10px; margin-bottom: 18px;
-        border-bottom: 2px solid rgba(255,140,66,0.35);
-        font-size: clamp(1.2rem, 5vw, 1.6rem);
-        font-weight: 900;
-    }
-    #page-reguler .menu-item {
-        display: flex; justify-content: space-between;
-        align-items: baseline; padding: 11px 0;
-        border-bottom: 1px dashed rgba(255,255,255,0.45);
-    }
+    #page-reguler .menu-container { max-width: 800px; margin: 0 auto; padding-bottom: 90px; }
+    #page-reguler h1 { color: var(--primary-dark); margin-bottom: 24px; font-size: clamp(1.7rem,6vw,2.3rem); font-weight: 900; text-shadow: 0 1px 4px rgba(255,255,255,0.5); }
+    #page-reguler .menu-category { background: var(--glass-mid); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1px solid var(--glass-border); border-radius: var(--r-card); box-shadow: var(--glass-shadow); margin-bottom: 24px; padding: 20px; text-align: left; overflow: hidden; position: relative; }
+    #page-reguler .menu-category::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.85), transparent); }
+    #page-reguler .category-title { color: var(--primary-dark); padding-bottom: 10px; margin-bottom: 18px; border-bottom: 2px solid rgba(255,140,66,0.35); font-size: clamp(1.2rem,5vw,1.6rem); font-weight: 900; }
+    #page-reguler .menu-item { display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-bottom: 1px dashed rgba(255,255,255,0.45); }
     #page-reguler .menu-item:last-child { border-bottom: none; }
     #page-reguler .item-name { font-weight: 700; color: var(--text); font-size: 0.95rem; }
     #page-reguler .item-dots { flex-grow: 1; }
-    #page-reguler .item-price {
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--secondary), #e6a800);
-        padding: 3px 10px; border-radius: 20px;
-        font-size: 0.88rem; color: var(--dark);
-        box-shadow: 0 2px 8px rgba(255,209,102,0.35);
-        white-space: nowrap;
-    }
+    #page-reguler .item-price { font-weight: 800; background: linear-gradient(135deg, var(--secondary), #e6a800); padding: 3px 10px; border-radius: 20px; font-size: 0.88rem; color: var(--dark); box-shadow: 0 2px 8px rgba(255,209,102,0.35); white-space: nowrap; }
 
     /* =========================================
        MODALS & OVERLAYS
        ========================================= */
-    /* Fullscreen image modal */
-    .fullscreen-modal {
-        position: fixed; top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(10,5,0,0.90);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        display: none; justify-content: center;
-        align-items: center; opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.3s;
-        z-index: 5000;
-    }
+    .fullscreen-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,5,0,0.90); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: none; justify-content: center; align-items: center; opacity: 0; visibility: hidden; transition: opacity 0.3s; z-index: 5000; }
     .fullscreen-modal.show { display: flex; opacity: 1; visibility: visible; }
-    .fullscreen-modal img {
-        max-width: 95%; max-height: 90%;
-        border-radius: var(--r-inner);
-        box-shadow: 0 0 40px rgba(255,255,255,0.12);
-    }
-    .close-btn {
-        position: absolute; top: 20px; right: 20px;
-        font-size: 22px; color: white;
-        background: rgba(220,30,30,0.75);
-        backdrop-filter: blur(8px);
-        border: 1.5px solid rgba(255,255,255,0.25);
-        border-radius: 50%; width: 42px; height: 42px;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: background 0.2s;
-    }
+    .fullscreen-modal img { max-width: 95%; max-height: 90%; border-radius: var(--r-inner); box-shadow: 0 0 40px rgba(255,255,255,0.12); }
+    .close-btn { position: absolute; top: 20px; right: 20px; font-size: 22px; color: white; background: rgba(220,30,30,0.75); backdrop-filter: blur(8px); border: 1.5px solid rgba(255,255,255,0.25); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
     .close-btn:hover { background: rgba(220,30,30,0.95); }
 
-    /* Generic popup */
-    .popup-overlay {
-        position: fixed; top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(10,5,0,0.65);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        display: none; justify-content: center;
-        align-items: center; z-index: 4000;
-        padding: 20px;
-        animation: fadeInPopup 0.3s ease-out;
-    }
+    .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,5,0,0.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; justify-content: center; align-items: center; z-index: 4000; padding: 20px; animation: fadeInPopup 0.3s ease-out; }
     .popup-overlay.show { display: flex; }
-    .popup-content {
-        background: var(--glass-high);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        padding: 28px;
-        border-radius: var(--r-card);
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
-        max-width: 500px; width: 100%;
-        text-align: center; position: relative;
-        color: var(--dark);
-    }
-    .popup-content h2 {
-        font-size: 1.3rem; font-weight: 800;
-        color: var(--primary-dark); margin-bottom: 12px;
-    }
+    .popup-content { background: var(--glass-high); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); padding: 28px; border-radius: var(--r-card); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); max-width: 500px; width: 100%; text-align: center; position: relative; color: var(--dark); }
+    .popup-content h2 { font-size: 1.3rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 12px; }
     .popup-content p { font-weight: 600; color: var(--text); }
-    .popup-button {
-        background: linear-gradient(135deg, var(--danger), #c0392b);
-        color: white; padding: 10px 30px;
-        border-radius: var(--r-btn); border: none;
-        cursor: pointer; margin-top: 16px;
-        font-weight: 800; font-family: 'Nunito', sans-serif;
-        font-size: 0.95rem;
-        box-shadow: 0 4px 14px rgba(231,76,60,0.35);
-        transition: transform 0.2s;
-    }
+    .popup-button { background: linear-gradient(135deg, var(--danger), #c0392b); color: white; padding: 10px 30px; border-radius: var(--r-btn); border: none; cursor: pointer; margin-top: 16px; font-weight: 800; font-family: 'Nunito', sans-serif; font-size: 0.95rem; box-shadow: 0 4px 14px rgba(231,76,60,0.35); transition: transform 0.2s; }
     .popup-button:hover { transform: translateY(-2px); }
-    @keyframes fadeInPopup {
-        from { opacity: 0; transform: scale(0.92); }
-        to   { opacity: 1; transform: scale(1); }
-    }
+    @keyframes fadeInPopup { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
 
-    /* Promo / Menu image popup */
-    .promo-popup-overlay {
-        position: fixed; top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(10,5,0,0.88);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        z-index: 6000;
-        display: none; justify-content: center;
-        align-items: center; padding: 10px;
-        animation: popIn 0.35s cubic-bezier(0.22,1,0.36,1);
-    }
-    @keyframes popIn {
-        0%   { opacity:0; transform: scale(0.85); }
-        100% { opacity:1; transform: scale(1); }
-    }
-    .promo-popup-container {
-        position: relative;
-        max-width: 90%; max-height: 90%;
-        display: flex; justify-content: center; align-items: center;
-    }
-    .promo-popup-container img {
-        width: auto; height: auto;
-        max-width: 100%; max-height: 85vh;
-        border-radius: var(--r-inner);
-        box-shadow: 0 0 40px rgba(255,255,255,0.15);
-        object-fit: contain;
-    }
-    .promo-close-btn {
-        position: absolute; top: -16px; right: -16px;
-        background: rgba(220,20,20,0.88);
-        backdrop-filter: blur(8px);
-        color: white; border: 2px solid rgba(255,255,255,0.5);
-        width: 40px; height: 40px; border-radius: 50%;
-        font-weight: 900; font-size: 18px; cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-        display: flex; align-items: center; justify-content: center;
-        transition: background 0.2s;
-    }
+    .promo-popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,5,0,0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 6000; display: none; justify-content: center; align-items: center; padding: 10px; animation: popIn 0.35s cubic-bezier(0.22,1,0.36,1); }
+    @keyframes popIn { 0% { opacity:0; transform: scale(0.85); } 100% { opacity:1; transform: scale(1); } }
+    .promo-popup-container { position: relative; max-width: 90%; max-height: 90%; display: flex; justify-content: center; align-items: center; }
+    .promo-popup-container img { width: auto; height: auto; max-width: 100%; max-height: 85vh; border-radius: var(--r-inner); box-shadow: 0 0 40px rgba(255,255,255,0.15); object-fit: contain; }
+    .promo-close-btn { position: absolute; top: -16px; right: -16px; background: rgba(220,20,20,0.88); backdrop-filter: blur(8px); color: white; border: 2px solid rgba(255,255,255,0.5); width: 40px; height: 40px; border-radius: 50%; font-weight: 900; font-size: 18px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
     .promo-close-btn:hover { background: rgba(220,20,20,1); }
 
-    /* =========================================
-       SCROLL INDICATOR
-       ========================================= */
-    #scroll-indicator {
-        position: fixed; bottom: 20px; right: 20px;
-        background: rgba(0,0,0,0.50);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        color: white; padding: 8px 16px;
-        border-radius: 20px; font-size: 14px;
-        z-index: 3000; display: none;
-        align-items: center; gap: 5px;
-        animation: bounce 2s infinite ease-in-out;
-        border: 1px solid rgba(255,255,255,0.25);
-        font-weight: 700;
-    }
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50%       { transform: translateY(-10px); }
-    }
+    #scroll-indicator { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.50); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; z-index: 3000; display: none; align-items: center; gap: 5px; animation: bounce 2s infinite ease-in-out; border: 1px solid rgba(255,255,255,0.25); font-weight: 700; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 
     /* =========================================
        ADMIN LOGIN MODAL
        ========================================= */
-    .admin-modal {
-        display: none; position: fixed; top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(10,5,0,0.75);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        z-index: 9999; justify-content: center; align-items: center;
-    }
-    .admin-box {
-        background: var(--glass-high);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        padding: 32px 28px;
-        border-radius: var(--r-card);
-        border: 1px solid var(--glass-border);
-        box-shadow: var(--glass-shadow);
-        width: 90%; max-width: 400px;
-        text-align: center;
-    }
-    .admin-box h2 {
-        color: var(--primary-dark); margin-bottom: 18px;
-        font-weight: 900; font-size: 1.4rem;
-    }
-    .admin-box input {
-        width: 100%; padding: 12px 16px;
-        margin: 8px 0;
-        background: rgba(255,255,255,0.55);
-        border: 1.5px solid var(--glass-border);
-        border-radius: var(--r-inner);
-        font-size: 1rem; font-family: 'Nunito', sans-serif;
-        font-weight: 600; color: var(--dark);
-        transition: border-color 0.25s;
-    }
-    .admin-box input:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(255,140,66,0.18);
-        outline: none;
-    }
-    .admin-box button {
-        width: 100%; padding: 12px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: white; border: none;
-        border-radius: var(--r-btn); cursor: pointer;
-        font-weight: 800; margin-top: 12px;
-        font-size: 1rem; font-family: 'Nunito', sans-serif;
-        box-shadow: 0 5px 16px rgba(255,140,66,0.40);
-        transition: transform 0.2s;
-    }
+    .admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,5,0,0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 9999; justify-content: center; align-items: center; }
+    .admin-box { background: var(--glass-high); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); padding: 32px 28px; border-radius: var(--r-card); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); width: 90%; max-width: 400px; text-align: center; }
+    .admin-box h2 { color: var(--primary-dark); margin-bottom: 18px; font-weight: 900; font-size: 1.4rem; }
+    .admin-box input { width: 100%; padding: 12px 16px; margin: 8px 0; background: rgba(255,255,255,0.55); border: 1.5px solid var(--glass-border); border-radius: var(--r-inner); font-size: 1rem; font-family: 'Nunito', sans-serif; font-weight: 600; color: var(--dark); transition: border-color 0.25s; }
+    .admin-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,140,66,0.18); outline: none; }
+    .admin-box button { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: var(--r-btn); cursor: pointer; font-weight: 800; margin-top: 12px; font-size: 1rem; font-family: 'Nunito', sans-serif; box-shadow: 0 5px 16px rgba(255,140,66,0.40); transition: transform 0.2s; }
     .admin-box button:hover { transform: translateY(-2px); }
-    .admin-box button.close-admin {
-        background: rgba(90,90,90,0.55);
-        backdrop-filter: blur(8px);
-        box-shadow: none; margin-top: 8px;
-        color: var(--dark);
-    }
+    .admin-box button.close-admin { background: rgba(90,90,90,0.55); backdrop-filter: blur(8px); box-shadow: none; margin-top: 8px; color: var(--dark); }
 
-    /* =========================================
-       ADMIN PANEL BUTTON (top-right)
-       ========================================= */
-    .admin-panel-btn {
-        display: none; position: fixed; top: 20px; right: 20px;
-        z-index: 8000;
-        background: rgba(200,30,30,0.82);
-        backdrop-filter: var(--blur-sm);
-        -webkit-backdrop-filter: var(--blur-sm);
-        color: white; padding: 10px 20px;
-        border-radius: 30px; cursor: pointer;
-        font-weight: 800; font-size: 0.9rem;
-        box-shadow: 0 4px 16px rgba(200,30,30,0.40);
-        border: 1.5px solid rgba(255,255,255,0.30);
-        transition: transform 0.2s; font-family: 'Nunito', sans-serif;
-    }
+    .admin-panel-btn { display: none; position: fixed; top: 20px; right: 20px; z-index: 8000; background: rgba(200,30,30,0.82); backdrop-filter: var(--blur-sm); -webkit-backdrop-filter: var(--blur-sm); color: white; padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: 800; font-size: 0.9rem; box-shadow: 0 4px 16px rgba(200,30,30,0.40); border: 1.5px solid rgba(255,255,255,0.30); transition: transform 0.2s; font-family: 'Nunito', sans-serif; }
     .admin-panel-btn:hover { transform: scale(1.06); }
 
     /* =========================================
        ADMIN DASHBOARD PANEL
        ========================================= */
-    .admin-dashboard {
-        display: none; position: fixed;
-        top: 0; right: 0;
-        width: 100%; max-width: 450px; height: 100%;
-        background: rgba(255,248,235,0.82);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
-        z-index: 9000; overflow-y: auto;
-        padding: 0;
-        box-shadow: -8px 0 32px rgba(120,60,10,0.22);
-        border-left: 1px solid var(--glass-border);
-    }
-    .dashboard-header {
-        background: rgba(255,255,255,0.45);
-        backdrop-filter: var(--blur-sm);
-        -webkit-backdrop-filter: var(--blur-sm);
-        padding: 18px 20px;
-        border-bottom: 1.5px solid var(--glass-border);
-        display: flex; justify-content: space-between;
-        align-items: center; position: sticky;
-        top: 0; z-index: 10;
-    }
-    .dashboard-header h2 {
-        font-size: 1.1rem; font-weight: 900;
-        color: var(--primary-dark);
-    }
-    .dashboard-header button {
-        background: rgba(231,76,60,0.15);
-        backdrop-filter: blur(8px);
-        color: var(--danger);
-        border: 1.5px solid rgba(231,76,60,0.35);
-        padding: 7px 14px; border-radius: 10px;
-        font-weight: 800; width: auto; margin: 0;
-        cursor: pointer; font-family: 'Nunito', sans-serif;
-        font-size: 0.9rem; transition: background 0.2s;
-    }
+    .admin-dashboard { display: none; position: fixed; top: 0; right: 0; width: 100%; max-width: 450px; height: 100%; background: rgba(255,248,235,0.82); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); z-index: 9000; overflow-y: auto; padding: 0; box-shadow: -8px 0 32px rgba(120,60,10,0.22); border-left: 1px solid var(--glass-border); }
+    .dashboard-header { background: rgba(255,255,255,0.45); backdrop-filter: var(--blur-sm); -webkit-backdrop-filter: var(--blur-sm); padding: 18px 20px; border-bottom: 1.5px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+    .dashboard-header h2 { font-size: 1.1rem; font-weight: 900; color: var(--primary-dark); }
+    .dashboard-header button { background: rgba(231,76,60,0.15); backdrop-filter: blur(8px); color: var(--danger); border: 1.5px solid rgba(231,76,60,0.35); padding: 7px 14px; border-radius: 10px; font-weight: 800; width: auto; margin: 0; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 0.9rem; transition: background 0.2s; }
     .dashboard-header button:hover { background: rgba(231,76,60,0.28); }
     .dashboard-content { padding: 18px; padding-bottom: 100px; }
 
-    /* Admin form groups */
-    .upload-group {
-        background: rgba(255,255,255,0.50);
-        backdrop-filter: var(--blur-sm);
-        -webkit-backdrop-filter: var(--blur-sm);
-        border: 1.5px solid var(--glass-border);
-        padding: 16px; margin-bottom: 18px;
-        border-radius: var(--r-card);
-        text-align: left;
-        box-shadow: var(--glass-shadow-sm);
-    }
-    .upload-group h3 {
-        font-size: 15px; margin-bottom: 14px;
-        color: var(--primary-dark); font-weight: 900;
-        border-bottom: 2px solid rgba(255,140,66,0.25);
-        padding-bottom: 8px;
-        display: flex; justify-content: space-between; align-items: center;
-    }
+    /* Admin cache info */
+    .cache-info-bar { background: rgba(33,150,243,0.10); border: 1px solid rgba(33,150,243,0.25); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: #1565c0; font-weight: 700; text-align: left; }
+    .cache-info-bar span { display: block; margin-bottom: 3px; }
+    .btn-clear-cache { background: rgba(231,76,60,0.10); color: var(--danger); border: 1px solid rgba(231,76,60,0.25); padding: 4px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 800; font-family: 'Nunito', sans-serif; margin-top: 6px; }
 
-    .preview-img {
-        width: 80px; height: 80px; object-fit: cover;
-        border-radius: 10px; border: 1.5px solid var(--glass-border);
-        background: rgba(255,220,180,0.30);
-        box-shadow: var(--glass-shadow-sm);
-        flex-shrink: 0;
-    }
+    .upload-group { background: rgba(255,255,255,0.50); backdrop-filter: var(--blur-sm); -webkit-backdrop-filter: var(--blur-sm); border: 1.5px solid var(--glass-border); padding: 16px; margin-bottom: 18px; border-radius: var(--r-card); text-align: left; box-shadow: var(--glass-shadow-sm); }
+    .upload-group h3 { font-size: 15px; margin-bottom: 14px; color: var(--primary-dark); font-weight: 900; border-bottom: 2px solid rgba(255,140,66,0.25); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
 
-    .admin-item-row {
-        display: flex; gap: 10px; align-items: flex-start;
-        margin-bottom: 12px; padding-bottom: 12px;
-        border-bottom: 1px solid rgba(255,255,255,0.50);
-    }
+    .preview-img { width: 80px; height: 80px; object-fit: cover; border-radius: 10px; border: 1.5px solid var(--glass-border); background: rgba(255,220,180,0.30); box-shadow: var(--glass-shadow-sm); flex-shrink: 0; }
+
+    .admin-item-row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.50); }
     .admin-item-row:last-child { border-bottom: none; }
-    .admin-item-info {
-        flex-grow: 1; display: flex; flex-direction: column; gap: 5px;
-    }
-    .admin-item-info input[type="text"],
-    .admin-item-info input[type="number"] {
-        padding: 8px 12px;
-        background: rgba(255,255,255,0.60);
-        border: 1.5px solid var(--glass-border);
-        border-radius: 10px; font-size: 14px;
-        font-family: 'Nunito', sans-serif;
-        font-weight: 600; color: var(--dark);
-        width: 100%; transition: border-color 0.2s;
-    }
-    .admin-item-info input[type="text"]:focus,
-    .admin-item-info input[type="number"]:focus {
-        border-color: var(--primary); outline: none;
-        box-shadow: 0 0 0 3px rgba(255,140,66,0.15);
-    }
-    .admin-item-info label {
-        font-size: 12px; color: var(--text-muted);
-        font-weight: 800; text-transform: uppercase;
-        letter-spacing: 0.3px;
-    }
+    .admin-item-info { flex-grow: 1; display: flex; flex-direction: column; gap: 5px; }
+    .admin-item-info input[type="text"], .admin-item-info input[type="number"] { padding: 8px 12px; background: rgba(255,255,255,0.60); border: 1.5px solid var(--glass-border); border-radius: 10px; font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: 600; color: var(--dark); width: 100%; transition: border-color 0.2s; }
+    .admin-item-info input[type="text"]:focus, .admin-item-info input[type="number"]:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(255,140,66,0.15); }
+    .admin-item-info label { font-size: 12px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }
     .admin-item-info input[type="file"] { font-size: 12px; color: var(--text); }
 
-    .admin-sub-section {
-        margin-left: 10px; padding: 10px 12px;
-        background: rgba(255,255,255,0.40);
-        border-left: 3px solid rgba(255,140,66,0.35);
-        margin-top: 5px; border-radius: 0 8px 8px 0;
-    }
-    .admin-sub-item {
-        display: flex; gap: 5px; margin-bottom: 6px; align-items: center;
-    }
-    .admin-sub-item input[type="text"] {
-        padding: 7px 10px;
-        background: rgba(255,255,255,0.60);
-        border: 1.5px solid var(--glass-border);
-        border-radius: 8px; font-size: 13px;
-        font-family: 'Nunito', sans-serif;
-        font-weight: 600; color: var(--dark);
-    }
+    .admin-sub-section { margin-left: 10px; padding: 10px 12px; background: rgba(255,255,255,0.40); border-left: 3px solid rgba(255,140,66,0.35); margin-top: 5px; border-radius: 0 8px 8px 0; }
+    .admin-sub-item { display: flex; gap: 5px; margin-bottom: 6px; align-items: center; }
+    .admin-sub-item input[type="text"] { padding: 7px 10px; background: rgba(255,255,255,0.60); border: 1.5px solid var(--glass-border); border-radius: 8px; font-size: 13px; font-family: 'Nunito', sans-serif; font-weight: 600; color: var(--dark); }
 
-    .btn-danger {
-        background: rgba(231,76,60,0.12);
-        color: #c0392b;
-        border: 1px solid rgba(231,76,60,0.30);
-        padding: 5px 10px; border-radius: 8px;
-        cursor: pointer; font-size: 12px;
-        font-weight: 800; height: fit-content;
-        align-self: center; white-space: nowrap;
-        font-family: 'Nunito', sans-serif;
-        transition: background 0.2s;
-    }
+    .btn-danger { background: rgba(231,76,60,0.12); color: #c0392b; border: 1px solid rgba(231,76,60,0.30); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 800; height: fit-content; align-self: center; white-space: nowrap; font-family: 'Nunito', sans-serif; transition: background 0.2s; }
     .btn-danger:hover { background: rgba(231,76,60,0.25); }
-
-    .btn-add {
-        background: rgba(33,150,243,0.10);
-        color: #1565c0;
-        border: 1.5px dashed rgba(33,150,243,0.50);
-        padding: 10px; border-radius: var(--r-inner);
-        cursor: pointer; width: 100%; margin-top: 6px;
-        font-weight: 800; transition: background 0.2s;
-        font-family: 'Nunito', sans-serif; font-size: 0.9rem;
-    }
+    .btn-add { background: rgba(33,150,243,0.10); color: #1565c0; border: 1.5px dashed rgba(33,150,243,0.50); padding: 10px; border-radius: var(--r-inner); cursor: pointer; width: 100%; margin-top: 6px; font-weight: 800; transition: background 0.2s; font-family: 'Nunito', sans-serif; font-size: 0.9rem; }
     .btn-add:hover { background: rgba(33,150,243,0.18); }
-
-    .btn-add-small {
-        background: rgba(39,174,96,0.10);
-        color: #1a6e3a;
-        border: 1.5px dashed rgba(39,174,96,0.45);
-        padding: 5px 8px; font-size: 12px;
-        margin-top: 6px; cursor: pointer;
-        border-radius: 8px; font-family: 'Nunito', sans-serif;
-        font-weight: 700; transition: background 0.2s;
-    }
+    .btn-add-small { background: rgba(39,174,96,0.10); color: #1a6e3a; border: 1.5px dashed rgba(39,174,96,0.45); padding: 5px 8px; font-size: 12px; margin-top: 6px; cursor: pointer; border-radius: 8px; font-family: 'Nunito', sans-serif; font-weight: 700; transition: background 0.2s; }
     .btn-add-small:hover { background: rgba(39,174,96,0.20); }
 
-    /* Save button bar */
-    .btn-save-container {
-        position: fixed; bottom: 0; right: 0;
-        width: 100%; max-width: 450px;
-        padding: 14px 18px;
-        background: rgba(255,255,255,0.55);
-        backdrop-filter: var(--blur-sm);
-        -webkit-backdrop-filter: var(--blur-sm);
-        border-top: 1.5px solid var(--glass-border);
-        z-index: 11;
-    }
-    .btn-save {
-        background: linear-gradient(135deg, #4caf50, #2e7d32);
-        color: white; padding: 14px;
-        font-size: 15px; border: none;
-        border-radius: var(--r-btn); width: 100%;
-        box-shadow: 0 5px 18px rgba(39,174,96,0.38);
-        cursor: pointer; font-weight: 900;
-        letter-spacing: 0.5px; font-family: 'Nunito', sans-serif;
-        transition: transform 0.2s;
-    }
+    .btn-save-container { position: fixed; bottom: 0; right: 0; width: 100%; max-width: 450px; padding: 14px 18px; background: rgba(255,255,255,0.55); backdrop-filter: var(--blur-sm); -webkit-backdrop-filter: var(--blur-sm); border-top: 1.5px solid var(--glass-border); z-index: 11; }
+    .btn-save { background: linear-gradient(135deg, #4caf50, #2e7d32); color: white; padding: 14px; font-size: 15px; border: none; border-radius: var(--r-btn); width: 100%; box-shadow: 0 5px 18px rgba(39,174,96,0.38); cursor: pointer; font-weight: 900; letter-spacing: 0.5px; font-family: 'Nunito', sans-serif; transition: transform 0.2s; }
     .btn-save:hover { transform: translateY(-2px); }
-    .btn-save:disabled {
-        background: rgba(150,150,150,0.45);
-        cursor: not-allowed; transform: none;
-        box-shadow: none;
-    }
+    .btn-save:disabled { background: rgba(150,150,150,0.45); cursor: not-allowed; transform: none; box-shadow: none; }
 
-    /* Switch Toggle */
-    .switch-toggle {
-        display: flex; align-items: center;
-        gap: 10px; margin-bottom: 5px;
-    }
+    .switch-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
     .switch-toggle input[type="checkbox"] { width: auto; margin: 0; }
-    .switch-label {
-        font-size: 13px; font-weight: 800; color: var(--text);
-    }
+    .switch-label { font-size: 13px; font-weight: 800; color: var(--text); }
 
-    /* Popup menu rows highlight */
-    .admin-item-row[style*="background:#fff3e0"] {
-        background: rgba(255,200,100,0.12) !important;
-        border: 1px solid rgba(255,140,66,0.25) !important;
-        border-radius: 12px !important;
-        padding: 10px !important;
-    }
-
-    /* Admin sub-section category editor */
-    div[style*="background:#f5f5f5"] {
-        background: rgba(255,255,255,0.42) !important;
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 14px !important;
-    }
-
-    /* Gallery thumb delete button in admin */
-    div[style*="position:relative"][style*="width:80px"] {
-        filter: drop-shadow(0 3px 6px rgba(120,60,10,0.18));
-    }
-
-    /* =========================================
-       RESPONSIVE
-       ========================================= */
-    @media (max-width: 768px) {
-        #page-home .main-container { padding-top: 180px; }
-    }
-    @media (max-width: 480px) {
-        #page-home .main-container { padding-top: 160px; padding-left: 12px; padding-right: 12px; }
-        #page-reguler .item-dots { display: none; }
-        .admin-dashboard { max-width: 100%; }
-        .btn-save-container { max-width: 100%; }
-    }
+    @media (max-width: 768px) { #page-home .main-container { padding-top: 180px; } }
+    @media (max-width: 480px) { #page-home .main-container { padding-top: 160px; padding-left: 12px; padding-right: 12px; } #page-reguler .item-dots { display: none; } .admin-dashboard { max-width: 100%; } .btn-save-container { max-width: 100%; } }
 </style>
 ```
 
@@ -989,6 +375,7 @@
         <h2>Memuat Halaman...</h2>
         <div class="loading-bar"><div class="loading-fill"></div></div>
         <p class="loading-text">0%</p>
+        <p class="cache-badge" id="cache-status-badge" style="display:none"></p>
     </div>
 
 ```
@@ -1025,7 +412,6 @@
         <div class="slideshow-container" id="slideshow-wrapper">
             <img id="overlay-frame-img" src="" class="frame-overlay" alt="Frame Decoration">
         </div>
-
         <div class="menu-grid-container">
             <a onclick="handlePageNavigation('page-reguler', 'reguler')" class="menu-card bg-orange">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg><span>Menu<br>Reguler</span>
@@ -1039,11 +425,9 @@
             <a onclick="handlePageNavigation('page-jadwal', 'jadwal')" class="menu-card bg-green">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg><span>Jadwal<br>Buka</span>
             </a>
-            
             <a onclick="handlePageNavigation('page-jeep', 'jeep')" class="menu-card bg-orange">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,12H5L6,8H18L19,12M20,13V7H4V13L2,13V16C2,17.1 2.9,18 4,18V21C4,21.55 4.45,22 5,22H7C7.55,22 8,21.55 8,21V18H16V21C16,21.55 16.45,22 17,22H19C19.55,22 20,21.55 20,21V18C21.1,18 22,17.1 22,16V13L20,13M6.5,16C5.67,16 5,15.33 5,14.5C5,13.67 5.67,13 6.5,13C7.33,13 8,13.67 8,14.5C8,15.33 7.33,16 6.5,16M17.5,16C16.67,16 16,15.33 16,14.5C16,13.67 16.67,13 17.5,13C18.33,13 19,13.67 19,14.5C19,15.33 18.33,16 17.5,16Z"/></svg><span>Jeep<br>Adventure</span>
             </a>
-            
             <a href="https://maps.app.goo.gl/gCyTugKbGJEdobXs8?g_st=ic" target="_blank" class="menu-card bg-green">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><span>Lokasi<br>Maps</span>
             </a>
@@ -1051,7 +435,6 @@
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M9 11H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2zm2-7h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"/></svg><span>Cek Ketersediaan Tempat</span>
             </a>
         </div>
-        
         <a href="https://wa.me/6285601393640" class="floating-button">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01s-.521.074-.792.372c-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z" fill-rule="evenodd"/></svg>
             <span>Reservasi via WhatsApp</span>
@@ -1097,9 +480,17 @@
     </div>
 </div>
 
-<div class="fullscreen-modal" id="fullscreen-modal"><button class="close-btn" onclick="closeFullscreen()">✕</button><img id="fullscreen-img" src="" alt="Gambar besar" referrerpolicy="no-referrer"></div>
-<div id="generic-popup" class="popup-overlay" onclick="closePopup()"><div class="popup-content" onclick="event.stopPropagation()"><h2 id="popup-title"></h2><div id="popup-body"></div><button id="popup-button" class="popup-button" onclick="closePopup()">Tutup</button></div></div>
-
+<div class="fullscreen-modal" id="fullscreen-modal">
+    <button class="close-btn" onclick="closeFullscreen()">✕</button>
+    <img id="fullscreen-img" src="" alt="Gambar besar" referrerpolicy="no-referrer">
+</div>
+<div id="generic-popup" class="popup-overlay" onclick="closePopup()">
+    <div class="popup-content" onclick="event.stopPropagation()">
+        <h2 id="popup-title"></h2>
+        <div id="popup-body"></div>
+        <button id="popup-button" class="popup-button" onclick="closePopup()">Tutup</button>
+    </div>
+</div>
 <div id="menu-image-popup" class="promo-popup-overlay">
     <div class="promo-popup-container">
         <button class="promo-close-btn" onclick="closeMenuPopup()">✕</button>
@@ -1108,11 +499,9 @@
 </div>
 
 <div id="scroll-indicator">Scroll ke Bawah <span>↓</span></div>
-
 <button id="floating-home-button" onclick="showPage('page-home')">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Kembali</span>
 </button>
-
 <a id="floating-member-button" href="https://www.dolansawah.my.id/daftarmember.html" target="_blank">
     <img id="member-btn-img" src="" alt="Tombol Member Area">
 </a>
@@ -1124,19 +513,31 @@
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyAk0CnaeiRRBqo5O_DnFUDpGHSM017wNiU",
-      authDomain: "slidemonitor.firebaseapp.com",
-      projectId: "slidemonitor",
-      storageBucket: "slidemonitor.firebasestorage.app",
-      messagingSenderId: "1010222267025",
-      appId: "1:1010222267025:web:d5448ad6c1e3d02b90dd30"
+        apiKey: "AIzaSyAk0CnaeiRRBqo5O_DnFUDpGHSM017wNiU",
+        authDomain: "slidemonitor.firebaseapp.com",
+        projectId: "slidemonitor",
+        storageBucket: "slidemonitor.firebasestorage.app",
+        messagingSenderId: "1010222267025",
+        appId: "1:1010222267025:web:d5448ad6c1e3d02b90dd30"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    /* ============================================================
+       ⚡ CACHE CONFIGURATION
+       CACHE_TTL_MS  : berapa lama data di-cache (default 4 jam)
+       CACHE_KEY     : key localStorage untuk data config
+       CACHE_TS_KEY  : key localStorage untuk timestamp cache
+       ============================================================ */
+    const CACHE_KEY    = 'ds_config_v4';
+    const CACHE_TS_KEY = 'ds_config_v4_ts';
+    const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 jam → hanya 6 Firestore reads/hari/device
+    // Naikkan ke 12 jam = 2 reads/hari, turunkan ke 1 jam jika konten sering berubah
+
+    const app     = initializeApp(firebaseConfig);
+    const auth    = getAuth(app);
+    const db      = getFirestore(app);
     const storage = getStorage(app);
 
+    /* ────── Default fallback data ────── */
     const defaultData = {
         general: {
             headerImage: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752467234/IMG_5184_qcsvrt.jpg",
@@ -1156,107 +557,179 @@
             "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752755554/IMG_5223_gaiovo.jpg"
         ],
         jeepPackages: [
-            { title: "Paket Short Trip", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066030/IMG_6559_bvqd6w.jpg" },
-            { title: "Paket Medium Trip", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066034/IMG_6560_laiobh.jpg" },
+            { title: "Paket Short Trip",      image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066030/IMG_6559_bvqd6w.jpg" },
+            { title: "Paket Medium Trip",     image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066034/IMG_6560_laiobh.jpg" },
             { title: "Paket Off-road Kering", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066034/IMG_6561_ljijy0.jpg" },
-            { title: "Paket Long Trip", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066035/IMG_6563_xg0oov.jpg" }
+            { title: "Paket Long Trip",       image: "https://res.cloudinary.com/dn60ib3ur/image/upload/w_400,ar_1:1,c_fill/v1760066035/IMG_6563_xg0oov.jpg" }
         ],
         gallery: [
             "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465151/IMG_5179_gaqxnv.jpg",
             "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752465454/IMG_5180_ws8xwl.jpg"
         ],
         reservationMenu: [
-            { title: "Paket Prasmanan", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1754808317/E983BD8B-5D43-448A-9E32-DB52316FA7E8_ls3xed.jpg", desc: "Minimal H-3 sebelum acara." },
-            { title: "Paket Kembulan", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461119/91d77689-1e31-4293-921e-3b52b6e61a2e_mb4ft3.jpg", desc: "Minimal pemesanan H-1." },
-            { title: "Tumpeng Nasi Kuning", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1757126294/IMG_6002_kmtqob.png", desc: "Minimal pemesanan H-1." },
-            { title: "Paket Rantang", image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461212/ec438e76-f56a-417c-97f6-6b68cb62c85d_pw5uxi.jpg", desc: "Bisa dipesan dadakan." }
+            { title: "Paket Prasmanan",    image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1754808317/E983BD8B-5D43-448A-9E32-DB52316FA7E8_ls3xed.jpg", desc: "Minimal H-3 sebelum acara." },
+            { title: "Paket Kembulan",     image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461119/91d77689-1e31-4293-921e-3b52b6e61a2e_mb4ft3.jpg", desc: "Minimal pemesanan H-1." },
+            { title: "Tumpeng Nasi Kuning",image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1757126294/IMG_6002_kmtqob.png", desc: "Minimal pemesanan H-1." },
+            { title: "Paket Rantang",      image: "https://res.cloudinary.com/dn60ib3ur/image/upload/v1752461212/ec438e76-f56a-417c-97f6-6b68cb62c85d_pw5uxi.jpg", desc: "Bisa dipesan dadakan." }
         ],
         regularMenu: [
-            {
-                category: "Daging, Ayam & Bebek",
-                items: [
-                    { name: "Iga Bakar", price: "55.000" },
-                    { name: "Opor Bebek", price: "38.000" }
-                ]
-            },
-            {
-                category: "Minuman Segar",
-                items: [
-                    { name: "Es Teh Manis", price: "5.000" },
-                    { name: "Jus Jeruk", price: "12.000" }
-                ]
-            }
+            { category: "Daging, Ayam & Bebek", items: [ { name: "Iga Bakar", price: "55.000" }, { name: "Opor Bebek", price: "38.000" } ] },
+            { category: "Minuman Segar",         items: [ { name: "Es Teh Manis", price: "5.000" }, { name: "Jus Jeruk", price: "12.000" } ] }
         ]
     };
 
-    let globalConfig = null;
+    let globalConfig   = null;
     let headerClickCount = 0;
+    let authUnsubscribe  = null; // untuk cleanup listener
 
-    document.querySelector('.header-gallery').addEventListener('click', () => {
-        headerClickCount++;
-        if(headerClickCount === 5) {
-            document.getElementById('admin-login-modal').style.display = 'flex';
-            headerClickCount = 0;
+    /* ============================================================
+       🗂️ CACHE HELPERS
+       Semua data konfigurasi disimpan di localStorage sehingga
+       Firestore hanya dipanggil maksimal sekali per TTL per device.
+       ============================================================ */
+    function readCache() {
+        try {
+            const ts   = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0', 10);
+            const now  = Date.now();
+            if (!ts || (now - ts) > CACHE_TTL_MS) return null; // expired
+            const raw  = localStorage.getItem(CACHE_KEY);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch (e) { return null; }
+    }
+
+    function writeCache(data) {
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            localStorage.setItem(CACHE_TS_KEY, Date.now().toString());
+        } catch (e) {
+            // localStorage penuh — hapus cache lama dan coba lagi
+            try { localStorage.removeItem(CACHE_KEY); localStorage.removeItem(CACHE_TS_KEY); } catch (_) {}
         }
-        setTimeout(() => { headerClickCount = 0; }, 2000);
-    });
+    }
 
-    window.loginAdmin = async () => {
-        const email = document.getElementById('admin-email').value;
-        const pass = document.getElementById('admin-password').value;
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            alert("Login Berhasil!");
-            document.getElementById('admin-login-modal').style.display = 'none';
-        } catch (e) { alert("Login Gagal: " + e.message); }
-    };
-    window.closeAdminLogin = () => document.getElementById('admin-login-modal').style.display = 'none';
-    
-    onAuthStateChanged(auth, (user) => {
-        document.getElementById('open-dashboard-btn').style.display = user ? 'block' : 'none';
-    });
+    function clearCache() {
+        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(CACHE_TS_KEY);
+    }
 
+    function cacheAge() {
+        const ts = parseInt(localStorage.getItem(CACHE_TS_KEY) || '0', 10);
+        if (!ts) return null;
+        const diffMs = Date.now() - ts;
+        const diffMin = Math.round(diffMs / 60000);
+        if (diffMin < 60) return diffMin + ' menit lalu';
+        return Math.round(diffMin / 60) + ' jam lalu';
+    }
+
+    /* ============================================================
+       🔥 DATA LOADING — Cache-first strategy
+       1. Cek localStorage → render langsung jika fresh (0 Firestore calls)
+       2. Jika cache expired/kosong → ambil dari Firestore, simpan ke cache
+       Hasil: dari ~1 read/visitor → 1 read per 4 jam per device
+       ============================================================ */
     async function loadData() {
+        setLoadingProgress(20);
+
+        // ── STEP 1: Cek cache ──
+        const cached = readCache();
+        if (cached) {
+            globalConfig = mergeWithDefaults(cached);
+            setLoadingProgress(80);
+            renderWebsite(globalConfig);
+
+            // Tampilkan badge cache
+            const badge = document.getElementById('cache-status-badge');
+            badge.textContent = '⚡ Dari cache lokal (' + cacheAge() + ')';
+            badge.style.display = 'block';
+
+            setLoadingProgress(100);
+            finishLoading();
+            setupAuthListener(); // setup auth SETELAH render selesai
+            return; // ← TIDAK ada Firestore call sama sekali
+        }
+
+        // ── STEP 2: Cache miss → ambil dari Firestore (1 read) ──
+        setLoadingProgress(40);
         try {
-            const docRef = doc(db, "website_data", "master_config_v4"); 
+            const docRef  = doc(db, "website_data", "master_config_v4");
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                globalConfig = docSnap.data();
-                if(!globalConfig.menuPopups) globalConfig.menuPopups = defaultData.menuPopups; 
-                if(!globalConfig.general) globalConfig.general = defaultData.general;
-                if(!globalConfig.reservationMenu) globalConfig.reservationMenu = defaultData.reservationMenu;
-                if(!globalConfig.regularMenu) globalConfig.regularMenu = defaultData.regularMenu;
-                if(!globalConfig.slideshow) globalConfig.slideshow = defaultData.slideshow;
-                if(!globalConfig.jeepPackages) globalConfig.jeepPackages = defaultData.jeepPackages;
-                if(!globalConfig.gallery) globalConfig.gallery = defaultData.gallery;
-                renderWebsite(globalConfig);
+                globalConfig = mergeWithDefaults(docSnap.data());
             } else {
                 globalConfig = defaultData;
-                renderWebsite(globalConfig);
             }
+
+            writeCache(globalConfig); // simpan ke localStorage
+            setLoadingProgress(85);
+            renderWebsite(globalConfig);
+
+            // Tampilkan badge fresh
+            const badge = document.getElementById('cache-status-badge');
+            badge.textContent = '🔄 Data terbaru dari server';
+            badge.className = 'cache-badge fresh';
+            badge.style.display = 'block';
+
         } catch (e) {
-            console.error("GAGAL MEMUAT DATA:", e);
-            alert("Gagal mengambil data: " + e.message + "\nMenampilkan data default.");
-            globalConfig = defaultData; 
+            console.error("Gagal memuat data Firestore:", e);
+            // Fallback ke defaultData — website tetap jalan
+            globalConfig = defaultData;
             renderWebsite(globalConfig);
         }
-        
-        document.querySelector(".loading-fill").style.width = "100%";
-        document.querySelector(".loading-text").textContent = "100%";
-        setTimeout(() => {
-            document.querySelector(".loading-screen").style.display = "none";
-            const hash = window.location.hash.substring(1);
-            if(hash && document.getElementById(hash)) showPage(hash);
-            else showPage("page-home");
-        }, 500);
+
+        setLoadingProgress(100);
+        finishLoading();
+        setupAuthListener();
     }
 
+    /* Merge data dari Firestore dengan defaultData untuk field yang hilang */
+    function mergeWithDefaults(data) {
+        return {
+            general:         data.general         || defaultData.general,
+            menuPopups:      data.menuPopups       || defaultData.menuPopups,
+            slideshow:       data.slideshow        || defaultData.slideshow,
+            jeepPackages:    data.jeepPackages     || defaultData.jeepPackages,
+            gallery:         data.gallery          || defaultData.gallery,
+            reservationMenu: data.reservationMenu  || defaultData.reservationMenu,
+            regularMenu:     data.regularMenu      || defaultData.regularMenu
+        };
+    }
+
+    function setLoadingProgress(pct) {
+        document.querySelector('.loading-fill').style.width = pct + '%';
+        document.querySelector('.loading-text').textContent = pct + '%';
+    }
+
+    function finishLoading() {
+        const hash = window.location.hash.substring(1);
+        setTimeout(() => {
+            document.querySelector('.loading-screen').style.display = 'none';
+            if (hash && document.getElementById(hash)) showPage(hash);
+            else showPage('page-home');
+        }, 400);
+    }
+
+    /* ============================================================
+       🔐 AUTH LISTENER — lazy, hanya setup setelah render
+       Listener dicleanup saat tidak dibutuhkan untuk menghindari
+       persistent Firebase connection yang menghabiskan quota
+       ============================================================ */
+    function setupAuthListener() {
+        if (authUnsubscribe) return; // jangan double-register
+        authUnsubscribe = onAuthStateChanged(auth, (user) => {
+            document.getElementById('open-dashboard-btn').style.display = user ? 'block' : 'none';
+        });
+    }
+
+    /* ============================================================
+       🖼️ RENDER FUNCTIONS — Sama seperti sebelumnya
+       ============================================================ */
     function renderWebsite(data) {
         if (data.general) {
-            document.getElementById('header-main-img').src = data.general.headerImage;
+            document.getElementById('header-main-img').src   = data.general.headerImage;
             document.getElementById('overlay-frame-img').src = data.general.overlayImage;
-            document.getElementById('member-btn-img').src = data.general.memberBtnImage;
+            document.getElementById('member-btn-img').src    = data.general.memberBtnImage;
         }
 
         const slideWrapper = document.getElementById('slideshow-wrapper');
@@ -1267,7 +740,8 @@
             data.slideshow.forEach((url, i) => {
                 const img = document.createElement('img');
                 img.src = url;
-                img.className = `slide-image ${i===0 ? 'active' : ''}`;
+                img.className = 'slide-image' + (i === 0 ? ' active' : '');
+                img.loading = i === 0 ? 'eager' : 'lazy'; // lazy load non-first slides
                 slideWrapper.appendChild(img);
             });
             startSlideshow();
@@ -1275,14 +749,16 @@
 
         const resList = document.getElementById('reservation-menu-list');
         resList.innerHTML = '';
-        if(data.reservationMenu) {
-            data.reservationMenu.forEach((item, idx) => {
+        if (data.reservationMenu) {
+            data.reservationMenu.forEach((item) => {
+                // Escape untuk keamanan XSS
+                const safeTitle = escHtml(item.title);
+                const safeDesc  = escHtml(item.desc);
                 resList.innerHTML += `
-                    <h2>${item.title}</h2>
-                    <div class="image-container" onclick="openPopup('${item.title}', '${item.desc}')">
-                        <img src="${item.image}" alt="${item.title}" />
-                    </div>
-                `;
+                    <h2>${safeTitle}</h2>
+                    <div class="image-container" onclick="openPopup('${safeTitle}', '${safeDesc}')">
+                        <img src="${item.image}" alt="${safeTitle}" loading="lazy" />
+                    </div>`;
             });
         }
 
@@ -1290,7 +766,11 @@
         galGrid.innerHTML = '';
         if (data.gallery) {
             data.gallery.forEach(url => {
-                galGrid.innerHTML += `<img src="${url}" onclick="openFullscreen(this)">`;
+                const img = document.createElement('img');
+                img.src     = url;
+                img.loading = 'lazy'; // lazy load gallery
+                img.onclick = function() { openFullscreen(this); };
+                galGrid.appendChild(img);
             });
         }
 
@@ -1298,65 +778,140 @@
         jeepGrid.innerHTML = '';
         if (data.jeepPackages) {
             data.jeepPackages.forEach(pkg => {
+                const safeTitle = escHtml(pkg.title);
                 jeepGrid.innerHTML += `
                     <div class="jeep-package-card" onclick="openFullscreenImage('${pkg.image}')">
-                        <img src="${pkg.image}">
-                        <div class="card-content"><h3>${pkg.title}</h3><span>Lihat Detail</span></div>
+                        <img src="${pkg.image}" loading="lazy">
+                        <div class="card-content"><h3>${safeTitle}</h3><span>Lihat Detail</span></div>
                     </div>`;
             });
         }
 
         const regList = document.getElementById('regular-menu-list');
         regList.innerHTML = '';
-        if(data.regularMenu) {
+        if (data.regularMenu) {
             data.regularMenu.forEach(cat => {
                 let itemsHtml = '';
                 cat.items.forEach(itm => {
                     itemsHtml += `
                     <div class="menu-item">
-                        <span class="item-name">${itm.name}</span>
+                        <span class="item-name">${escHtml(itm.name)}</span>
                         <span class="item-dots"></span>
-                        <span class="item-price">Rp ${itm.price}</span>
+                        <span class="item-price">Rp ${escHtml(itm.price)}</span>
                     </div>`;
                 });
                 regList.innerHTML += `
                 <div class="menu-category">
-                    <h2 class="category-title">${cat.category}</h2>
+                    <h2 class="category-title">${escHtml(cat.category)}</h2>
                     ${itemsHtml}
                 </div>`;
             });
         }
     }
 
+    // XSS guard
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    /* ── Slideshow ── */
     let slideInterval;
     function startSlideshow() {
-        if(slideInterval) clearInterval(slideInterval);
+        if (slideInterval) clearInterval(slideInterval);
         let idx = 0;
         slideInterval = setInterval(() => {
             const slides = document.querySelectorAll('.slide-image');
-            if(slides.length === 0) return;
+            if (slides.length === 0) return;
             slides.forEach(s => s.classList.remove('active'));
             idx = (idx + 1) % slides.length;
             slides[idx].classList.add('active');
         }, 4000);
     }
 
+    /* ============================================================
+       🔑 ADMIN — Header tap trigger (5 kali dalam 2 detik)
+       ============================================================ */
+    document.querySelector('.header-gallery').addEventListener('click', () => {
+        headerClickCount++;
+        if (headerClickCount === 5) {
+            document.getElementById('admin-login-modal').style.display = 'flex';
+            headerClickCount = 0;
+        }
+        setTimeout(() => { headerClickCount = 0; }, 2000);
+    });
+
+    window.loginAdmin = async () => {
+        const email = document.getElementById('admin-email').value;
+        const pass  = document.getElementById('admin-password').value;
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            alert("Login Berhasil!");
+            document.getElementById('admin-login-modal').style.display = 'none';
+        } catch (e) { alert("Login Gagal: " + e.message); }
+    };
+    window.closeAdminLogin = () => {
+        document.getElementById('admin-login-modal').style.display = 'none';
+    };
+
+    /* ============================================================
+       📋 ADMIN DASHBOARD
+       ============================================================ */
     window.openDashboard = () => {
         document.getElementById('admin-dashboard').style.display = 'block';
         generateAdminForm();
     };
-    window.closeDashboard = () => document.getElementById('admin-dashboard').style.display = 'none';
+    window.closeDashboard = () => {
+        document.getElementById('admin-dashboard').style.display = 'none';
+    };
+
+    window.clearCacheAndReload = async () => {
+        clearCache();
+        // Ambil data segar dari Firestore (1 read — hanya dilakukan manual oleh admin)
+        try {
+            const docSnap = await getDoc(doc(db, "website_data", "master_config_v4"));
+            if (docSnap.exists()) {
+                globalConfig = mergeWithDefaults(docSnap.data());
+            } else {
+                globalConfig = defaultData;
+            }
+            writeCache(globalConfig);
+            renderWebsite(globalConfig);
+            generateAdminForm();
+            alert("✅ Cache dihapus & data terbaru berhasil dimuat dari server.");
+        } catch (e) {
+            alert("Gagal memuat data: " + e.message);
+        }
+    };
 
     function generateAdminForm() {
         const area = document.getElementById('admin-content-area');
+
+        // Hitung berapa lama cache valid
+        const ageStr  = cacheAge();
+        const ttlHour = CACHE_TTL_MS / 3600000;
+
         let html = '';
 
+        // Cache info bar
+        html += `<div class="cache-info-bar">
+            <span>🗂️ <b>Cache Aktif</b> — Data di-cache ${ttlHour} jam di browser pengunjung</span>
+            <span>Data terakhir diambil: ${ageStr || 'belum ada cache'}</span>
+            <span>💡 Setelah simpan perubahan, cache admin dihapus otomatis.</span>
+            <button class="btn-clear-cache" onclick="clearCacheAndReload()">🗑️ Hapus Cache & Reload</button>
+        </div>`;
+
+        // ── Pop-up Menu ──
         html += `<div class="upload-group"><h3>Pengaturan Pop-up Menu Homepage</h3>`;
         html += `<p style="font-size:12px; margin-bottom:10px; color:var(--text-muted); font-weight:600;">Aktifkan pop-up agar gambar muncul saat menu diklik.</p>`;
-        
         const generatePopupRow = (key, label) => {
-            const isActive = globalConfig.menuPopups[key].active ? 'checked' : '';
-            const imgSrc = globalConfig.menuPopups[key].image;
+            const isActive = globalConfig.menuPopups[key] && globalConfig.menuPopups[key].active ? 'checked' : '';
+            const imgSrc   = globalConfig.menuPopups[key] ? globalConfig.menuPopups[key].image : '';
             return `
             <div class="admin-item-row" style="background:rgba(255,200,100,0.12); border:1px solid rgba(255,140,66,0.25); border-radius:12px; padding:10px;">
                 <img src="${imgSrc}" class="preview-img">
@@ -1366,11 +921,10 @@
                         <input type="checkbox" id="popup-active-${key}" onchange="updatePopupActive('${key}', this.checked)" ${isActive}>
                         <label for="popup-active-${key}" class="switch-label">Aktifkan Pop-up</label>
                     </div>
-                    <input type="file" onchange="uploadFile(this, 'menuPopup', '${key}')">
+                    <input type="file" accept="image/*" onchange="uploadFile(this, 'menuPopup', '${key}')">
                 </div>
             </div>`;
         };
-
         html += generatePopupRow('jeep', 'Jeep Adventure');
         html += generatePopupRow('reservation', 'Menu Reservasi');
         html += generatePopupRow('reguler', 'Menu Reguler');
@@ -1378,200 +932,252 @@
         html += generatePopupRow('jadwal', 'Jadwal Buka');
         html += `</div>`;
 
+        // ── Gambar Umum ──
         html += `<div class="upload-group"><h3>Pengaturan Umum (Gambar Utama)</h3>`;
         html += `<div class="admin-item-row">
             <img src="${globalConfig.general.headerImage}" class="preview-img">
             <div class="admin-item-info">
                 <label>Gambar Header (Banner Atas)</label>
-                <input type="file" onchange="uploadFile(this, 'general', 'headerImage')">
+                <input type="file" accept="image/*" onchange="uploadFile(this, 'general', 'headerImage')">
             </div>
         </div>`;
         html += `<div class="admin-item-row">
             <img src="${globalConfig.general.overlayImage}" class="preview-img">
             <div class="admin-item-info">
                 <label>Overlay/Frame Slideshow</label>
-                <input type="file" onchange="uploadFile(this, 'general', 'overlayImage')">
+                <input type="file" accept="image/*" onchange="uploadFile(this, 'general', 'overlayImage')">
             </div>
         </div>`;
         html += `<div class="admin-item-row">
             <img src="${globalConfig.general.memberBtnImage}" class="preview-img">
             <div class="admin-item-info">
                 <label>Tombol Member (Pojok Kanan Bawah)</label>
-                <input type="file" onchange="uploadFile(this, 'general', 'memberBtnImage')">
+                <input type="file" accept="image/*" onchange="uploadFile(this, 'general', 'memberBtnImage')">
             </div>
-        </div>`;
-        html += `</div>`;
+        </div></div>`;
 
+        // ── Slideshow ──
         html += `<div class="upload-group"><h3>Slideshow (Carousel)</h3>`;
         globalConfig.slideshow.forEach((url, i) => {
             html += `<div class="admin-item-row">
                 <img src="${url}" class="preview-img">
-                <div class="admin-item-info"><input type="file" onchange="uploadFile(this, 'slide', ${i})"></div>
+                <div class="admin-item-info"><input type="file" accept="image/*" onchange="uploadFile(this, 'slide', ${i})"></div>
                 <button class="btn-danger" onclick="deleteArrayItem('slideshow', ${i})">Hapus</button>
             </div>`;
         });
         html += `<button class="btn-add" onclick="addArrayItem('slideshow')">+ Tambah Slide</button></div>`;
 
+        // ── Paket Jeep ──
         html += `<div class="upload-group"><h3>Paket Jeep (Detail Halaman)</h3>`;
         globalConfig.jeepPackages.forEach((pkg, i) => {
             html += `<div class="admin-item-row" style="background:rgba(255,255,255,0.35); padding:10px; border-radius:12px;">
                 <img src="${pkg.image}" class="preview-img">
                 <div class="admin-item-info">
                     <label>Nama Paket:</label>
-                    <input type="text" value="${pkg.title}" oninput="updateDeepValue('jeepPackages', ${i}, 'title', this.value)">
-                    <input type="file" onchange="uploadFile(this, 'jeep', ${i})">
+                    <input type="text" value="${escHtml(pkg.title)}" oninput="updateDeepValue('jeepPackages', ${i}, 'title', this.value)">
+                    <input type="file" accept="image/*" onchange="uploadFile(this, 'jeep', ${i})">
                 </div>
                 <button class="btn-danger" onclick="deleteArrayItem('jeepPackages', ${i})">Hapus</button>
             </div>`;
         });
         html += `<button class="btn-add" onclick="addArrayItem('jeepPackages')">+ Tambah Paket Jeep</button></div>`;
 
+        // ── Menu Reservasi ──
         html += `<div class="upload-group"><h3>Menu Reservasi (Gambar & Ketentuan)</h3>`;
         globalConfig.reservationMenu.forEach((item, i) => {
             html += `<div class="admin-item-row" style="background:rgba(255,255,255,0.35); padding:10px; border-radius:12px;">
                 <img src="${item.image}" class="preview-img">
                 <div class="admin-item-info">
                     <label>Judul Menu:</label>
-                    <input type="text" value="${item.title}" oninput="updateDeepValue('reservationMenu', ${i}, 'title', this.value)">
+                    <input type="text" value="${escHtml(item.title)}" oninput="updateDeepValue('reservationMenu', ${i}, 'title', this.value)">
                     <label>Ketentuan (Popup):</label>
-                    <input type="text" value="${item.desc}" oninput="updateDeepValue('reservationMenu', ${i}, 'desc', this.value)">
-                    <input type="file" onchange="uploadFile(this, 'resMenu', ${i})">
+                    <input type="text" value="${escHtml(item.desc)}" oninput="updateDeepValue('reservationMenu', ${i}, 'desc', this.value)">
+                    <input type="file" accept="image/*" onchange="uploadFile(this, 'resMenu', ${i})">
                 </div>
                 <button class="btn-danger" onclick="deleteArrayItem('reservationMenu', ${i})">Hapus</button>
             </div>`;
         });
         html += `<button class="btn-add" onclick="addArrayItem('reservationMenu')">+ Tambah Menu Reservasi</button></div>`;
 
+        // ── Menu Reguler ──
         html += `<div class="upload-group"><h3>Menu Reguler (Kategori & Item)</h3>`;
         globalConfig.regularMenu.forEach((cat, catIdx) => {
             html += `<div style="background:rgba(255,255,255,0.42); padding:12px; border-radius:14px; margin-bottom:14px; border:1px solid var(--glass-border);">
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <input type="text" value="${cat.category}" style="font-weight:800; color:var(--primary-dark); width:70%;" oninput="updateCatTitle(${catIdx}, this.value)">
+                    <input type="text" value="${escHtml(cat.category)}" style="font-weight:800; color:var(--primary-dark); width:70%;" oninput="updateCatTitle(${catIdx}, this.value)">
                     <button class="btn-danger" onclick="deleteRegularCategory(${catIdx})">Hapus Kategori</button>
                 </div>
                 <div class="admin-sub-section">`;
             cat.items.forEach((item, itemIdx) => {
                 html += `<div class="admin-sub-item">
-                    <input type="text" value="${item.name}" placeholder="Nama Menu" style="width:50%" oninput="updateRegItem(${catIdx}, ${itemIdx}, 'name', this.value)">
-                    <input type="text" value="${item.price}" placeholder="Harga" style="width:30%" oninput="updateRegItem(${catIdx}, ${itemIdx}, 'price', this.value)">
+                    <input type="text" value="${escHtml(item.name)}" placeholder="Nama Menu" style="width:50%" oninput="updateRegItem(${catIdx}, ${itemIdx}, 'name', this.value)">
+                    <input type="text" value="${escHtml(item.price)}" placeholder="Harga" style="width:30%" oninput="updateRegItem(${catIdx}, ${itemIdx}, 'price', this.value)">
                     <button class="btn-danger" style="padding:5px;" onclick="deleteRegItem(${catIdx}, ${itemIdx})">✕</button>
                 </div>`;
             });
-            html += `<button class="btn-add-small" onclick="addRegItem(${catIdx})">+ Tambah Menu di ${cat.category}</button>
-                </div>
-            </div>`;
+            html += `<button class="btn-add-small" onclick="addRegItem(${catIdx})">+ Tambah Menu di ${escHtml(cat.category)}</button>
+                </div></div>`;
         });
         html += `<button class="btn-add" onclick="addRegularCategory()">+ Tambah Kategori Baru</button></div>`;
 
+        // ── Galeri ──
         html += `<div class="upload-group"><h3>Galeri Foto</h3><div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">`;
         globalConfig.gallery.forEach((url, i) => {
             html += `<div style="position:relative; width:80px; height:80px;">
-                <img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:10px; border:1.5px solid var(--glass-border);">
+                <img src="${url}" style="width:100%; height:100%; object-fit:cover; border-radius:10px; border:1.5px solid var(--glass-border); loading:lazy">
                 <button onclick="deleteArrayItem('gallery', ${i})" style="position:absolute; top:-5px; right:-5px; background:rgba(220,30,30,0.85); color:white; border:2px solid white; border-radius:50%; width:22px; height:22px; font-size:10px; cursor:pointer; font-weight:900; display:flex; align-items:center; justify-content:center;">✕</button>
             </div>`;
         });
         html += `</div><button class="btn-add" onclick="document.getElementById('input-gallery-add').click()">+ Upload Foto</button>
-        <input type="file" id="input-gallery-add" style="display:none" onchange="uploadFile(this, 'gallery_add')"></div>`;
+        <input type="file" id="input-gallery-add" accept="image/*" style="display:none" onchange="uploadFile(this, 'gallery_add')"></div>`;
 
         area.innerHTML = html;
     }
 
-    window.updatePopupActive = (key, status) => { globalConfig.menuPopups[key].active = status; };
+    /* ── Admin mutation handlers ── */
+    window.updatePopupActive  = (key, status) => { globalConfig.menuPopups[key].active = status; };
     window.addArrayItem = (key) => {
-        if(key === 'slideshow') globalConfig.slideshow.push("https://via.placeholder.com/800x400?text=New+Slide");
-        if(key === 'jeepPackages') globalConfig.jeepPackages.push({ title: "Paket Baru", image: "https://via.placeholder.com/400" });
-        if(key === 'reservationMenu') globalConfig.reservationMenu.push({ title: "Menu Baru", image: "https://via.placeholder.com/400", desc: "Keterangan disini" });
+        if (key === 'slideshow')       globalConfig.slideshow.push("https://via.placeholder.com/800x400?text=New+Slide");
+        if (key === 'jeepPackages')    globalConfig.jeepPackages.push({ title: "Paket Baru", image: "https://via.placeholder.com/400" });
+        if (key === 'reservationMenu') globalConfig.reservationMenu.push({ title: "Menu Baru", image: "https://via.placeholder.com/400", desc: "Keterangan disini" });
         generateAdminForm();
     };
     window.deleteArrayItem = (key, index) => {
-        if(!confirm("Yakin hapus?")) return;
+        if (!confirm("Yakin hapus?")) return;
         globalConfig[key].splice(index, 1);
         generateAdminForm();
     };
     window.updateDeepValue = (key, index, field, value) => { globalConfig[key][index][field] = value; };
-    window.addRegularCategory = () => { globalConfig.regularMenu.push({ category: "Kategori Baru", items: [] }); generateAdminForm(); };
-    window.deleteRegularCategory = (idx) => { if(!confirm("Hapus kategori dan semua isinya?")) return; globalConfig.regularMenu.splice(idx, 1); generateAdminForm(); };
+    window.addRegularCategory    = () => { globalConfig.regularMenu.push({ category: "Kategori Baru", items: [] }); generateAdminForm(); };
+    window.deleteRegularCategory = (idx) => { if (!confirm("Hapus kategori dan semua isinya?")) return; globalConfig.regularMenu.splice(idx, 1); generateAdminForm(); };
     window.updateCatTitle = (idx, val) => { globalConfig.regularMenu[idx].category = val; };
-    window.addRegItem = (catIdx) => { globalConfig.regularMenu[catIdx].items.push({ name: "Menu Baru", price: "0" }); generateAdminForm(); };
-    window.deleteRegItem = (catIdx, itemIdx) => { globalConfig.regularMenu[catIdx].items.splice(itemIdx, 1); generateAdminForm(); };
-    window.updateRegItem = (catIdx, itemIdx, field, val) => { globalConfig.regularMenu[catIdx].items[itemIdx][field] = val; };
+    window.addRegItem     = (catIdx) => { globalConfig.regularMenu[catIdx].items.push({ name: "Menu Baru", price: "0" }); generateAdminForm(); };
+    window.deleteRegItem  = (catIdx, itemIdx) => { globalConfig.regularMenu[catIdx].items.splice(itemIdx, 1); generateAdminForm(); };
+    window.updateRegItem  = (catIdx, itemIdx, field, val) => { globalConfig.regularMenu[catIdx].items[itemIdx][field] = val; };
 
+    /* ============================================================
+       📤 FILE UPLOAD — tetap ke Firebase Storage (tidak ada alternatif
+       gratis yang sama mudahnya), tapi gambar baru sudah otomatis
+       ter-cache oleh browser lewat URL yang konsisten.
+       ============================================================ */
     window.uploadFile = async (input, type, key) => {
         const file = input.files[0];
-        if(!file) return;
+        if (!file) return;
+
+        // Validasi ukuran file (max 5MB untuk hemat Storage egress)
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Ukuran file maksimal 5MB. Silakan kompres gambar terlebih dahulu.");
+            input.value = '';
+            return;
+        }
+
         const btnSave = document.querySelector('.btn-save');
-        btnSave.disabled = true; btnSave.innerText = "UPLOADING...";
+        btnSave.disabled = true;
+        btnSave.innerText = "UPLOADING...";
         try {
             const storageRef = ref(storage, `uploads_v4/${type}_${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const url = await getDownloadURL(snapshot.ref);
-            if (type === 'general') globalConfig.general[key] = url;
-            else if (type === 'menuPopup') globalConfig.menuPopups[key].image = url;
-            else if (type === 'slide') globalConfig.slideshow[key] = url;
-            else if (type === 'jeep') globalConfig.jeepPackages[key].image = url;
-            else if (type === 'resMenu') globalConfig.reservationMenu[key].image = url;
+            const snapshot   = await uploadBytes(storageRef, file);
+            const url        = await getDownloadURL(snapshot.ref);
+
+            if      (type === 'general')    globalConfig.general[key] = url;
+            else if (type === 'menuPopup')  globalConfig.menuPopups[key].image = url;
+            else if (type === 'slide')      globalConfig.slideshow[key] = url;
+            else if (type === 'jeep')       globalConfig.jeepPackages[key].image = url;
+            else if (type === 'resMenu')    globalConfig.reservationMenu[key].image = url;
             else if (type === 'gallery_add') globalConfig.gallery.push(url);
+
             generateAdminForm();
         } catch (error) {
             alert("Upload Gagal: " + error.message);
         } finally {
-            btnSave.disabled = false; btnSave.innerText = "💾 SIMPAN PERUBAHAN";
+            btnSave.disabled = false;
+            btnSave.innerText = "💾 SIMPAN PERUBAHAN";
         }
     };
 
+    /* ============================================================
+       💾 SAVE TO FIRESTORE
+       Setelah save: cache DIHAPUS sehingga semua device akan
+       mengambil data terbaru pada kunjungan berikutnya.
+       TIDAK pakai location.reload() untuk menghindari Firestore
+       call ganda — render langsung dari globalConfig.
+       ============================================================ */
     window.saveConfigToFirestore = async () => {
         const btn = document.querySelector('.btn-save');
-        btn.disabled = true; btn.innerText = "MENYIMPAN...";
+        btn.disabled = true;
+        btn.innerText = "MENYIMPAN...";
         try {
             await setDoc(doc(db, "website_data", "master_config_v4"), globalConfig);
-            alert("BERHASIL! Website telah diperbarui.");
-            location.reload();
+
+            // Hapus cache admin → admin langsung lihat data terbaru
+            clearCache();
+
+            // Re-cache dengan data yang baru saja disimpan
+            writeCache(globalConfig);
+
+            // Re-render website tanpa reload (hemat 1 Firestore read)
+            renderWebsite(globalConfig);
+            closeDashboard();
+            alert("✅ Berhasil disimpan! Website telah diperbarui.");
+
         } catch (e) {
             alert("Gagal menyimpan: " + e.message);
-            btn.disabled = false; btn.innerText = "💾 SIMPAN PERUBAHAN";
+            btn.disabled = false;
+            btn.innerText = "💾 SIMPAN PERUBAHAN";
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "💾 SIMPAN PERUBAHAN";
         }
     };
 
+    /* ============================================================
+       🧭 PAGE NAVIGATION
+       ============================================================ */
     window.showPage = (pageId) => {
         document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
         const target = document.getElementById(pageId);
-        if(target) target.style.display = 'block';
-        window.scrollTo(0,0);
+        if (target) target.style.display = 'block';
+        window.scrollTo(0, 0);
         document.body.className = '';
-        if(pageId === 'page-home')    document.body.classList.add('theme-home');
-        else if(pageId === 'page-menu')    document.body.classList.add('theme-menu');
-        else if(pageId === 'page-gallery') document.body.classList.add('theme-gallery');
-        else if(pageId === 'page-jadwal')  document.body.classList.add('theme-jadwal');
-        else if(pageId === 'page-jeep')    document.body.classList.add('theme-jeep');
-        else if(pageId === 'page-reguler') document.body.classList.add('theme-reguler');
+        const themeMap = {
+            'page-home':    'theme-home',
+            'page-menu':    'theme-menu',
+            'page-gallery': 'theme-gallery',
+            'page-jadwal':  'theme-jadwal',
+            'page-jeep':    'theme-jeep',
+            'page-reguler': 'theme-reguler'
+        };
+        if (themeMap[pageId]) document.body.classList.add(themeMap[pageId]);
         document.getElementById('floating-home-button').style.display = (pageId === 'page-home') ? 'none' : 'flex';
         const ind = document.getElementById('scroll-indicator');
-        if(ind) ind.style.display = (['page-menu','page-reguler'].includes(pageId)) ? 'flex' : 'none';
+        if (ind) ind.style.display = (['page-menu', 'page-reguler'].includes(pageId)) ? 'flex' : 'none';
     };
 
     window.handlePageNavigation = (pageId, configKey) => {
         showPage(pageId);
-        if (globalConfig.menuPopups && 
-            globalConfig.menuPopups[configKey] && 
+        if (globalConfig.menuPopups &&
+            globalConfig.menuPopups[configKey] &&
             globalConfig.menuPopups[configKey].active &&
             globalConfig.menuPopups[configKey].image) {
             openMenuPopup(globalConfig.menuPopups[configKey].image);
         }
     };
 
-    const menuPopup = document.getElementById('menu-image-popup');
+    /* ── Modals & Popups ── */
+    const menuPopup    = document.getElementById('menu-image-popup');
     const menuPopupImg = document.getElementById('menu-popup-img');
-    window.openMenuPopup = (url) => { menuPopupImg.src = url; menuPopup.style.display = 'flex'; };
-    window.closeMenuPopup = () => { menuPopup.style.display = 'none'; };
-    window.openFullscreen = (img) => { document.getElementById("fullscreen-img").src = img.src; document.getElementById("fullscreen-modal").classList.add("show"); };
-    window.openFullscreenImage = (url) => { document.getElementById("fullscreen-img").src = url; document.getElementById("fullscreen-modal").classList.add("show"); };
-    window.closeFullscreen = () => document.getElementById("fullscreen-modal").classList.remove("show");
+    window.openMenuPopup    = (url) => { menuPopupImg.src = url; menuPopup.style.display = 'flex'; };
+    window.closeMenuPopup   = ()    => { menuPopup.style.display = 'none'; };
+    window.openFullscreen   = (img) => { document.getElementById('fullscreen-img').src = img.src; document.getElementById('fullscreen-modal').classList.add('show'); };
+    window.openFullscreenImage = (url) => { document.getElementById('fullscreen-img').src = url; document.getElementById('fullscreen-modal').classList.add('show'); };
+    window.closeFullscreen  = ()    => document.getElementById('fullscreen-modal').classList.remove('show');
 
-    const popup = document.getElementById("generic-popup");
-    window.openPopup = (t, b) => { document.getElementById("popup-title").innerText = t; document.getElementById("popup-body").innerHTML = `<p>${b}</p>`; popup.classList.add("show"); };
-    window.closePopup = () => popup.classList.remove("show");
+    const popup = document.getElementById('generic-popup');
+    window.openPopup  = (t, b) => { document.getElementById('popup-title').innerText = t; document.getElementById('popup-body').innerHTML = `<p>${b}</p>`; popup.classList.add('show'); };
+    window.closePopup = ()     => popup.classList.remove('show');
 
-    document.addEventListener("DOMContentLoaded", loadData);
+    /* ── Start ── */
+    document.addEventListener('DOMContentLoaded', loadData);
 </script>
 ```
 
