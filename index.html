@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         /* =========================================
-           DESIGN TOKENS — Liquid Glass / Orange
+           DESIGN TOKENS - Liquid Glass / Orange
            ========================================= */
         :root {
             --primary:        #FF8C42;
@@ -601,7 +601,7 @@
             localStorage.setItem(CACHE_KEY, JSON.stringify(data));
             localStorage.setItem(CACHE_TS_KEY, Date.now().toString());
         } catch (e) {
-            // localStorage penuh — hapus cache lama dan coba lagi
+            // localStorage penuh - hapus cache lama dan coba lagi
             try { localStorage.removeItem(CACHE_KEY); localStorage.removeItem(CACHE_TS_KEY); } catch (_) {}
         }
     }
@@ -621,7 +621,7 @@
     }
 
     /* ============================================================
-       🔥 DATA LOADING — Cache-first strategy
+       🔥 DATA LOADING - Cache-first strategy
        1. Cek localStorage → render langsung jika fresh (0 Firestore calls)
        2. Jika cache expired/kosong → ambil dari Firestore, simpan ke cache
        Hasil: dari ~1 read/visitor → 1 read per 4 jam per device
@@ -671,7 +671,7 @@
 
         } catch (e) {
             console.error("Gagal memuat data Firestore:", e);
-            // Fallback ke defaultData — website tetap jalan
+            // Fallback ke defaultData - website tetap jalan
             globalConfig = defaultData;
             renderWebsite(globalConfig);
         }
@@ -709,7 +709,7 @@
     }
 
     /* ============================================================
-       🔐 AUTH LISTENER — lazy, hanya setup setelah render
+       🔐 AUTH LISTENER - lazy, hanya setup setelah render
        Listener dicleanup saat tidak dibutuhkan untuk menghindari
        persistent Firebase connection yang menghabiskan quota
        ============================================================ */
@@ -721,7 +721,7 @@
     }
 
     /* ============================================================
-       🖼️ RENDER FUNCTIONS — Sama seperti sebelumnya
+       🖼️ RENDER FUNCTIONS - Sama seperti sebelumnya
        ============================================================ */
     function renderWebsite(data) {
         if (data.general) {
@@ -833,7 +833,7 @@
     }
 
     /* ============================================================
-       🔑 ADMIN — Header tap trigger (5 kali dalam 2 detik)
+       🔑 ADMIN - Header tap trigger (5 kali dalam 2 detik)
        ============================================================ */
     document.querySelector('.header-gallery').addEventListener('click', () => {
         headerClickCount++;
@@ -870,7 +870,7 @@
 
     window.clearCacheAndReload = async () => {
         clearCache();
-        // Ambil data segar dari Firestore (1 read — hanya dilakukan manual oleh admin)
+        // Ambil data segar dari Firestore (1 read - hanya dilakukan manual oleh admin)
         try {
             const docSnap = await getDoc(doc(db, "website_data", "master_config_v4"));
             if (docSnap.exists()) {
@@ -898,7 +898,7 @@
 
         // Cache info bar
         html += `<div class="cache-info-bar">
-            <span>🗂️ <b>Cache Aktif</b> — Data di-cache ${ttlHour} jam di browser pengunjung</span>
+            <span>🗂️ <b>Cache Aktif</b> - Data di-cache ${ttlHour} jam di browser pengunjung</span>
             <span>Data terakhir diambil: ${ageStr || 'belum ada cache'}</span>
             <span>💡 Setelah simpan perubahan, cache admin dihapus otomatis.</span>
             <button class="btn-clear-cache" onclick="clearCacheAndReload()">🗑️ Hapus Cache & Reload</button>
@@ -1054,7 +1054,7 @@
     window.updateRegItem  = (catIdx, itemIdx, field, val) => { globalConfig.regularMenu[catIdx].items[itemIdx][field] = val; };
 
     /* ============================================================
-       📤 FILE UPLOAD — tetap ke Firebase Storage (tidak ada alternatif
+       📤 FILE UPLOAD - tetap ke Firebase Storage (tidak ada alternatif
        gratis yang sama mudahnya), tapi gambar baru sudah otomatis
        ter-cache oleh browser lewat URL yang konsisten.
        ============================================================ */
@@ -1098,7 +1098,7 @@
        Setelah save: cache DIHAPUS sehingga semua device akan
        mengambil data terbaru pada kunjungan berikutnya.
        TIDAK pakai location.reload() untuk menghindari Firestore
-       call ganda — render langsung dari globalConfig.
+       call ganda - render langsung dari globalConfig.
        ============================================================ */
     window.saveConfigToFirestore = async () => {
         const btn = document.querySelector('.btn-save');
