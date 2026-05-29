@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="theme-color" content="#fff8ef"/>
-<title>Sawah Senja — Order</title>
+<title>Sawah Senja - Order</title>
 <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 
 <script type="module">
@@ -31,23 +31,30 @@ const areaCode = (new URLSearchParams(window.location.search).get("table") || "G
 // MENU FALLBACK
 // ============================================================
 // Menu diambil 100% dari Firestore (dikelola via Dashboard > Kelola Menu)
-// Tidak ada hardcode menu — semua diatur dari dashboard
+// Tidak ada hardcode menu - semua diatur dari dashboard
 let MENU = [], CATEGORIES = buildCats();
 let menuLoading = true;
 
-// Settings — dibaca realtime dari Firestore settings/general
+// Settings - dibaca realtime dari Firestore settings/general
 // Default fallback dipakai sampai Firestore merespons
 let appSettings = {
   promoEnabled:      true,
   promoText:         "Gratis Es Teh untuk setiap Paket Senja",
   serviceFeeEnabled: true,
+  serviceFeeType:    "nominal",  // "nominal" | "percent"
   serviceFeeAmount:  2000,
+  serviceFeePercent: 10,
   serviceFeeLabel:   "Service fee",
+  logoUrl:           "",
 };
 
-// Helper — ambil service fee aktif berdasarkan settings
-function getServiceFee() {
-  return appSettings.serviceFeeEnabled ? (appSettings.serviceFeeAmount || 0) : 0;
+// Helper - hitung service fee berdasarkan subtotal dan tipe
+function getServiceFee(subtotal) {
+  if (!appSettings.serviceFeeEnabled) return 0;
+  if (appSettings.serviceFeeType === "percent") {
+    return Math.round((subtotal || cartSub()) * (appSettings.serviceFeePercent || 0) / 100);
+  }
+  return appSettings.serviceFeeAmount || 0;
 }
 
 function buildCats() { return ["Semua", ...new Set(MENU.map(m=>m.category))]; }
@@ -95,13 +102,13 @@ function normalizePhone(raw) {
     return { valid: true, normalized: international, display: "+"+international };
   }
 
-  // Format lain — coba pakai apa adanya jika cukup panjang
+  // Format lain - coba pakai apa adanya jika cukup panjang
   if (s.length >= 8) return { valid: true, normalized: s, display: s };
   return { valid: false, normalized: s, display: raw };
 }
 
 // ============================================================
-// SETTINGS LISTENER — baca promo & service fee dari Firestore realtime
+// SETTINGS LISTENER - baca promo & service fee dari Firestore realtime
 // ============================================================
 function startSettingsListener() {
   try {
@@ -112,10 +119,15 @@ function startSettingsListener() {
           promoEnabled:      d.promoEnabled      !== false,
           promoText:         d.promoText         || "Promo hari ini",
           serviceFeeEnabled: d.serviceFeeEnabled !== false,
-          serviceFeeAmount:  Number(d.serviceFeeAmount) || 0,
+          serviceFeeType:    d.serviceFeeType    || "nominal",
+          serviceFeeAmount:  Number(d.serviceFeeAmount)  || 0,
+          serviceFeePercent: Number(d.serviceFeePercent) || 0,
           serviceFeeLabel:   d.serviceFeeLabel   || "Service fee",
+          logoUrl:           d.logoUrl           || "",
         };
       }
+      // Update logo di header jika halaman menu sedang tampil
+      if (checkoutStep === "menu") updateCustomerLogo(appSettings.logoUrl);
       // Kalau dokumen belum ada, pakai default (sudah diset di state)
 
       // Update promo banner jika halaman menu sedang ditampilkan
@@ -131,7 +143,7 @@ function startSettingsListener() {
       const tEl = document.getElementById("cart-total-fab");
       if (tEl) tEl.textContent = fmt(cartTot());
     }, err => {
-      console.warn("Settings listener error:", err.code, "— menggunakan default.");
+      console.warn("Settings listener error:", err.code, "- menggunakan default.");
       // Tidak perlu showToast, cukup pakai default
     });
   } catch(e) {
@@ -236,7 +248,7 @@ function rebuildFeatured() {
 const fmt = n => "Rp\u00a0"+Number(n).toLocaleString("id-ID");
 const cartCount = ()=>Object.values(cart).reduce((s,i)=>s+i.qty,0);
 const cartSub   = ()=>Object.values(cart).reduce((s,i)=>s+i.price*i.qty,0);
-const cartTot   = ()=>cartSub()+getServiceFee();
+const cartTot   = ()=>{ const sub=cartSub(); return sub+getServiceFee(sub); };
 const getFiltered = ()=>activeCategory==="Semua"?MENU:MENU.filter(m=>m.category===activeCategory);
 
 // Estimasi total waktu masak berdasarkan item di keranjang
@@ -303,8 +315,9 @@ async function submitOrder(customerName, customerWhatsapp, paymentMethod) {
   try {
     const orderId=await generateOrderId();
     const items=Object.values(cart).map(i=>({name:i.name,qty:i.qty,price:i.price,notes:i.notes||""}));
-    const fee=getServiceFee();
-    const subtotal=cartSub(),total=cartTot();
+    const subtotal=cartSub();
+    const fee=getServiceFee(subtotal);
+    const total=subtotal+fee;
     const paymentStatus=paymentMethod==="QRIS"?"PENDING":"UNPAID";
     const orderData={
       orderId,areaCode,customerName,customerWhatsapp,
@@ -352,6 +365,7 @@ function renderApp() {
   if(checkoutStep==="checkout"){root.innerHTML=renderCheckoutPage();bindCheckoutEvents();return;}
   root.innerHTML=renderMenuPage();
   updateCartUI();
+  if(appSettings.logoUrl) updateCustomerLogo(appSettings.logoUrl);
 }
 
 // ============================================================
@@ -397,8 +411,9 @@ function renderSuccessPage() {
 // ============================================================
 function renderCheckoutPage() {
   const items=Object.values(cart);
-  const fee=getServiceFee();
-  const feeLabel=appSettings.serviceFeeLabel||"Service fee";
+  const sub=cartSub();
+  const fee=getServiceFee(sub);
+  const feeLabel=(appSettings.serviceFeeLabel||"Service fee") + (appSettings.serviceFeeEnabled && appSettings.serviceFeeType==="percent" ? ` (${appSettings.serviceFeePercent}%)` : "");
   const sub=cartSub(),total=cartTot();
   const wait=estimatedWait();
 
@@ -454,7 +469,7 @@ function renderCheckoutPage() {
               oninput="onPhoneInput(this)" onblur="onPhoneBlur(this)"/>
             <div id="phone-preview" class="phone-preview"></div>
           </div>
-          <span class="co-field__hint">Format apapun diterima — otomatis dikonversi 🔄</span>
+          <span class="co-field__hint">Format apapun diterima - otomatis dikonversi 🔄</span>
         </div>
       </div>
 
@@ -468,7 +483,7 @@ function renderCheckoutPage() {
             <div class="pay-opt__icon">${m==="QRIS"?"📱":m==="Cash"?"💵":"🏦"}</div>
             <div class="pay-opt__text">
               <div class="pay-opt__name">${m}</div>
-              <div class="pay-opt__desc">${m==="QRIS"?"Scan QR saat pickup":m==="Cash"?"Bayar tunai ke kasir":"Transfer bank — konfirmasi ke kasir"}</div>
+              <div class="pay-opt__desc">${m==="QRIS"?"Scan QR saat pickup":m==="Cash"?"Bayar tunai ke kasir":"Transfer bank - konfirmasi ke kasir"}</div>
             </div>
             <div class="pay-opt__check">✓</div>
           </label>`).join("")}
@@ -503,10 +518,13 @@ function renderMenuPage() {
       <div class="hero__horizon"></div>
       <div class="hero__content">
         <div class="hero__brand">
-          <div class="hero__logo">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-            </svg>
+          <div class="hero__logo" style="position:relative;overflow:hidden;">
+            <div id="cust-logo-icon" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+              </svg>
+            </div>
+            <img id="cust-logo-img" src="" alt="logo" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:8px;"/>
           </div>
           <span>Sawah Senja</span>
         </div>
@@ -519,7 +537,7 @@ function renderMenuPage() {
       </div>
     </div>
 
-    <!-- PROMO BANNER — dikontrol dari Dashboard > Pengaturan -->
+    <!-- PROMO BANNER - dikontrol dari Dashboard > Pengaturan -->
     <div id="promo-banner" class="promo-banner" style="${!appSettings.promoEnabled?'display:none':''}">
       <div class="promo-banner__icon">🎁</div>
       <div class="promo-banner__text">
@@ -641,7 +659,7 @@ function renderCard(item) {
         <span class="menu-card__price">${fmt(item.price)}</span>
         ${item.stock?(qty>0
           ?`<div class="qty-ctrl">
-              <button onclick="removeFromCart('${id}')" class="qty-btn qty-btn--minus">−</button>
+              <button onclick="removeFromCart('${id}')" class="qty-btn qty-btn--minus">-</button>
               <span class="qty-num">${qty}</span>
               <button onclick="addToCart('${id}')" class="qty-btn qty-btn--plus">+</button>
             </div>`
@@ -668,7 +686,7 @@ function renderCartItems() {
           value="${i.notes||""}" oninput="setItemNotes('${i.id}',this.value)"
           class="ci__note"/>
         <div class="ci__ctrl">
-          <button onclick="removeFromCart('${i.id}')" class="qty-btn qty-btn--minus">−</button>
+          <button onclick="removeFromCart('${i.id}')" class="qty-btn qty-btn--minus">-</button>
           <span class="qty-num">${i.qty}</span>
           <button onclick="addToCart('${i.id}')" class="qty-btn qty-btn--plus">+</button>
           <button onclick="deleteFromCart('${i.id}')" class="ci__del">Hapus</button>
@@ -681,8 +699,9 @@ function renderCartFooter() {
   const count=cartCount();
   if(!count) return `<div class="cart-empty"><div class="cart-empty__icon">🛒</div><p>Keranjang masih kosong</p></div>`;
   const wait=estimatedWait();
-  const fee=getServiceFee();
-  const feeLabel=appSettings.serviceFeeLabel||"Service fee";
+  const sub=cartSub();
+  const fee=getServiceFee(sub);
+  const feeLabel=(appSettings.serviceFeeLabel||"Service fee") + (appSettings.serviceFeeEnabled && appSettings.serviceFeeType==="percent" ? ` (${appSettings.serviceFeePercent}%)` : "");
   return `
     <div class="cart-totals">
       <div class="cart-total-row"><span>Subtotal</span><span>${fmt(cartSub())}</span></div>
@@ -782,6 +801,20 @@ function bindCheckoutEvents() {
   window.onPhoneBlur=onPhoneBlur;
 }
 
+// ── Logo update in customer header ──────────────────────────
+function updateCustomerLogo(url) {
+  const img  = document.getElementById("cust-logo-img");
+  const icon = document.getElementById("cust-logo-icon");
+  if (!img || !icon) return;
+  if (url) {
+    img.src = url; img.style.display="block"; icon.style.display="none";
+    img.onerror = () => { img.style.display="none"; icon.style.display="flex"; };
+  } else {
+    img.style.display="none"; icon.style.display="flex";
+  }
+}
+window.updateCustomerLogo = updateCustomerLogo;
+
 // GLOBALS
 window.addToCart=addToCart;window.removeFromCart=removeFromCart;
 window.deleteFromCart=deleteFromCart;window.setItemNotes=setItemNotes;
@@ -798,7 +831,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 <style>
 /* ============================================================
-   SAWAH SENJA — LIGHT WARM PALETTE
+   SAWAH SENJA - LIGHT WARM PALETTE
    Terinspirasi langit senja di atas sawah:
    Sky biru keunguan → horizon emas oranye → padi hijau → tanah coklat hangat
 ============================================================ */
@@ -856,7 +889,7 @@ button{cursor:pointer;border:none;background:none;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 
 /* ============================================================
-   HERO — senja di atas sawah
+   HERO - senja di atas sawah
 ============================================================ */
 .hero{
   position:relative;min-height:54dvh;
