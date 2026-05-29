@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="theme-color" content="#fff8ef"/>
-<title>Sawah Senja - Order</title>
+<title>Sawah Senja — Order</title>
 <link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 
 <script type="module">
@@ -31,11 +31,11 @@ const areaCode = (new URLSearchParams(window.location.search).get("table") || "G
 // MENU FALLBACK
 // ============================================================
 // Menu diambil 100% dari Firestore (dikelola via Dashboard > Kelola Menu)
-// Tidak ada hardcode menu - semua diatur dari dashboard
+// Tidak ada hardcode menu — semua diatur dari dashboard
 let MENU = [], CATEGORIES = buildCats();
 let menuLoading = true;
 
-// Settings - dibaca realtime dari Firestore settings/general
+// Settings — dibaca realtime dari Firestore settings/general
 // Default fallback dipakai sampai Firestore merespons
 let appSettings = {
   promoEnabled:      true,
@@ -48,7 +48,7 @@ let appSettings = {
   logoUrl:           "",
 };
 
-// Helper - hitung service fee berdasarkan subtotal dan tipe
+// Helper — hitung service fee berdasarkan subtotal dan tipe
 function getServiceFee(subtotal) {
   if (!appSettings.serviceFeeEnabled) return 0;
   if (appSettings.serviceFeeType === "percent") {
@@ -102,13 +102,13 @@ function normalizePhone(raw) {
     return { valid: true, normalized: international, display: "+"+international };
   }
 
-  // Format lain - coba pakai apa adanya jika cukup panjang
+  // Format lain — coba pakai apa adanya jika cukup panjang
   if (s.length >= 8) return { valid: true, normalized: s, display: s };
   return { valid: false, normalized: s, display: raw };
 }
 
 // ============================================================
-// SETTINGS LISTENER - baca promo & service fee dari Firestore realtime
+// SETTINGS LISTENER — baca promo & service fee dari Firestore realtime
 // ============================================================
 function startSettingsListener() {
   try {
@@ -143,7 +143,7 @@ function startSettingsListener() {
       const tEl = document.getElementById("cart-total-fab");
       if (tEl) tEl.textContent = fmt(cartTot());
     }, err => {
-      console.warn("Settings listener error:", err.code, "- menggunakan default.");
+      console.warn("Settings listener error:", err.code, "— menggunakan default.");
       // Tidak perlu showToast, cukup pakai default
     });
   } catch(e) {
@@ -267,11 +267,12 @@ function estimatedWait() {
 // ORDER ID
 // ============================================================
 async function generateOrderId() {
-  try {
-    const today=new Date(); today.setHours(0,0,0,0);
-    const snap=await getDocs(query(collection(db,"orders"),where("createdAt",">=",Timestamp.fromDate(today))));
-    return `${areaCode}-${String(snap.size+1).padStart(3,"0")}`;
-  } catch { return `${areaCode}-${String(Math.floor(Math.random()*900)+100)}`; }
+  // Gunakan timestamp+random untuk menghindari duplicate order ID
+  // Format: AREA-HHMM-XX (jam+menit + 2 digit random)
+  const now = new Date();
+  const hhmm = now.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}).replace(".","");
+  const rand = String(Math.floor(Math.random()*90)+10);
+  return `${areaCode}-${hhmm}${rand}`;
 }
 
 // ============================================================
@@ -319,7 +320,7 @@ async function submitOrder(customerName, customerWhatsapp, paymentMethod) {
   if(btn){btn.disabled=true;btn.innerHTML=`<span class="spinner"></span> Memproses…`;}
   try {
     const orderId=await generateOrderId();
-    const items=Object.values(cart).map(i=>({name:i.name,qty:i.qty,price:i.price,notes:i.notes||""}));
+    const items=Object.values(cart).map(i=>({name:i.name,category:i.category||"",qty:i.qty,price:i.price,notes:i.notes||""}));
     const subtotal=cartSub();
     const fee=getServiceFee(subtotal);
     const total=subtotal+fee;
@@ -401,7 +402,7 @@ function renderSuccessPage() {
           </div>
         </div>
         <div class="ticket-footer">
-          🌾 Silahkan mengambil ke counter <strong>${o.areaCode}</strong> saat makanan siap,akan kami hubungi melalui WhatsApp
+          🌾 Akan diantar ke area <strong>${o.areaCode}</strong> saat siap
         </div>
       </div>
 
@@ -474,7 +475,7 @@ function renderCheckoutPage() {
               oninput="onPhoneInput(this)" onblur="onPhoneBlur(this)"/>
             <div id="phone-preview" class="phone-preview"></div>
           </div>
-          <span class="co-field__hint">Format apapun diterima - otomatis dikonversi 🔄</span>
+          <span class="co-field__hint">Format apapun diterima — otomatis dikonversi 🔄</span>
         </div>
       </div>
 
@@ -488,7 +489,7 @@ function renderCheckoutPage() {
             <div class="pay-opt__icon">${m==="QRIS"?"📱":m==="Cash"?"💵":"🏦"}</div>
             <div class="pay-opt__text">
               <div class="pay-opt__name">${m}</div>
-              <div class="pay-opt__desc">${m==="QRIS"?"Scan QR saat pickup":m==="Cash"?"Bayar tunai ke kasir":"Transfer bank - konfirmasi ke kasir"}</div>
+              <div class="pay-opt__desc">${m==="QRIS"?"Scan QR saat pickup":m==="Cash"?"Bayar tunai ke kasir":"Transfer bank — konfirmasi ke kasir"}</div>
             </div>
             <div class="pay-opt__check">✓</div>
           </label>`).join("")}
@@ -516,10 +517,23 @@ function renderMenuPage() {
   return `
   <div class="menu-screen">
 
-    <!-- HERO -->
-    <div class="hero">
+    <!-- HERO HEADER IMAGE — tampil jika logo diset di Dashboard > Pengaturan -->
+    <div id="cust-header-img-wrap" class="cust-header-img-wrap" style="${appSettings.logoUrl?'':'display:none'}">
+      <img id="cust-header-img" src="${appSettings.logoUrl||''}" alt="${appSettings.storeName||'Sawah Senja'}"
+        class="cust-header-img"
+        onerror="document.getElementById('cust-header-img-wrap').style.display='none'"/>
+      <div class="cust-header-overlay">
+        <div class="cust-header-area-pill">
+          <svg width="9" height="9" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"/></svg>
+          Area ${areaCode}
+        </div>
+      </div>
+    </div>
+
+    <!-- HERO GRADIENT — selalu tampil, ukuran menyesuaikan ada/tidaknya header image -->
+    <div class="hero ${appSettings.logoUrl?'hero--compact':''}">
       <div class="hero__sky-top"></div>
-      <div class="hero__sun"></div>
+      <div class="hero__sun" style="${appSettings.logoUrl?'display:none':''}"></div>
       <div class="hero__horizon"></div>
       <div class="hero__content">
         <div class="hero__brand">
@@ -531,18 +545,18 @@ function renderMenuPage() {
             </div>
             <img id="cust-logo-img" src="" alt="logo" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:8px;"/>
           </div>
-          <span>Sawah Senja</span>
+          <span>${appSettings.storeName||'Sawah Senja'}</span>
         </div>
-        <div class="hero__area-pill">
+        ${!appSettings.logoUrl?`<div class="hero__area-pill">
           <svg width="9" height="9" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"/></svg>
           Area ${areaCode}
-        </div>
+        </div>`:''}
         <h1 class="hero__title">Halo! Mau<br/><em>Makan Apa?</em></h1>
         <p class="hero__sub">Pesan sekarang, nikmati di tepi sawah 🌾</p>
       </div>
     </div>
 
-    <!-- PROMO BANNER - dikontrol dari Dashboard > Pengaturan -->
+    <!-- PROMO BANNER — dikontrol dari Dashboard > Pengaturan -->
     <div id="promo-banner" class="promo-banner" style="${!appSettings.promoEnabled?'display:none':''}">
       <div class="promo-banner__icon">🎁</div>
       <div class="promo-banner__text">
@@ -673,7 +687,7 @@ function renderCard(item) {
         <span class="menu-card__price">${fmt(item.price)}</span>
         ${item.stock?(qty>0
           ?`<div class="qty-ctrl">
-              <button onclick="removeFromCart('${id}')" class="qty-btn qty-btn--minus">-</button>
+              <button onclick="removeFromCart('${id}')" class="qty-btn qty-btn--minus">−</button>
               <span class="qty-num">${qty}</span>
               <button onclick="addToCart('${id}')" class="qty-btn qty-btn--plus">+</button>
             </div>`
@@ -703,7 +717,7 @@ function renderCartItems() {
           value="${i.notes||""}" oninput="setItemNotes('${i.id}',this.value)"
           class="ci__note"/>
         <div class="ci__ctrl">
-          <button onclick="removeFromCart('${i.id}')" class="qty-btn qty-btn--minus">-</button>
+          <button onclick="removeFromCart('${i.id}')" class="qty-btn qty-btn--minus">−</button>
           <span class="qty-num">${i.qty}</span>
           <button onclick="addToCart('${i.id}')" class="qty-btn qty-btn--plus">+</button>
           <button onclick="deleteFromCart('${i.id}')" class="ci__del">Hapus</button>
@@ -820,14 +834,35 @@ function bindCheckoutEvents() {
 
 // ── Logo update in customer header ──────────────────────────
 function updateCustomerLogo(url) {
+  // Update small brand pill icon
   const img  = document.getElementById("cust-logo-img");
   const icon = document.getElementById("cust-logo-icon");
-  if (!img || !icon) return;
-  if (url) {
-    img.src = url; img.style.display="block"; icon.style.display="none";
-    img.onerror = () => { img.style.display="none"; icon.style.display="flex"; };
-  } else {
-    img.style.display="none"; icon.style.display="flex";
+  if (img && icon) {
+    if (url) {
+      img.src = url; img.style.display="block"; icon.style.display="none";
+      img.onerror = () => { img.style.display="none"; icon.style.display="flex"; };
+    } else {
+      img.style.display="none"; icon.style.display="flex";
+    }
+  }
+  // Update large header image
+  const headerWrap = document.getElementById("cust-header-img-wrap");
+  const headerImg  = document.getElementById("cust-header-img");
+  if (headerWrap && headerImg) {
+    if (url) {
+      headerImg.src = url;
+      headerWrap.style.display = "";
+      headerImg.onerror = () => { headerWrap.style.display = "none"; };
+    } else {
+      headerWrap.style.display = "none";
+    }
+  }
+  // Toggle hero compact mode
+  const hero = document.querySelector(".hero");
+  if (hero) {
+    hero.classList.toggle("hero--compact", !!url);
+    const sun = hero.querySelector(".hero__sun");
+    if (sun) sun.style.display = url ? "none" : "";
   }
 }
 window.updateCustomerLogo = updateCustomerLogo;
@@ -848,7 +883,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 <style>
 /* ============================================================
-   SAWAH SENJA - LIGHT WARM PALETTE
+   SAWAH SENJA — LIGHT WARM PALETTE
    Terinspirasi langit senja di atas sawah:
    Sky biru keunguan → horizon emas oranye → padi hijau → tanah coklat hangat
 ============================================================ */
@@ -906,12 +941,46 @@ button{cursor:pointer;border:none;background:none;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 
 /* ============================================================
-   HERO - senja di atas sawah
+   HERO — senja di atas sawah
 ============================================================ */
+/* ── Header image (logo besar di atas hero) ── */
+.cust-header-img-wrap{
+  position:relative;
+  width:100%;
+  max-height:280px;
+  overflow:hidden;
+  background:#1a1a2e;
+  flex-shrink:0;
+}
+.cust-header-img{
+  width:100%;
+  max-height:280px;
+  object-fit:cover;
+  display:block;
+}
+.cust-header-overlay{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  padding:12px 18px;
+  background:linear-gradient(to top,rgba(0,0,0,0.5) 0%,transparent 100%);
+  display:flex;justify-content:flex-end;
+}
+.cust-header-area-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,0.25);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,0.4);
+  color:#fff;font-size:11px;font-weight:800;
+  border-radius:100px;padding:4px 10px;
+}
+
 .hero{
   position:relative;min-height:54dvh;
   display:flex;flex-direction:column;justify-content:flex-end;
   padding:0 24px 32px;overflow:hidden;
+}
+/* Hero lebih pendek jika ada header image di atas */
+.hero--compact{
+  min-height:32dvh;
 }
 .hero__sky-top{
   position:absolute;inset:0;
