@@ -232,7 +232,12 @@ function rebuildFeatured() {
   if(sec)sec.style.display="";
   w.innerHTML=bs.map(item=>`
     <div class="featured-card" onclick="addToCart('${item.id}')">
-      <div class="featured-card__img" style="background:url('${item.image||""}') center/cover no-repeat,#f5c07a"></div>
+      <div class="featured-card__img">
+        ${item.image
+          ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0"
+                 onerror="this.style.display='none';this.parentElement.style.background='#f5c07a'"/>`
+          : ""}
+      </div>
       <div class="featured-card__body">
         <span class="hot-badge">🔥 Favorit</span>
         <div class="featured-card__name">${item.name}</div>
@@ -556,7 +561,12 @@ function renderMenuPage() {
       <div id="featured-row" class="featured-row">
         ${bs.map(item=>`
         <div class="featured-card" onclick="addToCart('${item.id}')">
-          <div class="featured-card__img" style="background:url('${item.image||""}') center/cover no-repeat,#f5c07a"></div>
+          <div class="featured-card__img">
+        ${item.image
+          ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0"
+                 onerror="this.style.display='none';this.parentElement.style.background='#f5c07a'"/>`
+          : ""}
+      </div>
           <div class="featured-card__body">
             <span class="hot-badge">🔥 Favorit</span>
             <div class="featured-card__name">${item.name}</div>
@@ -647,7 +657,11 @@ function renderCard(item) {
   return `
   <div class="menu-card ${!item.stock?"menu-card--out":""}">
     <div class="menu-card__img-wrap">
-      <img src="${item.image||""}" alt="${item.name}" class="menu-card__img" loading="lazy" onerror="this.style.background='#f5e0b0'"/>
+      ${item.image
+        ? `<img src="${item.image}" alt="${item.name}" class="menu-card__img" loading="lazy"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+           <div class="menu-card__img-ph" style="display:none">🍽️</div>`
+        : `<div class="menu-card__img-ph">🍽️</div>`}
       ${item.bestSeller?`<span class="menu-card__hot">🔥</span>`:""}
       ${!item.stock?`<div class="menu-card__sold-out">Habis</div>`:""}
       ${item.prepTime?`<span class="menu-card__time">⏱ ${item.prepTime}m</span>`:""}
@@ -678,7 +692,10 @@ function renderCartItems() {
   if(!items.length) return "";
   return items.map(i=>`
     <div class="ci">
-      <img src="${i.image||""}" class="ci__img" onerror="this.style.background='#f5e0b0'"/>
+      ${i.image
+        ? `<img src="${i.image}" class="ci__img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+           <div class="ci__img-ph" style="display:none">🍽️</div>`
+        : `<div class="ci__img-ph">🍽️</div>`}
       <div class="ci__body">
         <div class="ci__name">${i.name}</div>
         <div class="ci__price">${fmt(i.price)} × ${i.qty} = <strong>${fmt(i.price*i.qty)}</strong></div>
@@ -991,7 +1008,11 @@ button{cursor:pointer;border:none;background:none;}
   scroll-snap-align:start;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;
 }
 .featured-card:active{transform:scale(0.95);}
-.featured-card__img{height:100px;width:100%;background:var(--surface2) center/cover;}
+.featured-card__img{
+  height:100px;width:100%;background:#f5c07a;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;
+}
+.featured-card__img img{width:100%;height:100%;object-fit:cover;}
 .featured-card__body{padding:10px 11px 12px;}
 .hot-badge{
   display:inline-block;font-size:10px;font-weight:800;
@@ -1050,6 +1071,17 @@ button{cursor:pointer;border:none;background:none;}
 
 .menu-card__img-wrap{position:relative;}
 .menu-card__img{width:100%;height:118px;object-fit:cover;background:var(--surface2);}
+/* Placeholder saat gambar kosong/gagal load */
+.menu-card__img-ph{
+  width:100%;height:118px;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;color:var(--text3);
+}
+.ci__img-ph{
+  width:56px;height:56px;border-radius:12px;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
 .menu-card__hot{
   position:absolute;top:7px;left:7px;font-size:14px;
   background:rgba(255,255,255,0.85);border-radius:100px;padding:2px 6px;
