@@ -413,8 +413,8 @@ function renderCheckoutPage() {
   const items=Object.values(cart);
   const sub=cartSub();
   const fee=getServiceFee(sub);
+  const total=sub+fee;
   const feeLabel=(appSettings.serviceFeeLabel||"Service fee") + (appSettings.serviceFeeEnabled && appSettings.serviceFeeType==="percent" ? ` (${appSettings.serviceFeePercent}%)` : "");
-  const sub=cartSub(),total=cartTot();
   const wait=estimatedWait();
 
   const itemsHtml=items.map(i=>`
