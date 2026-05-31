@@ -76,7 +76,8 @@ let appSettings = {
 function getServiceFee(subtotal) {
   if (!appSettings.serviceFeeEnabled) return 0;
   if (appSettings.serviceFeeType === "percent") {
-    return Math.round((subtotal || cartSub()) * (appSettings.serviceFeePercent || 0) / 100);
+    const base = (subtotal != null && subtotal !== "") ? subtotal : cartSub();
+    return Math.round(base * (appSettings.serviceFeePercent || 0) / 100);
   }
   return appSettings.serviceFeeAmount || 0;
 }
@@ -352,7 +353,8 @@ function rebuildFeatured() {
     <div class="featured-card" onclick="addToCart('${item.id}')">
       <div class="featured-card__img">
         ${item.image
-          ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0"
+          ? `<img src="${item.image}" alt="${item.name}" loading="lazy" decoding="async"
+                 style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0"
                  onerror="this.style.display='none';this.parentElement.style.background='#f5c07a'"/>`
           : ""}
       </div>
@@ -388,7 +390,7 @@ async function generateOrderId() {
   // Gunakan timestamp+random untuk menghindari duplicate order ID
   // Format: AREA-HHMM-XX (jam+menit + 2 digit random)
   const now = new Date();
-  const hhmm = now.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}).replace(".","");
+  const hhmm = now.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}).replace(/[^0-9]/g,"");
   const rand = String(Math.floor(Math.random()*90)+10);
   return `${areaCode}-${hhmm}${rand}`;
 }
@@ -396,8 +398,13 @@ async function generateOrderId() {
 // ============================================================
 // CART
 // ============================================================
+const _addCooldown = {};
 function addToCart(itemId) {
   const id=isNaN(itemId)?itemId:Number(itemId);
+  // Debounce 300ms per item — cegah double-tap di mobile
+  const now = Date.now();
+  if (_addCooldown[id] && now - _addCooldown[id] < 300) return;
+  _addCooldown[id] = now;
   const item=MENU.find(m=>m.id==id);
   if(!item||!item.stock) return;
   cart[id]?cart[id].qty++:(cart[id]={...item,qty:1,notes:""});
@@ -449,10 +456,21 @@ async function submitOrder(customerName, customerWhatsapp, paymentMethod) {
       paymentMethod,paymentStatus,orderStatus:"NEW",
       createdAt:serverTimestamp(),updatedAt:serverTimestamp(),
       readyAt:null,completedAt:null,whatsappSent:false,
+      archived:false,  // FIX: wajib ada agar query where("archived","!=",true) menemukan dokumen ini
     };
     await setDoc(doc(collection(db,"orders")),orderData);
+    // Simpan state dulu — baru update UI (aman jika renderApp throw)
     lastOrder={...orderData,orderId,total,customerName,areaCode,paymentMethod,paymentStatus};
-    cart={}; checkoutStep="success"; renderApp();
+    const savedCart = cart;
+    cart = {};
+    checkoutStep = "success";
+    try { renderApp(); }
+    catch(err) {
+      // Jika render gagal, kembalikan cart agar user tidak kehilangan pesanan
+      cart = savedCart; checkoutStep = "checkout";
+      console.error("renderApp error:", err);
+      showToast("Pesanan berhasil, tapi tampilan gagal — coba refresh","info");
+    }
   } catch(e) {
     console.error(e);
     showToast(`Gagal: ${e.code||e.message}`,"error");
@@ -507,7 +525,7 @@ function renderSuccessPage() {
 
       <div class="order-ticket">
         <div class="ticket-header">
-          <div class="ticket-brand">Sawah Senja</div>
+          <div class="ticket-brand">${appSettings.storeName||"Sawah Senja"}</div>
           <div class="ticket-id">${o.orderId}</div>
         </div>
         <div class="ticket-body">
@@ -520,12 +538,12 @@ function renderSuccessPage() {
           </div>
         </div>
         <div class="ticket-footer">
-          🌾 Akan diantar ke area <strong>${o.areaCode}</strong> saat siap
+          🌾 Akan disiapkan untuk area <strong>${o.areaCode}</strong>
         </div>
       </div>
 
       <button class="cta-btn w-full" onclick="resetApp()">Pesan Lagi</button>
-      <p class="brand-footer">Sawah Senja · Makan enak di pinggir sawah</p>
+      <p class="brand-footer">${appSettings.storeName||"Sawah Senja"} · Makan enak di pinggir sawah 🌾</p>
     </div>
   </div>`;
 }
@@ -695,7 +713,8 @@ function renderMenuPage() {
         <div class="featured-card" onclick="addToCart('${item.id}')">
           <div class="featured-card__img">
         ${item.image
-          ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0"
+          ? `<img src="${item.image}" alt="${item.name}" loading="lazy" decoding="async"
+                 style="width:100%;height:100%;object-fit:cover;display:block;border-radius:0"
                  onerror="this.style.display='none';this.parentElement.style.background='#f5c07a'"/>`
           : ""}
       </div>
@@ -713,13 +732,13 @@ function renderMenuPage() {
     <div class="cat-wrap">
       <div id="cat-tabs" class="cat-tabs">
         ${CATEGORIES.map(c=>`
-        <button onclick="setCategory('${c}')" data-cat="${c}" class="cat-pill ${c===activeCategory?"cat-pill--active":""}">${c}</button>
+        <button onclick="setCategory(this.dataset.cat)" data-cat="${c}" class="cat-pill ${c===activeCategory?"cat-pill--active":""}">${c}</button>
         `).join("")}
       </div>
     </div>
 
     <!-- MENU SKELETON (tampil saat loading dari Firestore) -->
-    <div id="menu-skeleton" class="menu-grid" style="${menuLoading?'':'display:none'}">
+    <div id="menu-skeleton" class="menu-skeleton-grid" style="${menuLoading?'':'display:none'}">
       ${[1,2,3,4,5,6].map(()=>`
       <div style="border-radius:16px;overflow:hidden;background:var(--surface);border:1.5px solid var(--border);">
         <div class="menu-skel-img"></div>
@@ -832,7 +851,7 @@ function renderCartItems() {
         <div class="ci__name">${i.name}</div>
         <div class="ci__price">${fmt(i.price)} × ${i.qty} = <strong>${fmt(i.price*i.qty)}</strong></div>
         <input type="text" placeholder="Catatan (pedas, tanpa kecap…)"
-          value="${i.notes||""}" oninput="setItemNotes('${i.id}',this.value)"
+          value="${i.notes||""}" onchange="setItemNotes('${i.id}',this.value)"
           class="ci__note"/>
         <div class="ci__ctrl">
           <button onclick="removeFromCart('${i.id}')" class="qty-btn qty-btn--minus">−</button>
@@ -868,11 +887,46 @@ function renderCartFooter() {
 // ============================================================
 function updateCartUI() {
   const count=cartCount();
+
+  // FAB visibility & counter
   const fab=document.getElementById("cart-fab");
   if(fab){count===0?fab.classList.add("cart-fab--hidden"):fab.classList.remove("cart-fab--hidden");}
   const qEl=document.getElementById("cart-qty"); if(qEl)qEl.textContent=count;
   const tEl=document.getElementById("cart-total-fab"); if(tEl)tEl.textContent=fmt(cartTot());
-  refreshMenuGrid();
+
+  // Update partial: hanya qty-ctrl per item yang ada di grid
+  // Jauh lebih hemat daripada re-render seluruh grid
+  const grid=document.getElementById("menu-grid");
+  if(grid) {
+    grid.querySelectorAll(".menu-card").forEach(card=>{
+      // Ambil id item dari tombol add/qty di dalam card
+      const addBtn = card.querySelector(".add-btn");
+      const qtyMinus = card.querySelector(".qty-btn--minus");
+      const itemId = addBtn?.getAttribute("onclick")?.match(/addToCart\(['"]?([^'")\s]+)['"]?\)/)?.[1]
+                  || qtyMinus?.getAttribute("onclick")?.match(/removeFromCart\(['"]?([^'")\s]+)['"]?\)/)?.[1];
+      if(!itemId) return;
+      const id = isNaN(itemId)?itemId:Number(itemId);
+      const inCart=cart[id], qty=inCart?inCart.qty:0;
+      const foot=card.querySelector(".menu-card__foot");
+      if(!foot) return;
+      const item=MENU.find(m=>m.id==id);
+      if(!item||!item.stock) return;
+      // Render hanya kontrol qty/add
+      if(qty>0){
+        foot.innerHTML=`<span class="menu-card__price">${fmt(item.price)}</span>
+          <div class="qty-ctrl">
+            <button onclick="removeFromCart('${id}')" class="qty-btn qty-btn--minus">−</button>
+            <span class="qty-num">${qty}</span>
+            <button onclick="addToCart('${id}')" class="qty-btn qty-btn--plus">+</button>
+          </div>`;
+      } else {
+        foot.innerHTML=`<span class="menu-card__price">${fmt(item.price)}</span>
+          <button onclick="addToCart('${id}')" class="add-btn">+</button>`;
+      }
+    });
+  }
+
+  // Cart drawer items & footer
   const list=document.getElementById("cart-items-list"); if(list)list.innerHTML=renderCartItems();
   const foot=document.getElementById("cart-footer"); if(foot)foot.innerHTML=renderCartFooter();
   const waitLbl=document.getElementById("cart-wait-label");
@@ -1246,14 +1300,16 @@ button{cursor:pointer;border:none;background:none;}
 /* ============================================================
    MENU GRID
 ============================================================ */
-.menu-grid{
+.menu-skeleton-grid,.menu-grid{
   display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
   padding:14px 14px 0;background:var(--bg);
+}
+.menu-grid{
   /* Percepat rendering — browser skip render item yang tidak terlihat */
   content-visibility:auto;
   contain-intrinsic-size:0 800px;
 }
-@media(min-width:480px){.menu-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:480px){.menu-skeleton-grid,.menu-grid{grid-template-columns:repeat(3,1fr);}}
 
 .menu-card{
   border-radius:16px;overflow:hidden;
@@ -1261,7 +1317,7 @@ button{cursor:pointer;border:none;background:none;}
   box-shadow:0 2px 10px rgba(121,85,72,0.07);
   transition:transform 0.15s,box-shadow 0.15s;
 }
-.menu-card:not(.menu-card--out):hover{box-shadow:0 6px 20px rgba(121,85,72,0.14);}
+@media(hover:hover){.menu-card:not(.menu-card--out):hover{box-shadow:0 6px 20px rgba(121,85,72,0.14);}}
 .menu-card--out{opacity:0.5;}
 
 .menu-card__img-wrap{position:relative;}
