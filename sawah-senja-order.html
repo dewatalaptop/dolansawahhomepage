@@ -2,15 +2,37 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"/>
+<script>
+// Preload logo dari cache sebelum CSS/JS load (inline agar instant)
+try {
+  var _s = localStorage.getItem("ss_menu_v2");
+  // Logo preload: cek settings cache
+  var _sc = localStorage.getItem("ss_settings_v1");
+  if (_sc) {
+    var _sd = JSON.parse(_sc);
+    if (_sd && _sd.logoUrl) {
+      var _lnk = document.createElement("link");
+      _lnk.rel = "preload"; _lnk.as = "image"; _lnk.href = _sd.logoUrl;
+      document.head.appendChild(_lnk);
+    }
+  }
+} catch(e) {}
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
 <meta name="theme-color" content="#fff8ef"/>
 <title>Sawah Senja — Order</title>
-<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Instrument+Serif:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<!-- Preconnect untuk percepat font load -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+<!-- Font dengan display=swap — teks langsung tampil pakai fallback, ganti saat font siap -->
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;700;800;900&family=Instrument+Serif:ital@1&family=DM+Mono:wght@400&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<noscript><link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;700;800;900&family=Instrument+Serif:ital@1&family=DM+Mono:wght@400&display=swap" rel="stylesheet"/></noscript>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, collection, doc, setDoc, getDocs, onSnapshot,
+  getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot,
   query, where, orderBy, Timestamp, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -46,6 +68,8 @@ let appSettings = {
   serviceFeePercent: 10,
   serviceFeeLabel:   "Service fee",
   logoUrl:           "",
+  storeName:         "Sawah Senja",   // FIX-9
+  waTplReady:        "",              // FIX-10
 };
 
 // Helper — hitung service fee berdasarkan subtotal dan tipe
@@ -108,47 +132,70 @@ function normalizePhone(raw) {
 }
 
 // ============================================================
-// SETTINGS LISTENER — baca promo & service fee dari Firestore realtime
+// SETTINGS — getDoc sekali saat load, polling tiap 5 menit
+// Lebih hemat dari onSnapshot (tidak ada persistent listener)
 // ============================================================
-function startSettingsListener() {
+const SETTINGS_CACHE_KEY = "ss_settings_v1";
+
+// Load settings dari cache SEGERA saat halaman mulai
+(function loadSettingsCache() {
   try {
-    onSnapshot(doc(db, "settings", "general"), snap => {
-      if (snap.exists()) {
-        const d = snap.data();
-        appSettings = {
-          promoEnabled:      d.promoEnabled      !== false,
-          promoText:         d.promoText         || "Promo hari ini",
-          serviceFeeEnabled: d.serviceFeeEnabled !== false,
-          serviceFeeType:    d.serviceFeeType    || "nominal",
-          serviceFeeAmount:  Number(d.serviceFeeAmount)  || 0,
-          serviceFeePercent: Number(d.serviceFeePercent) || 0,
-          serviceFeeLabel:   d.serviceFeeLabel   || "Service fee",
-          logoUrl:           d.logoUrl           || "",
-        };
-      }
-      // Update logo di header jika halaman menu sedang tampil
-      if (checkoutStep === "menu") updateCustomerLogo(appSettings.logoUrl);
-      // Kalau dokumen belum ada, pakai default (sudah diset di state)
+    const raw = localStorage.getItem(SETTINGS_CACHE_KEY);
+    if (!raw) return;
+    const cached = JSON.parse(raw);
+    if (cached && cached.logoUrl !== undefined) {
+      // Whitelist field — jangan spread field asing dari cache lama
+      const keys = ["promoEnabled","promoText","serviceFeeEnabled","serviceFeeType",
+                    "serviceFeeAmount","serviceFeePercent","serviceFeeLabel",
+                    "logoUrl","storeName","waTplReady"];
+      keys.forEach(k => { if (cached[k] !== undefined) appSettings[k] = cached[k]; });
+    }
+  } catch(e) {}
+})();
 
-      // Update promo banner jika halaman menu sedang ditampilkan
-      if (checkoutStep === "menu") {
-        updatePromoBanner();
-      }
-
-      // Update cart footer jika drawer terbuka (service fee bisa berubah)
-      const foot = document.getElementById("cart-footer");
-      if (foot) foot.innerHTML = renderCartFooter();
-
-      // Update FAB total
-      const tEl = document.getElementById("cart-total-fab");
-      if (tEl) tEl.textContent = fmt(cartTot());
-    }, err => {
-      console.warn("Settings listener error:", err.code, "— menggunakan default.");
-      // Tidak perlu showToast, cukup pakai default
-    });
-  } catch(e) {
-    console.warn("Settings listener gagal:", e.message);
+async function applySettingsSnap(snap) {
+  if (snap.exists()) {
+    const d = snap.data();
+    appSettings = {
+      promoEnabled:      d.promoEnabled      !== false,
+      promoText:         d.promoText         || "Promo hari ini",
+      serviceFeeEnabled: d.serviceFeeEnabled !== false,
+      serviceFeeType:    d.serviceFeeType    || "nominal",
+      serviceFeeAmount:  Number(d.serviceFeeAmount)  || 0,
+      serviceFeePercent: Number(d.serviceFeePercent) || 0,
+      serviceFeeLabel:   d.serviceFeeLabel   || "Service fee",
+      logoUrl:           d.logoUrl           || "",
+      storeName:         d.storeName         || "Sawah Senja",
+      waTplReady:        d.waTplReady        || "",
+    };
+    // Simpan ke localStorage untuk kunjungan berikutnya
+    try { localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(appSettings)); } catch(e) {}
   }
+  if (checkoutStep === "menu") {
+    updateCustomerLogo(appSettings.logoUrl);
+    updatePromoBanner();
+  }
+  const foot = document.getElementById("cart-footer");
+  if (foot) foot.innerHTML = renderCartFooter();
+  const tEl = document.getElementById("cart-total-fab");
+  if (tEl) tEl.textContent = fmt(cartTot());
+}
+
+async function startSettingsListener() {
+  try {
+    // Fetch pertama kali
+    const snap = await getDoc(doc(db, "settings", "general"));
+    await applySettingsSnap(snap);
+  } catch(e) {
+    console.warn("Settings fetch gagal:", e.message);
+  }
+  // Polling tiap 5 menit — cukup untuk update promo/fee tanpa persistent listener
+  setInterval(async () => {
+    try {
+      const snap = await getDoc(doc(db, "settings", "general"));
+      await applySettingsSnap(snap);
+    } catch(e) { /* pakai settings terakhir */ }
+  }, 5 * 60 * 1000);
 }
 
 // Update promo banner di DOM tanpa re-render seluruh halaman
@@ -167,47 +214,118 @@ function updatePromoBanner() {
 }
 
 // ============================================================
-// FIRESTORE MENU LISTENER
+// MENU — localStorage cache 10 menit + onSnapshot untuk live update
+// Cache: tampil INSTAN dari cache, lalu refresh di background
 // ============================================================
-function startMenuListener() {
-  try {
-    onSnapshot(
-      query(collection(db,"menu"), orderBy("category"), orderBy("name")),
-      snap => {
-        menuLoading = false;
-        if (snap.empty) {
-          MENU = [];
-        } else {
-          MENU = snap.docs.map(d=>({
-            id:d.id,...d.data(),
-            price:Number(d.data().price)||0,
-            stock:d.data().stock!==false,
-            bestSeller:d.data().bestSeller===true,
-            prepTime:Number(d.data().prepTime)||0,
-          }));
-        }
-        CATEGORIES = buildCats();
-        if (!CATEGORIES.includes(activeCategory)) activeCategory="Semua";
-        if (checkoutStep==="menu") {
-          refreshMenuGrid(); rebuildCategoryTabs(); rebuildFeatured(); updateCartUI();
-          // Hide skeleton once loaded
-          const skel = document.getElementById("menu-skeleton");
-          if (skel) skel.style.display = "none";
-          const grid = document.getElementById("menu-grid");
-          if (grid) grid.style.display = "";
-        }
-      },
-      err => {
-        menuLoading = false;
-        console.error("Menu listener error:", err);
-        const skel = document.getElementById("menu-skeleton");
-        if (skel) skel.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:32px;margin-bottom:8px">⚠️</div><div style="font-weight:700">Gagal memuat menu</div><div style="font-size:12px;margin-top:4px">Periksa koneksi internet kamu</div></div>';
-      }
-    );
-  } catch(e) {
-    menuLoading = false;
-    console.error(e);
+const MENU_CACHE_KEY = "ss_menu_v2";
+const MENU_CACHE_TTL = 10 * 60 * 1000; // 10 menit
+
+function applyMenuData(docs) {
+  MENU = docs;
+  CATEGORIES = buildCats();
+  if (!CATEGORIES.includes(activeCategory)) activeCategory = "Semua";
+  if (checkoutStep === "menu") {
+    refreshMenuGrid(); rebuildCategoryTabs(); rebuildFeatured(); updateCartUI();
+    const skel = document.getElementById("menu-skeleton");
+    if (skel) skel.style.display = "none";
+    const grid = document.getElementById("menu-grid");
+    if (grid) grid.style.display = "";
   }
+}
+
+function saveMenuCache(docs) {
+  try {
+    localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: docs }));
+  } catch(e) { /* localStorage penuh — abaikan */ }
+}
+
+function loadMenuCache() {
+  try {
+    const raw = localStorage.getItem(MENU_CACHE_KEY);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw);
+    if (Date.now() - ts > MENU_CACHE_TTL) return null; // expired
+    return data;
+  } catch(e) { return null; }
+}
+
+function mapMenuDoc(d) {
+  const data = d.data ? d.data() : d; // handle Firestore doc vs plain object
+  return {
+    id:         d.id || data.id,
+    ...data,
+    price:      Number(data.price)    || 0,
+    stock:      data.stock            !== false,
+    bestSeller: data.bestSeller       === true,
+    prepTime:   Number(data.prepTime) || 0,
+  };
+}
+
+function startMenuListener() {
+  // ── Langkah 1: Tampilkan cache SEGERA (zero network delay) ──
+  const cached = loadMenuCache();
+  if (cached && cached.length > 0) {
+    menuLoading = false;
+    applyMenuData(cached);
+    // Skeleton sudah hilang, menu tampil instan
+  }
+
+  // ── Langkah 2: Fetch Firestore di background ──
+  // Jika ada cache: getDocs sekali (bukan listener) → lebih hemat
+  // Jika tidak ada cache: onSnapshot untuk loading pertama
+  if (cached) {
+    // Ada cache — getDocs sekali untuk sinkronisasi
+    getDocs(query(collection(db,"menu"), orderBy("category"), orderBy("name")))
+      .then(snap => {
+        if (snap.empty) { MENU = []; saveMenuCache([]); return; }
+        const fresh = snap.docs.map(mapMenuDoc);
+        saveMenuCache(fresh);
+        applyMenuData(fresh);
+      })
+      .catch(err => console.warn("Menu refresh gagal:", err.message));
+  } else {
+    // Tidak ada cache — pakai onSnapshot untuk loading pertama
+    try {
+      const unsub = onSnapshot(
+        query(collection(db,"menu"), orderBy("category"), orderBy("name")),
+        snap => {
+          menuLoading = false;
+          const docs = snap.empty ? [] : snap.docs.map(mapMenuDoc);
+          saveMenuCache(docs);
+          applyMenuData(docs);
+          // Setelah dapat data pertama, stop listener → hemat reads
+          // Refresh berikutnya lewat getDocs saja (via polling 5 menit)
+          unsub();
+          startMenuPolling();
+        },
+        err => {
+          menuLoading = false;
+          console.error("Menu listener error:", err);
+          const skel = document.getElementById("menu-skeleton");
+          if (skel) skel.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:32px;margin-bottom:8px">⚠️</div><div style="font-weight:700">Gagal memuat menu</div><div style="font-size:12px;margin-top:4px">Periksa koneksi internet kamu</div></div>';
+        }
+      );
+    } catch(e) { menuLoading = false; console.error(e); }
+  }
+}
+
+// Polling ringan — refresh menu tiap 5 menit (deteksi perubahan stok/harga)
+function startMenuPolling() {
+  setInterval(() => {
+    getDocs(query(collection(db,"menu"), orderBy("category"), orderBy("name")))
+      .then(snap => {
+        if (!snap) return;
+        const fresh = snap.empty ? [] : snap.docs.map(mapMenuDoc);
+        // Cek apakah ada perubahan (bandingkan JSON)
+        const freshStr = JSON.stringify(fresh.map(m=>({id:m.id,stock:m.stock,price:m.price})));
+        const currStr  = JSON.stringify(MENU.map(m=>({id:m.id,stock:m.stock,price:m.price})));
+        if (freshStr !== currStr) {
+          saveMenuCache(fresh);
+          applyMenuData(fresh);
+        }
+      })
+      .catch(() => {}); // Gagal polling — pakai data terakhir
+  }, 5 * 60 * 1000);
 }
 
 function refreshMenuGrid() {
@@ -672,7 +790,7 @@ function renderCard(item) {
   <div class="menu-card ${!item.stock?"menu-card--out":""}">
     <div class="menu-card__img-wrap">
       ${item.image
-        ? `<img src="${item.image}" alt="${item.name}" class="menu-card__img" loading="lazy"
+        ? `<img src="${item.image}" alt="${item.name}" class="menu-card__img" loading="lazy" decoding="async"
                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
            <div class="menu-card__img-ph" style="display:none">🍽️</div>`
         : `<div class="menu-card__img-ph">🍽️</div>`}
@@ -875,9 +993,13 @@ window.goToCheckout=goToCheckout;window.backToMenu=backToMenu;
 window.resetApp=resetApp;window.setCategory=setCategory;
 
 document.addEventListener("DOMContentLoaded",()=>{
-  startSettingsListener(); // load promo & service fee dari Firestore
-  startMenuListener();
-  renderApp();
+  renderApp(); // render hero & skeleton SEGERA — tidak tunggu Firestore
+  // Jalankan settings dan menu paralel (tidak saling tunggu)
+  Promise.all([
+    startSettingsListener(),
+    // Menu mulai setelah settings (untuk tampilkan logo di hero)
+  ]).catch(()=>{});
+  startMenuListener(); // menu independen — langsung dari cache
 });
 </script>
 
@@ -888,6 +1010,10 @@ document.addEventListener("DOMContentLoaded",()=>{
    Sky biru keunguan → horizon emas oranye → padi hijau → tanah coklat hangat
 ============================================================ */
 :root {
+  /* Font fallback stack — teks langsung tampil sebelum Google Font load */
+  --font:       'Cabinet Grotesk', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-mono:  'DM Mono', 'Courier New', monospace;
   /* Sky & sunset */
   --sky:        #fff3e0;
   --sky-deep:   #ffe0b2;
@@ -922,9 +1048,6 @@ document.addEventListener("DOMContentLoaded",()=>{
   --accent-dim: rgba(230,81,0,0.1);
 
   --radius:     18px;
-  --font:       'Cabinet Grotesk', sans-serif;
-  --font-serif: 'Instrument Serif', serif;
-  --font-mono:  'DM Mono', monospace;
   --safe-b:     env(safe-area-inset-bottom, 0px);
 }
 
@@ -1126,6 +1249,9 @@ button{cursor:pointer;border:none;background:none;}
 .menu-grid{
   display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
   padding:14px 14px 0;background:var(--bg);
+  /* Percepat rendering — browser skip render item yang tidak terlihat */
+  content-visibility:auto;
+  contain-intrinsic-size:0 800px;
 }
 @media(min-width:480px){.menu-grid{grid-template-columns:repeat(3,1fr);}}
 
