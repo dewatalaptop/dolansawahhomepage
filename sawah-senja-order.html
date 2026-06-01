@@ -391,8 +391,9 @@ async function generateOrderId() {
   // Format: AREA-HHMM-XX (jam+menit + 2 digit random)
   const now = new Date();
   const hhmm = now.toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}).replace(/[^0-9]/g,"");
-  const rand = String(Math.floor(Math.random()*90)+10);
-  return `${areaCode}-${hhmm}${rand}`;
+  // 4 digit random (1000-9999) → collision 1/9000 per menit per area
+  const rand = String(Math.floor(Math.random()*9000)+1000);
+  return `${areaCode}-${hhmm}-${rand}`;
 }
 
 // ============================================================
