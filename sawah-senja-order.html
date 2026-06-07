@@ -87,6 +87,10 @@ function buildCats() { return ["Semua", ...new Set(MENU.map(m=>m.category))]; }
 let cart={}, activeCategory="Semua", cartOpen=false;
 let checkoutStep="menu", lastOrder=null;
 
+// ── Queue tracking state ─────────────────────────────────────
+let unsubQueue = null;   // Firestore listener untuk antrian
+let queueData  = null;   // {position, totalActive, ahead, myStatus, eta}
+
 // ============================================================
 // SMART PHONE NORMALIZER
 // Menerima semua format: 08xx, +628xx, 628xx, (021), spasi, dash
@@ -338,7 +342,7 @@ function rebuildCategoryTabs() {
   const w=document.getElementById("cat-tabs");
   if(!w) return;
   w.innerHTML=CATEGORIES.map(c=>`
-    <button onclick="setCategory('${c}')" data-cat="${c}" class="cat-pill ${c===activeCategory?"cat-pill--active":""}">${c}</button>
+    <button onclick="setCategory(this.dataset.cat)" data-cat="${c}" class="cat-pill ${c===activeCategory?"cat-pill--active":""}">${c}</button>
   `).join("");
 }
 
@@ -515,6 +519,47 @@ function showWAConfirmModal(name, normalizedPhone, rawPhone, pm) {
   });
 }
 
+
+// ── Promo Popup — tampil di success page ─────────────────────
+function showPromoPopup() {
+  // Jangan tampil jika promo tidak aktif
+  if(!appSettings.promoEnabled || !appSettings.promoText) return;
+
+  // Jangan tampil jika sudah pernah ditampilkan di sesi ini
+  if(sessionStorage.getItem("ss_promo_shown")) return;
+
+  const old = document.getElementById("__promo_popup__");
+  if(old) old.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "__promo_popup__";
+  overlay.className = "promo-popup-overlay";
+
+  overlay.innerHTML =
+    '<div class="promo-popup">' +
+      '<div class="promo-popup__header">' +
+        '<span class="promo-popup__icon">🎁</span>' +
+        '<div class="promo-popup__title">Promo Hari Ini!</div>' +
+        '<div class="promo-popup__sub">Spesial untuk kamu yang makan di sini</div>' +
+      '</div>' +
+      '<div class="promo-popup__body">' +
+        '<div class="promo-popup__text">' + appSettings.promoText + '</div>' +
+        '<button class="promo-popup__cta" id="__promo_ok__">Sip, Mengerti! 🙌</button>' +
+        '<button class="promo-popup__skip" id="__promo_skip__">Tutup</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+  sessionStorage.setItem("ss_promo_shown", "1");
+
+  // Tutup saat tap backdrop atau tombol
+  function closePromo() { overlay.style.opacity="0"; setTimeout(()=>overlay.remove(), 250); }
+  overlay.style.transition = "opacity .25s";
+  document.getElementById("__promo_ok__")?.addEventListener("click", closePromo);
+  document.getElementById("__promo_skip__")?.addEventListener("click", closePromo);
+  overlay.addEventListener("click", e=>{ if(e.target===overlay) closePromo(); });
+}
+
 async function submitOrder(customerName, customerWhatsapp, paymentMethod) {
   const btn=document.getElementById("btn-submit-order");
   if(btn){btn.disabled=true;btn.innerHTML=`<span class="spinner"></span> Memproses…`;}
@@ -539,6 +584,10 @@ async function submitOrder(customerName, customerWhatsapp, paymentMethod) {
     const savedCart = cart;
     cart = {};
     checkoutStep = "success";
+    // Mulai queue listener setelah order berhasil dibuat
+    setTimeout(()=>startQueueListener(orderId), 1500);
+    // Tampilkan promo popup 2 detik setelah success page muncul
+    setTimeout(()=>showPromoPopup(), 2000);
     try { renderApp(); }
     catch(err) {
       // Jika render gagal, kembalikan cart agar user tidak kehilangan pesanan
@@ -552,6 +601,172 @@ async function submitOrder(customerName, customerWhatsapp, paymentMethod) {
     if(btn){btn.disabled=false;btn.textContent="Konfirmasi Pesanan";}
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+// QUEUE TRACKER — realtime posisi antrian customer
+// ══════════════════════════════════════════════════════════════
+function startQueueListener(myOrderId) {
+  // Stop listener lama
+  if(unsubQueue) { unsubQueue(); unsubQueue=null; }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Dengarkan semua order hari ini yang belum selesai (NEW + COOKING + READY)
+  unsubQueue = onSnapshot(
+    query(
+      collection(db,"orders"),
+      where("createdAt",">=",Timestamp.fromDate(today)),
+      orderBy("createdAt","asc")
+    ),
+    function(snap) {
+      const orders = [];
+      snap.forEach(d => {
+        const data = {id: d.id, ...d.data()};
+        // Hanya yang belum selesai / belum diarsipkan
+        if(data.archived !== true && data.orderStatus !== "DONE") {
+          orders.push(data);
+        }
+      });
+
+      // Cari posisi order kita
+      const myIdx = orders.findIndex(o => o.orderId === myOrderId);
+      const myOrder = orders.find(o => o.orderId === myOrderId);
+
+      if(!myOrder) {
+        // Order sudah DONE atau tidak ketemu
+        queueData = { done: true };
+        updateQueueDisplay();
+        stopQueueListener();
+        return;
+      }
+
+      // Posisi dalam antrian (1-based)
+      const position    = myIdx + 1;
+      const totalActive = orders.length;
+      const ahead       = myIdx; // berapa order di depan kita
+
+      // Hitung ETA berdasarkan status
+      const myStatus = myOrder.orderStatus;
+      let etaMinutes = 0;
+
+      if(myStatus === "NEW") {
+        // Belum mulai masak — estimasi dari prepTime + antrian di depan
+        const myPrepTime = (myOrder.items||[]).reduce((max, i) => {
+          return Math.max(max, i.prepTime||0);
+        }, 0) + Math.floor((myOrder.items||[]).reduce((s,i)=>s+(i.qty||0),0)*1.5);
+
+        // Tambahkan estimasi untuk order yang sedang dimasak di depan
+        const cookingAhead = orders.slice(0, myIdx).filter(o => o.orderStatus==="COOKING").length;
+        etaMinutes = myPrepTime + (cookingAhead * 5); // rata-rata 5 menit per order di depan
+        etaMinutes = Math.max(5, etaMinutes);
+      } else if(myStatus === "COOKING") {
+        // Sedang dimasak — estimasi lebih pendek
+        const myPrepTime = (myOrder.items||[]).reduce((max, i) => {
+          return Math.max(max, i.prepTime||0);
+        }, 8);
+        etaMinutes = Math.max(3, Math.floor(myPrepTime * 0.6)); // sudah mulai, perkiraan 60% sisa
+      } else if(myStatus === "READY") {
+        etaMinutes = 0; // sudah siap!
+      }
+
+      queueData = {
+        done:        false,
+        position,
+        totalActive,
+        ahead,
+        myStatus,
+        etaMinutes,
+        orderId:     myOrderId,
+      };
+
+      updateQueueDisplay();
+    },
+    function(err) {
+      console.warn("Queue listener error:", err);
+    }
+  );
+}
+
+function stopQueueListener() {
+  if(unsubQueue) { unsubQueue(); unsubQueue=null; }
+}
+
+function updateQueueDisplay() {
+  const el = document.getElementById("queue-status-box");
+  if(!el || !queueData) return;
+
+  if(queueData.done) {
+    el.innerHTML = `
+      <div class="queue-box queue-box--done">
+        <div class="queue-icon">✅</div>
+        <div class="queue-main">
+          <div class="queue-title">Pesananmu Selesai!</div>
+          <div class="queue-sub">Silakan ambil di counter kasir</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const { position, totalActive, ahead, myStatus, etaMinutes } = queueData;
+
+  // Status label & warna
+  const statusMap = {
+    NEW:     { label:"Menunggu Dimasak", color:"#f59e0b", icon:"⏳" },
+    COOKING: { label:"Sedang Dimasak",   color:"#ea580c", icon:"🍳" },
+    READY:   { label:"Siap Diambil!",    color:"#16a34a", icon:"🔔" },
+  };
+  const s = statusMap[myStatus] || statusMap.NEW;
+
+  // Buat visual antrian (max 8 slots)
+  const displayMax = Math.min(totalActive, 8);
+  const slots = Array.from({length:displayMax}, (_,i) => {
+    const isMine    = (i === position-1);
+    const isDone    = false; // semua yang tampil belum DONE
+    const isAhead   = (i < position-1);
+    return `<div class="queue-slot ${isMine?"queue-slot--mine":isAhead?"queue-slot--ahead":"queue-slot--behind"}" title="${isMine?"Kamu":"Order lain"}"></div>`;
+  }).join("");
+  const extraText = totalActive > 8 ? `+${totalActive-8}` : "";
+
+  el.innerHTML = `
+    <div class="queue-box" style="border-color:${s.color}20;background:${s.color}08;">
+      <div class="queue-header">
+        <div class="queue-status-pill" style="background:${s.color}18;color:${s.color};">
+          ${s.icon} ${s.label}
+        </div>
+        <div class="queue-order-id">#${position} dari ${totalActive}</div>
+      </div>
+
+      <div class="queue-visual">
+        <div class="queue-slots">${slots}${extraText?`<div class="queue-extra">${extraText}</div>`:""}</div>
+        <div class="queue-legend">
+          <span class="queue-legend-item"><span class="ql-dot ql-dot--mine"></span>Kamu</span>
+          <span class="queue-legend-item"><span class="ql-dot ql-dot--ahead"></span>Sebelum kamu</span>
+        </div>
+      </div>
+
+      <div class="queue-detail">
+        ${myStatus === "READY" ? `
+          <div class="queue-eta queue-eta--ready">
+            <span class="queue-eta-icon">🔔</span>
+            <span>Pesananmu <strong>sudah siap!</strong> Segera ke counter.</span>
+          </div>
+        ` : `
+          <div class="queue-eta">
+            <span class="queue-eta-icon">⏱</span>
+            <span>Estimasi siap: <strong>~${etaMinutes} menit</strong></span>
+          </div>
+          ${ahead > 0 ? `
+          <div class="queue-ahead">
+            <span>${ahead} pesanan di depanmu</span>
+          </div>` : `
+          <div class="queue-ahead queue-ahead--next">
+            <span>Pesananmu yang selanjutnya diproses!</span>
+          </div>`}
+        `}
+      </div>
+    </div>`;
+}
+
 
 // ============================================================
 // TOAST
@@ -578,7 +793,12 @@ function showToast(msg,type="info") {
 function renderApp() {
   const root=document.getElementById("app-root");
   if(!root) return;
-  if(checkoutStep==="success"){root.innerHTML=renderSuccessPage();return;}
+  if(checkoutStep==="success"){
+    root.innerHTML=renderSuccessPage();
+    // Update queue display jika data sudah ada
+    if(queueData) updateQueueDisplay();
+    return;
+  }
   if(checkoutStep==="checkout"){root.innerHTML=renderCheckoutPage();bindCheckoutEvents();return;}
   root.innerHTML=renderMenuPage();
   updateCartUI();
@@ -596,7 +816,7 @@ function renderSuccessPage() {
     <div class="success-inner">
       <div class="success-lottie">🌾</div>
       <h1 class="success-title">Pesanan<br/><em>Masuk!</em></h1>
-      <p class="success-sub">Kami sedang menyiapkan pesananmu</p>
+      <p class="success-sub">Pesananmu sudah masuk ke dapur!</p>
 
       <div class="order-ticket">
         <div class="ticket-header">
@@ -604,19 +824,45 @@ function renderSuccessPage() {
           <div class="ticket-id">${o.orderId}</div>
         </div>
         <div class="ticket-body">
-          <div class="ticket-row"><span>Area</span><strong>${o.areaCode}</strong></div>
-          <div class="ticket-row"><span>Total</span><strong>${fmt(o.total)}</strong></div>
-          <div class="ticket-row"><span>Bayar</span><strong>${o.paymentMethod}</strong></div>
+          <div class="ticket-row"><span>Area / Meja</span><strong>${o.areaCode}</strong></div>
+          <div class="ticket-row"><span>Total Bayar</span><strong>${fmt(o.total)}</strong></div>
+          <div class="ticket-row"><span>Metode</span><strong>${o.paymentMethod}</strong></div>
           <div class="ticket-row">
             <span>Status</span>
             <strong class="status-processing">🔄 Sedang Diproses</strong>
           </div>
         </div>
+        <!-- Estimasi waktu menonjol -->
+        ${estimatedWait()>0?`
+        <div style="background:linear-gradient(135deg,var(--paddy),var(--paddy-light));padding:12px 18px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="color:rgba(255,255,255,.85);font-size:12px;font-weight:700;">⏱ Estimasi waktu siap</div>
+          <div style="color:#fff;font-size:20px;font-weight:900;">~${estimatedWait()} menit</div>
+        </div>`:""}
         <div class="ticket-footer">
-          🌾 Akan disiapkan untuk area <strong>${o.areaCode}</strong>
+          🌾 Pantau status pesananmu di bawah ini secara realtime
         </div>
       </div>
 
+      <!-- Antrian realtime -->
+      <div id="queue-status-box" style="margin-bottom:16px;">
+        <div class="queue-box">
+          <div class="queue-header">
+            <div class="queue-status-pill" style="background:#f1f5f9;color:#64748b;">
+              ⏳ Memuat status antrian…
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info box panduan customer -->
+      <div class="info-box" style="text-align:left;margin-bottom:16px;">
+        <div style="font-weight:800;margin-bottom:6px;">📋 Langkah selanjutnya:</div>
+        <div style="line-height:1.8;font-size:13px;">
+          1. Ambil minumanmu di counter 🥤<br/>
+          2. Kami akan hubungi WhatsApp kamu saat makanan siap<br/>
+          3. Ambil makanan &amp; lakukan pembayaran di kasir
+        </div>
+      </div>
       <button class="cta-btn w-full" onclick="resetApp()">Pesan Lagi</button>
       <p class="brand-footer">${appSettings.storeName||"Sawah Senja"} · Makan enak di pinggir sawah 🌾</p>
     </div>
@@ -1054,7 +1300,11 @@ function closeCart() {
 }
 function goToCheckout(){if(!cartCount())return;closeCart();checkoutStep="checkout";renderApp();}
 function backToMenu(){checkoutStep="menu";renderApp();}
-function resetApp(){checkoutStep="menu";lastOrder=null;cart={};renderApp();}
+function resetApp(){
+  stopQueueListener();
+  queueData=null;
+  checkoutStep="menu";lastOrder=null;cart={};renderApp();
+}
 function setCategory(c){
   activeCategory=c;
   refreshMenuGrid();
@@ -1749,6 +1999,124 @@ button{cursor:pointer;border:none;background:none;}
 @keyframes slideUp  { from{transform:translateY(100%)} to{transform:translateY(0)} }
 /* Status processing */
 .status-processing{color:#16a34a;font-weight:800;}
+
+/* ── QUEUE STATUS BOX ─────────────────────────────────────── */
+.queue-box{
+  background:#fff;border:2px solid var(--border2);border-radius:18px;
+  padding:16px 18px;margin-bottom:4px;
+  box-shadow:0 4px 16px rgba(121,85,72,0.08);
+  transition:all 0.4s ease;
+}
+.queue-box--done{
+  border-color:rgba(22,163,74,0.3);background:rgba(22,163,74,0.05);
+  display:flex;align-items:center;gap:12px;
+}
+.queue-icon{font-size:28px;flex-shrink:0;}
+.queue-main{flex:1;}
+.queue-title{font-size:16px;font-weight:900;color:var(--text);}
+.queue-sub{font-size:13px;color:var(--text2);margin-top:2px;}
+
+/* Header row */
+.queue-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.queue-status-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;font-weight:800;padding:5px 12px;border-radius:100px;
+}
+.queue-order-id{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text2);}
+
+/* Visual slot antrian */
+.queue-visual{margin-bottom:14px;}
+.queue-slots{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.queue-slot{
+  width:32px;height:32px;border-radius:8px;
+  border:2px solid var(--border2);
+  background:var(--surface2);
+  transition:all 0.3s ease;
+}
+.queue-slot--mine{
+  background:var(--accent);border-color:var(--accent);
+  box-shadow:0 0 12px rgba(230,81,0,0.4);
+  position:relative;
+}
+.queue-slot--mine::after{
+  content:"★";position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:#fff;
+}
+.queue-slot--ahead{background:#fed7aa;border-color:#f97316;}
+.queue-slot--behind{background:var(--surface2);border-color:var(--border);}
+.queue-extra{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:800;color:var(--text2);
+}
+.queue-legend{display:flex;gap:14px;}
+.queue-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);font-weight:600;}
+.ql-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.ql-dot--mine{background:var(--accent);}
+.ql-dot--ahead{background:#f97316;}
+
+/* Detail baris bawah */
+.queue-detail{display:flex;flex-direction:column;gap:6px;}
+.queue-eta{
+  display:flex;align-items:center;gap:8px;
+  font-size:14px;color:var(--text2);
+  background:var(--surface2);border-radius:10px;padding:10px 12px;
+}
+.queue-eta--ready{
+  background:rgba(22,163,74,0.08);color:var(--paddy);
+  border:1.5px solid rgba(22,163,74,0.2);
+  font-weight:700;
+}
+.queue-eta-icon{font-size:18px;flex-shrink:0;}
+.queue-ahead{
+  font-size:12px;color:var(--text3);font-weight:600;
+  text-align:center;padding:4px 0;
+}
+.queue-ahead--next{color:var(--paddy);font-weight:800;}
+
+/* ── PROMO POPUP ──────────────────────────────────────────── */
+.promo-popup-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);
+  display:flex;align-items:flex-end;justify-content:center;
+  animation:fadeInBg .25s ease;
+}
+.promo-popup{
+  background:#fff;width:100%;max-width:480px;
+  border-radius:28px 28px 0 0;
+  overflow:hidden;
+  box-shadow:0 -8px 40px rgba(0,0,0,.2);
+  animation:slideUpPromo .3s cubic-bezier(.34,1.2,.64,1);
+}
+@keyframes slideUpPromo{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.promo-popup__header{
+  background:linear-gradient(135deg,var(--paddy),var(--paddy-light));
+  padding:24px 24px 20px;text-align:center;position:relative;
+}
+.promo-popup__icon{font-size:52px;margin-bottom:8px;display:block;animation:float 2s ease-in-out infinite;}
+.promo-popup__title{color:#fff;font-size:22px;font-weight:900;margin-bottom:4px;}
+.promo-popup__sub{color:rgba(255,255,255,.85);font-size:13px;}
+.promo-popup__body{padding:20px 24px;}
+.promo-popup__text{
+  font-size:18px;font-weight:800;color:var(--text);text-align:center;
+  line-height:1.4;margin-bottom:20px;
+  background:linear-gradient(135deg,var(--accent),var(--straw));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.promo-popup__cta{
+  width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--paddy),var(--paddy-light));
+  color:#fff;font-size:16px;font-weight:800;font-family:inherit;
+  box-shadow:0 4px 14px rgba(85,139,47,.3);
+}
+.promo-popup__cta:active{transform:scale(.97);}
+.promo-popup__skip{
+  width:100%;padding:12px;border:none;background:none;cursor:pointer;
+  font-size:13px;color:var(--text3);font-weight:600;font-family:inherit;
+  margin-top:6px;
+}
 </style>
 </head>
 <body>
