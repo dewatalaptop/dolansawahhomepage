@@ -612,6 +612,14 @@ function startQueueListener(myOrderId) {
   const today = new Date(); today.setHours(0,0,0,0);
 
   // Dengarkan semua order hari ini yang belum selesai (NEW + COOKING + READY)
+  // Timeout 10 detik jika Firestore tidak merespons
+  var queueTimeout = setTimeout(function() {
+    var el = document.getElementById("queue-status-box");
+    if(el && (!queueData || !queueData.position)) {
+      el.innerHTML = '<div class="queue-box"><div class="queue-header"><div class="queue-status-pill" style="background:#fef3c7;color:#d97706;">⚠ Tidak dapat memuat status antrian</div></div></div>';
+    }
+  }, 10000);
+
   unsubQueue = onSnapshot(
     query(
       collection(db,"orders"),
@@ -619,6 +627,7 @@ function startQueueListener(myOrderId) {
       orderBy("createdAt","asc")
     ),
     function(snap) {
+      clearTimeout(queueTimeout);
       const orders = [];
       snap.forEach(d => {
         const data = {id: d.id, ...d.data()};
