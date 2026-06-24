@@ -30,6 +30,7 @@
       --text-muted: #6b7280;
       --border: #e5e7eb;
       --sidebar-width: 260px;
+      --chatted: #0d9e6e;
     }
 
     * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
@@ -93,12 +94,141 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .request-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-    .request-card { background: white; border-radius: 12px; padding: 20px; border-left: 5px solid var(--warning); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .request-card { background: white; border-radius: 12px; padding: 20px; border-left: 5px solid var(--warning); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; transition: 0.2s; }
+
+    /* ============================
+       CHAT STATUS STYLES (NEW)
+    ============================ */
+    .request-card.chatted {
+      border-left-color: var(--chatted);
+      background: #f0fdf9;
+    }
+
+    .chatted-banner {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: #d1fae5;
+      color: #065f46;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      border: 1px solid #6ee7b7;
+    }
+    .request-card.chatted .chatted-banner { display: flex; }
+
+    .btn-chat { background: #25D366; color: white; }
+    .btn-chat.done {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #6ee7b7;
+      position: relative;
+    }
+    .btn-chat.done::after {
+      content: '';
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      margin-left: 6px;
+      vertical-align: middle;
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* Tooltip "klik untuk reset" on chatted button */
+    .btn-chat.done:active { background: #fee2e2; color: var(--danger); border-color: #fca5a5; }
+
+    /* ============================
+       SEARCH BAR (NEW)
+    ============================ */
+    .search-bar-wrapper {
+      position: relative;
+      flex: 1;
+      max-width: 320px;
+    }
+    .search-bar-wrapper i {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+    #inbox-search {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      background: white;
+      color: var(--text-main);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #inbox-search:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.15);
+    }
+    #inbox-search::placeholder { color: #aaa; }
+
+    .inbox-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .inbox-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+    }
+    .filter-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .filter-tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    #empty-search {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      grid-column: 1 / -1;
+    }
+    #empty-search i { font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.4; }
+
+    .request-card {
+      background: white; border-radius: 12px; padding: 20px; border-left: 5px solid var(--warning);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; transition: 0.2s;
+    }
     .req-actions { display: flex; gap: 10px; margin-top: 15px; }
-    .req-actions button { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+    .req-actions button { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.15s; }
     .btn-accept { background: var(--success); color: white; }
     .btn-reject { background: #fee2e2; color: var(--danger); }
-    .btn-chat { background: #25D366; color: white; }
 
     .calendar-wrapper { background: white; border-radius: 16px; padding: 20px; border: 1px solid var(--border); }
     .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
@@ -175,21 +305,44 @@
       </div>
     </div>
 
+    <!-- INBOX TAB -->
     <div id="tab-inbox" class="section">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 class="section-title">Inbox Permintaan</h2>
-        <button class="btn-chat" style="padding:10px 20px; border-radius:8px;" onclick="forceRefresh()"><i class="fas fa-sync"></i> Refresh</button>
+      <div class="inbox-toolbar">
+        <div class="inbox-title-group">
+          <h2 class="section-title" style="margin:0;">Inbox Permintaan</h2>
+          <!-- FILTER TABS (NEW) -->
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setFilter('all', this)">Semua</button>
+            <button class="filter-tab" onclick="setFilter('unchatted', this)">Belum Chat</button>
+            <button class="filter-tab" onclick="setFilter('chatted', this)">Sudah Chat</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+          <!-- SEARCH BAR (NEW) -->
+          <div class="search-bar-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="inbox-search" placeholder="Cari nama, HP, tempat..." oninput="renderInbox()">
+          </div>
+          <button class="btn-chat" style="padding:10px 16px; border-radius:8px; border:none; cursor:pointer; font-weight:600; white-space:nowrap;" onclick="forceRefresh()">
+            <i class="fas fa-sync"></i> Refresh
+          </button>
+        </div>
       </div>
-      <div id="inbox-container" class="request-grid"></div>
+      <div id="inbox-container" class="request-grid">
+        <div id="empty-search">
+          <i class="fas fa-search"></i>
+          <p>Tidak ada hasil yang cocok</p>
+        </div>
+      </div>
     </div>
 
     <div id="tab-calendar" class="section">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
         <h2 class="section-title">Kalender Reservasi</h2>
         <div>
-           <button class="btn-chat" onclick="changeMonth(-1)"><</button>
+           <button class="btn-chat" onclick="changeMonth(-1)" style="border:none; cursor:pointer; padding:8px 14px; border-radius:6px; font-weight:700;"><</button>
            <span id="cal-month-year" style="font-weight:700; margin: 0 15px;">...</span>
-           <button class="btn-chat" onclick="changeMonth(1)">></button>
+           <button class="btn-chat" onclick="changeMonth(1)" style="border:none; cursor:pointer; padding:8px 14px; border-radius:6px; font-weight:700;">></button>
         </div>
       </div>
       <div class="calendar-wrapper">
@@ -210,7 +363,7 @@
          <div class="calendar-wrapper">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h3 style="margin:0;">Daftar Menu</h3>
-                <button class="btn-accept" style="padding:5px 10px; border-radius:5px;" onclick="addMenu()">+ Tambah</button>
+                <button class="btn-accept" style="padding:5px 10px; border-radius:5px; border:none; cursor:pointer; font-weight:600;" onclick="addMenu()">+ Tambah</button>
             </div>
             <div id="master-menu-list"></div>
          </div>
@@ -231,7 +384,9 @@
   </div>
 
   <script>
-    // --- KONFIGURASI FIREBASE ---
+    // =============================================
+    // FIREBASE CONFIG
+    // =============================================
     const firebaseConfig = {
       apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
       authDomain: "reservasi-dolan-sawah.firebaseapp.com",
@@ -245,19 +400,68 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // --- STATE MANAGEMENT ---
+    // =============================================
+    // STATE
+    // =============================================
     let unsubRequests, unsubReservations, unsubMenus, unsubLocations;
     let reservationsCache = [];
     let requestsCache = [];
-    let globalMenuPrices = {}; 
+    let globalMenuPrices = {};
     let currentMonth = new Date().getMonth();
     let currentYear = new Date().getFullYear();
     let myChart = null;
 
+    // --- CHAT STATUS STATE (NEW) ---
+    // Key: requestId → value: timestamp
+    const CHAT_STORAGE_KEY = 'ds_chatted_ids';
+    
+    function getChatted() {
+      try { return JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '{}'); } 
+      catch { return {}; }
+    }
+    function markChatted(id) {
+      const data = getChatted();
+      data[id] = Date.now();
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(data));
+    }
+    function unmarkChatted(id) {
+      const data = getChatted();
+      delete data[id];
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(data));
+    }
+    function isChatted(id) {
+      return !!getChatted()[id];
+    }
+    // Bersihkan ID yang sudah tidak ada di requestsCache
+    function pruneChattedStorage() {
+      const data = getChatted();
+      const validIds = new Set(requestsCache.map(r => r.id));
+      let changed = false;
+      Object.keys(data).forEach(id => {
+        if (!validIds.has(id)) { delete data[id]; changed = true; }
+      });
+      if (changed) localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(data));
+    }
+
+    // --- FILTER STATE (NEW) ---
+    let activeFilter = 'all'; // 'all' | 'chatted' | 'unchatted'
+
+    function setFilter(filter, el) {
+      activeFilter = filter;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderInbox();
+    }
+
+    // =============================================
+    // HELPERS
+    // =============================================
     const formatIDR = (n) => new Intl.NumberFormat('id-ID').format(n || 0);
     const getTodayStr = () => new Date().toLocaleDateString('sv-SE');
 
-    // --- AUTH ---
+    // =============================================
+    // AUTH
+    // =============================================
     auth.onAuthStateChanged(user => {
       if (user) {
         document.getElementById('login-overlay').style.display = 'none';
@@ -273,12 +477,14 @@
     async function handleLogin() {
       const e = document.getElementById('email').value;
       const p = document.getElementById('password').value;
-      try { await auth.signInWithEmailAndPassword(e, p); } 
+      try { await auth.signInWithEmailAndPassword(e, p); }
       catch (err) { Swal.fire('Error', 'Login gagal: ' + err.message, 'error'); }
     }
     function handleLogout() { auth.signOut(); }
 
-    // --- CORE ---
+    // =============================================
+    // CORE
+    // =============================================
     function initApp() {
         document.getElementById('date-display').textContent = new Date().toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
         stopAllListeners();
@@ -327,22 +533,58 @@
     function listenRequests() {
         unsubRequests = db.collection('reservation_requests').orderBy('createdAt', 'desc').onSnapshot(snap => {
             requestsCache = snap.docs.map(d => ({id: d.id, ...d.data()}));
+            pruneChattedStorage(); // bersihkan ID usang
             renderInbox();
         });
     }
 
-    // --- FUNGSI RENDER INBOX (DIPERBARUI) ---
+    // =============================================
+    // RENDER INBOX (UPDATED - search + chat status)
+    // =============================================
     function renderInbox() {
         const badge = document.getElementById('sidebar-badge');
         const container = document.getElementById('inbox-container');
+        const emptyEl = document.getElementById('empty-search');
+
         document.getElementById('stat-pending').textContent = requestsCache.length;
-        
-        if(requestsCache.length > 0) {
+
+        if (requestsCache.length > 0) {
             badge.textContent = requestsCache.length; badge.style.display = 'inline-block';
         } else badge.style.display = 'none';
 
-        container.innerHTML = requestsCache.map(r => {
-            // 1. Tampilan Menu
+        // -- SEARCH FILTER --
+        const query = (document.getElementById('inbox-search')?.value || '').toLowerCase().trim();
+
+        let filtered = requestsCache.filter(r => {
+            if (!query) return true;
+            return (r.nama || '').toLowerCase().includes(query)
+                || (r.nomorHp || '').includes(query)
+                || (r.tempat || '').toLowerCase().includes(query)
+                || (r.date || '').includes(query);
+        });
+
+        // -- CHATTED FILTER --
+        if (activeFilter === 'chatted') {
+            filtered = filtered.filter(r => isChatted(r.id));
+        } else if (activeFilter === 'unchatted') {
+            filtered = filtered.filter(r => !isChatted(r.id));
+        }
+
+        // -- EMPTY STATE --
+        if (filtered.length === 0) {
+            container.innerHTML = '';
+            emptyEl.style.display = 'block';
+            emptyEl.innerHTML = query
+                ? `<i class="fas fa-search"></i><p>Tidak ada hasil untuk "<b>${query}</b>"</p>`
+                : `<i class="fas fa-inbox"></i><p>${activeFilter === 'chatted' ? 'Belum ada yang dichat' : activeFilter === 'unchatted' ? 'Semua sudah dichat 🎉' : 'Inbox kosong'}</p>`;
+            return;
+        }
+        emptyEl.style.display = 'none';
+
+        container.innerHTML = filtered.map(r => {
+            const chatted = isChatted(r.id);
+
+            // Tampilan Menu
             let menuDisplay = '<div style="color:#999; font-style:italic;">Tidak ada menu tambahan</div>';
             if (r.menus && Array.isArray(r.menus) && r.menus.length > 0) {
                 menuDisplay = r.menus.map(m => `
@@ -353,12 +595,29 @@
                 `).join('');
             }
 
-            // 2. Tampilan Note
-            // DIPERBARUI: Menambahkan r.tambahan agar sinkron dengan website user
             const userNote = r.note || r.catatan || r.pesan || r.tambahan || '-';
 
+            // Format waktu dichat
+            let chattedTime = '';
+            if (chatted) {
+                const chattedData = getChatted();
+                const ts = chattedData[r.id];
+                if (ts) {
+                    const d = new Date(ts);
+                    chattedTime = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+                        + ', ' + d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                }
+            }
+
             return `
-            <div class="request-card">
+            <div class="request-card ${chatted ? 'chatted' : ''}" id="card-${r.id}">
+
+                <!-- CHATTED BANNER (NEW) -->
+                <div class="chatted-banner">
+                    <i class="fab fa-whatsapp"></i>
+                    Sudah dichat${chattedTime ? ' • ' + chattedTime : ''}
+                </div>
+
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
                     <div>
                         <b style="font-size:1.1rem; color:var(--secondary);">${r.nama}</b>
@@ -394,15 +653,61 @@
                 </div>
 
                 <div class="req-actions">
-                    <button class="btn-chat" onclick="prepareChat('${r.id}')"><i class="fab fa-whatsapp"></i> Chat</button>
+                    <!-- CHAT BUTTON (UPDATED) -->
+                    <button 
+                        class="btn-chat ${chatted ? 'done' : ''}" 
+                        id="chat-btn-${r.id}"
+                        onclick="handleChat('${r.id}')">
+                        <i class="fab fa-whatsapp"></i> 
+                        ${chatted ? 'Sudah Chat' : 'Chat'}
+                    </button>
                     <button class="btn-reject" onclick="deleteDoc('reservation_requests', '${r.id}')">Tolak</button>
                     <button class="btn-accept" onclick="approveRequest('${r.id}')">Terima</button>
                 </div>
+
+                <!-- RESET HINT (NEW) -->
+                ${chatted ? `<div style="text-align:center; margin-top:8px; font-size:0.72rem; color:#aaa;">
+                    <i class="fas fa-undo" style="font-size:0.65rem;"></i> Tap "Sudah Chat" lagi untuk reset
+                </div>` : ''}
+
             </div>
         `}).join('');
     }
 
-    // --- WHATSAPP MESSAGE FORMAT ---
+    // =============================================
+    // HANDLE CHAT (NEW - with toggle logic)
+    // =============================================
+    function handleChat(requestId) {
+        const alreadyChatted = isChatted(requestId);
+
+        if (alreadyChatted) {
+            // Toggle: reset status
+            Swal.fire({
+                title: 'Reset Status Chat?',
+                text: 'Tandai customer ini sebagai belum dichat?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, reset',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#ef4444'
+            }).then(res => {
+                if (res.isConfirmed) {
+                    unmarkChatted(requestId);
+                    renderInbox();
+                }
+            });
+            return;
+        }
+
+        // Buka WA + mark chatted
+        prepareChat(requestId);
+        markChatted(requestId);
+        renderInbox(); // update tampilan langsung
+    }
+
+    // =============================================
+    // WHATSAPP MESSAGE FORMAT
+    // =============================================
     function prepareChat(requestId) {
         const r = requestsCache.find(x => x.id === requestId);
         if(!r) return;
@@ -420,8 +725,7 @@
         const ppn = Math.round(totalFood * 0.1);
         const total = totalFood + ppn;
         const dp = Math.round(total * 0.5);
-        
-        // DIPERBARUI: Menambahkan r.tambahan juga di pesan WA
+
         const userNote = r.note || r.catatan || r.pesan || r.tambahan || '';
 
         const msg = `Halo Kak *${r.nama}* 👋,\n` +
@@ -451,7 +755,9 @@
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // --- APPROVE LOGIC + AUTO VIEWER ---
+    // =============================================
+    // APPROVE
+    // =============================================
     async function approveRequest(id) {
         const r = requestsCache.find(x => x.id === id);
         if(!r) return;
@@ -479,17 +785,20 @@
                 delete data.id;
                 await db.collection('reservations').add(data);
                 await db.collection('reservation_requests').doc(id).delete();
-                
-                // AUTO OPEN VIEWER
+                // Bersihkan chat status untuk request ini
+                unmarkChatted(id);
+
                 const viewerUrl = `https://dewatalaptop.github.io/reservasids?autoOpen=true&date=${r.date}&search=${encodeURIComponent(r.nama)}`;
                 window.open(viewerUrl, '_blank');
-                
+
                 Swal.fire('Berhasil', 'Reservasi tersimpan dan Viewer dibuka.', 'success');
             } catch (e) { Swal.fire('Error', e.message, 'error'); }
         }
     }
 
-    // --- KALENDER ---
+    // =============================================
+    // CALENDAR
+    // =============================================
     function listenReservations() {
         unsubReservations = db.collection('reservations').onSnapshot(snap => {
             reservationsCache = snap.docs.map(d => ({id: d.id, ...d.data()}));
@@ -523,7 +832,7 @@
         list.innerHTML = filtered.length ? filtered.map(r => `
             <div class="reservation-list-item">
                 <div><b>${r.jam} - ${r.nama}</b><br><small>${r.tempat} (${r.jumlah}pax)</small></div>
-                <button class="btn-chat" onclick="window.open('https://wa.me/${r.nomorHp}')">WA</button>
+                <button class="btn-chat" style="border:none; cursor:pointer; padding:8px 12px; border-radius:6px; font-weight:600;" onclick="window.open('https://wa.me/${r.nomorHp}')">WA</button>
             </div>`).join('') : '<p>Tidak ada reservasi.</p>';
     }
 
@@ -534,7 +843,9 @@
         renderCalendar();
     }
 
-    // --- UI HELPERS ---
+    // =============================================
+    // UI HELPERS
+    // =============================================
     function switchTab(tabId, el) {
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
         document.getElementById('tab-'+tabId).classList.add('active');
@@ -560,9 +871,9 @@
     function updateChart() {
         const ctx = document.getElementById('chartAnalysis').getContext('2d');
         const data = Array(12).fill(0);
-        reservationsCache.forEach(r => { 
-            const d = new Date(r.date); 
-            if(d.getFullYear() === currentYear) data[d.getMonth()]++; 
+        reservationsCache.forEach(r => {
+            const d = new Date(r.date);
+            if(d.getFullYear() === currentYear) data[d.getMonth()]++;
         });
         if(myChart) myChart.destroy();
         myChart = new Chart(ctx, {
