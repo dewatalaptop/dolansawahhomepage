@@ -401,14 +401,17 @@
     #edit-modal-overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.45); z-index: 5000;
-      justify-content: center; align-items: flex-start;
-      padding: 20px 16px; overflow-y: auto;
+      justify-content: center; align-items: center;
+      padding: 20px 16px;
+      overflow-y: auto;
     }
     #edit-modal-overlay.show { display: flex; }
     #edit-modal {
       background: white; border-radius: 16px; width: 100%; max-width: 560px;
       box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-      margin: auto; overflow: hidden;
+      margin: auto;
+      display: flex; flex-direction: column;
+      max-height: calc(100vh - 40px);
       animation: slideUp 0.22s ease;
     }
     @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
@@ -416,6 +419,8 @@
       background: linear-gradient(135deg, var(--secondary), var(--primary-dark));
       color: white; padding: 18px 22px;
       display: flex; justify-content: space-between; align-items: flex-start;
+      flex-shrink: 0;
+      border-radius: 16px 16px 0 0;
     }
     .modal-header h3 { margin: 0; font-size: 1.05rem; font-weight: 700; }
     .modal-header small { display: block; font-size: 0.78rem; opacity: 0.75; margin-top: 2px; font-weight: 400; }
@@ -426,7 +431,7 @@
       font-size: 1rem; flex-shrink: 0; margin-left: 12px;
     }
     .modal-close:hover { background: rgba(255,255,255,0.3); }
-    .modal-body { padding: 18px 22px; }
+    .modal-body { padding: 18px 22px 24px; overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
     .form-row.single { grid-template-columns: 1fr; }
     .form-group { display: flex; flex-direction: column; gap: 4px; }
@@ -466,7 +471,7 @@
       display: flex; align-items: center; gap: 4px;
     }
     .btn-add-row:hover { background: var(--primary); color: white; border-color: var(--primary); }
-    #edit-menu-rows { display: flex; flex-direction: column; gap: 6px; }
+    #edit-menu-rows { display: flex; flex-direction: column; gap: 6px; padding-bottom: 4px; }
     .menu-edit-row {
       display: grid; grid-template-columns: 1fr 72px 32px; gap: 6px; align-items: center;
     }
@@ -487,6 +492,9 @@
       padding: 14px 22px 20px;
       display: flex; gap: 10px; justify-content: flex-end;
       border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      background: white;
+      border-radius: 0 0 16px 16px;
     }
     .btn-modal-cancel {
       padding: 10px 18px; background: white; color: var(--text-muted);
@@ -1408,30 +1416,8 @@ let editingDocId   = null;   // Firestore document ID
 let editCollection = null;   // 'reservations' or 'reservation_requests'
 let locationsList  = [];     // [{id, name, capacity}] from Firestore cache
 
-// Populate location select whenever locations listener fires
-// We hook into the existing listenMasterData by keeping a locationsList in sync
-const _origListenMasterData = listenMasterData;
-listenMasterData = function() {
-  _origListenMasterData();
-  // Also maintain locationsList for the edit modal
-};
-
-// Called from unsubLocations snapshot — we patch showDateDetail to pass full object
-// Instead, we track locations independently:
-(function patchLocations() {
-  const origUnsub = null;
-  const origListen = listenMasterData;
-})();
-
-// Simple: re-read from the DOM or maintain a separate cache
-// We maintain editLocations cache updated whenever the locations listener fires.
+// editLocations: diisi saat modal dibuka via loadLocationsForModal()
 let editLocations = [];  // [{id, name, capacity}]
-
-// We patch the existing listenMasterData to also update editLocations
-// by overriding db.collection('locations').onSnapshot
-const _origOnSnapshot = firebase.firestore.CollectionReference.prototype.onSnapshot;
-
-// Simpler approach: just call db directly when modal opens
 async function loadLocationsForModal() {
   const snap = await db.collection('locations').get();
   editLocations = snap.docs.map(d => ({ id: d.id, name: d.data().name || d.id, capacity: d.data().capacity || 0 }));
@@ -1451,7 +1437,9 @@ async function openEditModal(docId, source) {
   saveBtn.disabled = true;
   saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
 
-  // Show overlay
+  // Show overlay — reset scroll modal body dulu
+  const modalBody = document.querySelector('#edit-modal .modal-body');
+  if (modalBody) modalBody.scrollTop = 0;
   document.getElementById('edit-modal-overlay').classList.add('show');
   document.body.style.overflow = 'hidden';
 
