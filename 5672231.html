@@ -389,6 +389,119 @@
       padding: 24px; border: 1px solid var(--border);
     }
     .chart-wrap h3 { margin: 0 0 16px; font-size: 1rem; color: var(--secondary); }
+
+    /* ── EDIT MODAL ── */
+    #edit-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45); z-index: 5000;
+      justify-content: center; align-items: flex-start;
+      padding: 20px 16px; overflow-y: auto;
+    }
+    #edit-modal-overlay.show { display: flex; }
+    #edit-modal {
+      background: white; border-radius: 16px; width: 100%; max-width: 560px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      margin: auto; overflow: hidden;
+      animation: slideUp 0.22s ease;
+    }
+    @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+    .modal-header {
+      background: linear-gradient(135deg, var(--secondary), var(--primary-dark));
+      color: white; padding: 18px 22px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+    }
+    .modal-header h3 { margin: 0; font-size: 1.05rem; font-weight: 700; }
+    .modal-header small { display: block; font-size: 0.78rem; opacity: 0.75; margin-top: 2px; font-weight: 400; }
+    .modal-close {
+      background: rgba(255,255,255,0.15); border: none; color: white;
+      width: 32px; height: 32px; border-radius: 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0; margin-left: 12px;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.3); }
+    .modal-body { padding: 18px 22px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group label {
+      font-size: 0.72rem; font-weight: 700; color: var(--primary-dark);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 9px 11px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 0.88rem; font-family: inherit; color: var(--text-main);
+      background: white; width: 100%;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(42,157,143,0.12);
+      outline: none;
+    }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .section-divider {
+      display: flex; justify-content: space-between; align-items: center;
+      margin: 16px 0 8px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-divider span {
+      font-size: 0.72rem; font-weight: 700; color: var(--primary-dark);
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .btn-add-row {
+      padding: 4px 10px; background: #e6faf7; color: var(--primary);
+      border: 1px solid #b2eae3; border-radius: 6px;
+      font-size: 0.76rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .btn-add-row:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    #edit-menu-rows { display: flex; flex-direction: column; gap: 6px; }
+    .menu-edit-row {
+      display: grid; grid-template-columns: 1fr 72px 32px; gap: 6px; align-items: center;
+    }
+    .menu-edit-row select,
+    .menu-edit-row input[type=number] {
+      padding: 8px 9px; border: 1.5px solid var(--border); border-radius: 7px;
+      font-size: 0.85rem; font-family: inherit; background: white;
+    }
+    .menu-edit-row select:focus,
+    .menu-edit-row input[type=number]:focus { border-color: var(--primary); outline: none; }
+    .btn-del-row {
+      width: 32px; height: 32px; background: #fee2e2; color: var(--danger);
+      border: none; border-radius: 7px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .btn-del-row:hover { background: var(--danger); color: white; }
+    .modal-footer {
+      padding: 14px 22px 20px;
+      display: flex; gap: 10px; justify-content: flex-end;
+      border-top: 1px solid var(--border);
+    }
+    .btn-modal-cancel {
+      padding: 10px 18px; background: white; color: var(--text-muted);
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-weight: 600; font-size: 0.88rem; cursor: pointer;
+    }
+    .btn-modal-cancel:hover { border-color: var(--danger); color: var(--danger); }
+    .btn-modal-save {
+      padding: 10px 22px; background: var(--primary); color: white;
+      border: none; border-radius: 8px;
+      font-weight: 700; font-size: 0.88rem; cursor: pointer;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .btn-modal-save:hover { background: var(--primary-dark); }
+    .btn-modal-save:disabled { background: #aaa; cursor: not-allowed; }
+    .btn-edit-sm {
+      padding: 6px 10px; background: #e6faf7; color: var(--primary);
+      border: 1px solid #b2eae3; border-radius: 6px;
+      font-weight: 600; font-size: 0.76rem; cursor: pointer; white-space: nowrap;
+    }
+    .btn-edit-sm:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .res-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -821,6 +934,7 @@ function buildCard(r) {
           ? `<span class="dot"></span> Sudah Chat`
           : `<i class="fab fa-whatsapp"></i> Chat`}
       </button>
+      <button style="flex:0.7;padding:9px 6px;border:none;border-radius:7px;cursor:pointer;font-weight:600;font-size:0.82rem;background:#e6faf7;color:var(--primary);display:flex;align-items:center;justify-content:center;gap:4px;" onclick="openEditModal('${safeId}','reservation_requests')"><i class="fas fa-pencil-alt"></i> Edit</button>
       <button class="btn-tolak"  onclick="rejectRequest('${safeId}')"><i class="fas fa-times"></i> Tolak</button>
       <button class="btn-terima" onclick="approveRequest('${safeId}')"><i class="fas fa-check"></i> Terima</button>
     </div>
@@ -1013,7 +1127,10 @@ function renderDashboardStats() {
           <b>${r.nama}</b><br>
           <small style="color:var(--text-muted)">${r.date} | ${r.jam} | ${r.tempat}</small>
         </span>
-        <span style="background:var(--primary); color:white; padding:3px 10px; border-radius:12px; font-size:0.78rem; font-weight:700;">${r.jumlah} pax</span>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+          <button class="btn-edit-sm" onclick="openEditModal('${r.id}','reservations')"><i class="fas fa-pencil-alt"></i></button>
+          <span style="background:var(--primary);color:white;padding:3px 10px;border-radius:12px;font-size:0.78rem;font-weight:700;">${r.jumlah} pax</span>
+        </div>
       </div>`).join('')
     : '<p style="color:#bbb; margin:0; font-size:0.9rem;">Belum ada reservasi.</p>';
 }
@@ -1067,7 +1184,10 @@ function showDateDetail(date) {
           <b>${r.jam} — ${r.nama}</b><br>
           <small style="color:var(--text-muted)">${r.tempat} · ${r.jumlah} pax · DP: Rp ${fmtIDR(r.dp)} (${r.tipeDp||'–'})</small>
         </div>
-        <button class="btn-wa-sm" onclick="window.open('https://wa.me/${phone}')">WA</button>
+        <div class="res-item-actions">
+          <button class="btn-edit-sm" onclick="openEditModal('${r.id}','reservations')"><i class="fas fa-pencil-alt"></i> Edit</button>
+          <button class="btn-wa-sm" onclick="window.open('https://wa.me/${phone}')"><i class="fab fa-whatsapp"></i></button>
+        </div>
       </div>`;
       }).join('')
     : '<p style="color:#bbb; margin:0; font-size:0.9rem;">Tidak ada reservasi pada tanggal ini.</p>';
@@ -1182,5 +1302,325 @@ function closeSidebar() {
 <style>
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>
+
+<!-- EDIT RESERVATION MODAL -->
+<div id="edit-modal-overlay" onclick="handleOverlayClick(event)">
+  <div id="edit-modal">
+    <div class="modal-header">
+      <div>
+        <h3><i class="fas fa-edit"></i> Edit Reservasi</h3>
+        <small id="edit-modal-subtitle">Memuat data...</small>
+      </div>
+      <button class="modal-close" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label><i class="fas fa-user"></i> Nama Pemesan</label>
+          <input type="text" id="ef-nama" placeholder="Nama lengkap">
+        </div>
+        <div class="form-group">
+          <label><i class="fab fa-whatsapp"></i> Nomor HP</label>
+          <input type="tel" id="ef-hp" placeholder="08xx">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label><i class="fas fa-calendar-day"></i> Tanggal</label>
+          <input type="date" id="ef-date">
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-clock"></i> Jam</label>
+          <input type="time" id="ef-jam">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label><i class="fas fa-users"></i> Jumlah Orang</label>
+          <input type="number" id="ef-jumlah" min="1" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-map-marker-alt"></i> Tempat</label>
+          <select id="ef-tempat"></select>
+        </div>
+      </div>
+      <div class="form-row" id="ef-dp-row">
+        <div class="form-group">
+          <label><i class="fas fa-money-bill-wave"></i> DP (Rp)</label>
+          <input type="number" id="ef-dp" min="0" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-credit-card"></i> Metode Bayar DP</label>
+          <select id="ef-tipe-dp">
+            <option value="Transfer BNI">Transfer BNI</option>
+            <option value="Transfer BRI">Transfer BRI</option>
+            <option value="QRIS">QRIS</option>
+            <option value="Cash">Cash</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label><i class="fas fa-sticky-note"></i> Catatan</label>
+          <textarea id="ef-note" placeholder="Catatan / permintaan khusus customer..."></textarea>
+        </div>
+      </div>
+      <div class="section-divider">
+        <span><i class="fas fa-utensils"></i> Menu Pesanan</span>
+        <button class="btn-add-row" onclick="addMenuRow()"><i class="fas fa-plus"></i> Tambah Menu</button>
+      </div>
+      <div id="edit-menu-rows"></div>
+      <div id="edit-menu-empty" style="color:#bbb;font-size:0.82rem;padding:8px 2px;display:none;">
+        Belum ada menu. Tap "Tambah Menu" untuk menambahkan.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeEditModal()">Batal</button>
+      <button class="btn-modal-save" id="btn-save-edit" onclick="saveEdit()">
+        <i class="fas fa-save"></i> Simpan Perubahan
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==============================================
+// EDIT MODAL STATE
+// ==============================================
+let editingDocId   = null;   // Firestore document ID
+let editCollection = null;   // 'reservations' or 'reservation_requests'
+let locationsList  = [];     // [{id, name, capacity}] from Firestore cache
+
+// Populate location select whenever locations listener fires
+// We hook into the existing listenMasterData by keeping a locationsList in sync
+const _origListenMasterData = listenMasterData;
+listenMasterData = function() {
+  _origListenMasterData();
+  // Also maintain locationsList for the edit modal
+};
+
+// Called from unsubLocations snapshot — we patch showDateDetail to pass full object
+// Instead, we track locations independently:
+(function patchLocations() {
+  const origUnsub = null;
+  const origListen = listenMasterData;
+})();
+
+// Simple: re-read from the DOM or maintain a separate cache
+// We maintain editLocations cache updated whenever the locations listener fires.
+let editLocations = [];  // [{id, name, capacity}]
+
+// We patch the existing listenMasterData to also update editLocations
+// by overriding db.collection('locations').onSnapshot
+const _origOnSnapshot = firebase.firestore.CollectionReference.prototype.onSnapshot;
+
+// Simpler approach: just call db directly when modal opens
+async function loadLocationsForModal() {
+  const snap = await db.collection('locations').get();
+  editLocations = snap.docs.map(d => ({ id: d.id, name: d.data().name || d.id, capacity: d.data().capacity || 0 }));
+  editLocations.sort((a,b) => a.name.localeCompare(b.name));
+}
+
+// ==============================================
+// OPEN EDIT MODAL
+// source: 'reservations' or 'reservation_requests'
+// ==============================================
+async function openEditModal(docId, source) {
+  editingDocId   = docId;
+  editCollection = source;
+
+  // Disable save while loading
+  const saveBtn = document.getElementById('btn-save-edit');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat...';
+
+  // Show overlay
+  document.getElementById('edit-modal-overlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+
+  // Load locations & document in parallel
+  await Promise.all([loadLocationsForModal(), (async () => {
+    const doc = await db.collection(source).doc(docId).get();
+    if (!doc.exists) {
+      closeEditModal();
+      return Swal.fire('Error', 'Data tidak ditemukan.', 'error');
+    }
+    const r = doc.data();
+
+    // subtitle
+    document.getElementById('edit-modal-subtitle').textContent =
+      (source === 'reservations' ? 'Reservasi Approved' : 'Request Pending') + ' — ' + (r.nama || docId);
+
+    // Fill basic fields
+    document.getElementById('ef-nama').value   = r.nama    || '';
+    document.getElementById('ef-hp').value     = r.nomorHp || '';
+    document.getElementById('ef-date').value   = r.date    || '';
+    document.getElementById('ef-jam').value    = r.jam     || '';
+    document.getElementById('ef-jumlah').value = r.jumlah  || '';
+    document.getElementById('ef-note').value   = r.note || r.catatan || r.pesan || r.tambahan || '';
+    document.getElementById('ef-dp').value     = r.dp      || '';
+
+    // Show/hide DP row based on source
+    const dpRow = document.getElementById('ef-dp-row');
+    dpRow.style.display = source === 'reservations' ? '' : 'none';
+
+    // Metode bayar
+    const tipeDpSel = document.getElementById('ef-tipe-dp');
+    if (r.tipeDp) {
+      for (let opt of tipeDpSel.options) {
+        if (opt.value === r.tipeDp) { opt.selected = true; break; }
+      }
+    }
+
+    // Populate location dropdown
+    const tempSel = document.getElementById('ef-tempat');
+    tempSel.innerHTML = '';
+    editLocations.forEach(loc => {
+      const opt = document.createElement('option');
+      opt.value = loc.name;
+      opt.textContent = loc.name + (loc.capacity ? ' (' + loc.capacity + ' pax)' : '');
+      if (loc.name === r.tempat) opt.selected = true;
+      tempSel.appendChild(opt);
+    });
+    // If current tempat not in list, add it
+    if (r.tempat && !editLocations.find(l => l.name === r.tempat)) {
+      const opt = document.createElement('option');
+      opt.value = r.tempat; opt.textContent = r.tempat; opt.selected = true;
+      tempSel.insertBefore(opt, tempSel.firstChild);
+    }
+
+    // Populate menus
+    const menuRows = document.getElementById('edit-menu-rows');
+    menuRows.innerHTML = '';
+    const menus = (r.menus && Array.isArray(r.menus)) ? r.menus : [];
+    menus.forEach(m => addMenuRow(m.name, m.quantity));
+    updateMenuEmpty();
+  })()]);
+
+  saveBtn.disabled = false;
+  saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
+}
+
+// ==============================================
+// MENU ROW MANAGEMENT
+// ==============================================
+function addMenuRow(menuName, qty) {
+  const menuNames = Object.keys(globalMenuPrices);
+  if (menuNames.length === 0) {
+    // Fallback: allow text input
+    const row = document.createElement('div');
+    row.className = 'menu-edit-row';
+    row.innerHTML =
+      '<input type="text" class="me-name" placeholder="Nama menu" value="' + (menuName||'') + '">' +
+      '<input type="number" class="me-qty" min="1" value="' + (qty||1) + '" placeholder="Qty">' +
+      '<button class="btn-del-row" onclick="removeMenuRow(this)"><i class="fas fa-trash"></i></button>';
+    document.getElementById('edit-menu-rows').appendChild(row);
+  } else {
+    const options = menuNames.map(n =>
+      '<option value="' + n + '"' + (n === menuName ? ' selected' : '') + '>' + n + '</option>'
+    ).join('');
+    const row = document.createElement('div');
+    row.className = 'menu-edit-row';
+    row.innerHTML =
+      '<select class="me-name">' + options + '</select>' +
+      '<input type="number" class="me-qty" min="1" value="' + (qty||1) + '" placeholder="Qty">' +
+      '<button class="btn-del-row" onclick="removeMenuRow(this)"><i class="fas fa-trash"></i></button>';
+    document.getElementById('edit-menu-rows').appendChild(row);
+  }
+  updateMenuEmpty();
+}
+
+function removeMenuRow(btn) {
+  btn.closest('.menu-edit-row').remove();
+  updateMenuEmpty();
+}
+
+function updateMenuEmpty() {
+  const rows = document.getElementById('edit-menu-rows').querySelectorAll('.menu-edit-row');
+  document.getElementById('edit-menu-empty').style.display = rows.length === 0 ? 'block' : 'none';
+}
+
+// ==============================================
+// SAVE EDIT
+// ==============================================
+async function saveEdit() {
+  const saveBtn = document.getElementById('btn-save-edit');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+  // Collect fields
+  const nama    = document.getElementById('ef-nama').value.trim();
+  const nomorHp = document.getElementById('ef-hp').value.trim();
+  const date    = document.getElementById('ef-date').value;
+  const jam     = document.getElementById('ef-jam').value;
+  const jumlah  = parseInt(document.getElementById('ef-jumlah').value) || 0;
+  const tempat  = document.getElementById('ef-tempat').value;
+  const note    = document.getElementById('ef-note').value.trim();
+
+  // Validate
+  if (!nama || !date || !jam || !jumlah || !tempat) {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
+    return Swal.fire('Periksa Form', 'Nama, tanggal, jam, jumlah, dan tempat wajib diisi.', 'warning');
+  }
+
+  // Collect menus
+  const menus = [];
+  document.querySelectorAll('#edit-menu-rows .menu-edit-row').forEach(row => {
+    const nameEl = row.querySelector('.me-name');
+    const qtyEl  = row.querySelector('.me-qty');
+    const name   = (nameEl ? nameEl.value.trim() : '');
+    const qty    = parseInt(qtyEl ? qtyEl.value : 1) || 1;
+    if (name) menus.push({ name, quantity: qty });
+  });
+
+  const updates = {
+    nama, nomorHp, date, jam,
+    jumlah: jumlah.toString(),
+    tempat, note, menus,
+    lastEditedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  // DP fields only for approved reservations
+  if (editCollection === 'reservations') {
+    updates.dp     = parseInt(document.getElementById('ef-dp').value) || 0;
+    updates.tipeDp = document.getElementById('ef-tipe-dp').value;
+  }
+
+  try {
+    await db.collection(editCollection).doc(editingDocId).update(updates);
+    closeEditModal();
+    Swal.fire({
+      icon: 'success', title: 'Tersimpan!',
+      text: 'Data reservasi ' + nama + ' berhasil diperbarui.',
+      timer: 2000, showConfirmButton: false
+    });
+    // Re-render will happen automatically via onSnapshot listeners
+  } catch(e) {
+    Swal.fire('Error', e.message, 'error');
+  }
+
+  saveBtn.disabled = false;
+  saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
+}
+
+// ==============================================
+// CLOSE MODAL
+// ==============================================
+function closeEditModal() {
+  document.getElementById('edit-modal-overlay').classList.remove('show');
+  document.body.style.overflow = '';
+  editingDocId = null; editCollection = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('edit-modal-overlay')) closeEditModal();
+}
+
+// ESC key to close
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeEditModal();
+});
+</script>
 </body>
 </html>
