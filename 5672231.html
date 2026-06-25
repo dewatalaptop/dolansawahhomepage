@@ -289,14 +289,18 @@
     .menu-empty { color: #bbb; font-style: italic; }
 
     /* req actions */
-    .req-actions { display: flex; gap: 8px; }
-    .req-actions button {
-      flex: 1; padding: 9px 8px; border: none; border-radius: 7px;
-      cursor: pointer; font-weight: 600; font-size: 0.82rem;
-      transition: filter 0.15s, opacity 0.15s;
-      display: flex; align-items: center; justify-content: center; gap: 5px;
+    .req-actions {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 14px;
     }
-    .req-actions button:hover { filter: brightness(0.92); }
+    .req-actions button {
+      flex: 1 1 auto; min-width: 60px;
+      padding: 9px 6px; border: none; border-radius: 7px;
+      cursor: pointer; font-weight: 600; font-size: 0.8rem;
+      transition: filter 0.15s, opacity 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      white-space: nowrap;
+    }
+    .req-actions button:hover  { filter: brightness(0.9); }
     .req-actions button:active { opacity: 0.8; }
 
     .btn-wa       { background: #25D366; color: white; }
@@ -312,8 +316,10 @@
       0%,100% { opacity:1; transform:scale(1); }
       50%      { opacity:0.4; transform:scale(0.65); }
     }
-    .btn-tolak  { background: #fee2e2; color: var(--danger); }
-    .btn-terima { background: var(--success); color: white; }
+    .btn-tolak       { background: #fee2e2; color: var(--danger); }
+    .btn-terima      { background: var(--success); color: white; }
+    .btn-edit-inline { background: #e6faf7; color: var(--primary); border: 1px solid #b2eae3 !important; }
+    .btn-edit-inline:hover { background: var(--primary); color: white; border-color: var(--primary) !important; }
 
     .reset-hint {
       text-align: center; margin-top: 7px;
@@ -359,9 +365,10 @@
     }
 
     .reservation-list-item {
-      background: white; padding: 13px 15px; border-radius: 8px;
+      background: white; padding: 12px 14px; border-radius: 8px;
       margin-bottom: 8px; border-left: 4px solid var(--primary);
       display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.07);
     }
     .btn-wa-sm {
@@ -501,7 +508,7 @@
       font-weight: 600; font-size: 0.76rem; cursor: pointer; white-space: nowrap;
     }
     .btn-edit-sm:hover { background: var(--primary); color: white; border-color: var(--primary); }
-    .res-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .res-item-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
   </style>
 </head>
 <body>
@@ -934,7 +941,7 @@ function buildCard(r) {
           ? `<span class="dot"></span> Sudah Chat`
           : `<i class="fab fa-whatsapp"></i> Chat`}
       </button>
-      <button style="flex:0.7;padding:9px 6px;border:none;border-radius:7px;cursor:pointer;font-weight:600;font-size:0.82rem;background:#e6faf7;color:var(--primary);display:flex;align-items:center;justify-content:center;gap:4px;" onclick="openEditModal('${safeId}','reservation_requests')"><i class="fas fa-pencil-alt"></i> Edit</button>
+      <button class="btn-edit-inline" onclick="openEditModal('${safeId}','reservation_requests')"><i class="fas fa-pencil-alt"></i> Edit</button>
       <button class="btn-tolak"  onclick="rejectRequest('${safeId}')"><i class="fas fa-times"></i> Tolak</button>
       <button class="btn-terima" onclick="approveRequest('${safeId}')"><i class="fas fa-check"></i> Terima</button>
     </div>
@@ -980,7 +987,11 @@ function openWA(id) {
 
   const ppn   = Math.round(totalFood * 0.1);
   const total = totalFood + ppn;
-  const dp    = Math.round(total * 0.5);
+  // OTS: DP flat 200.000 jika tidak ada menu pre-order atau tempat/via OTS
+  const isOTS_wa = (r.tempat || '').toUpperCase().includes('OTS')
+                || (r.via    || '').toUpperCase().includes('OTS')
+                || !(r.menus && r.menus.length > 0);
+  const dp    = isOTS_wa ? 200000 : Math.round(total * 0.5);
   const note  = r.note || r.catatan || r.pesan || r.tambahan || '';
 
   const msg =
@@ -1035,15 +1046,21 @@ async function approveRequest(id) {
   if (!r) return;
 
   // hitung estimasi DP
+  // OTS = On The Spot: tempat/via mengandung 'OTS' atau tidak ada pre-order menu
+  const isOTS = (r.tempat || '').toUpperCase().includes('OTS')
+             || (r.via    || '').toUpperCase().includes('OTS')
+             || !(r.menus && r.menus.length > 0);
   let totalFood = 0;
   (r.menus || []).forEach(m => {
     totalFood += (globalMenuPrices[m.name] || 0) * m.quantity;
   });
-  const estDP = Math.round((totalFood + Math.round(totalFood * 0.1)) * 0.5);
+  const estDP = isOTS ? 200000
+              : Math.round((totalFood + Math.round(totalFood * 0.1)) * 0.5);
 
   const { value: form } = await Swal.fire({
     title: `Setujui — ${r.nama}`,
     html: `
+      ${isOTS ? '<div style="background:#fff7ed;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px;margin-bottom:10px;font-size:0.8rem;color:#92400e;text-align:left;"><i class=\'fas fa-bolt\'></i> <b>OTS</b> — DP otomatis Rp 200.000</div>' : ''}
       <div style="text-align:left; margin-bottom:4px;">
         <label style="font-size:0.82rem; font-weight:600; color:#555;">Nominal DP (Rp)</label>
       </div>
