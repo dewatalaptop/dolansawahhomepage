@@ -517,6 +517,57 @@
     }
     .btn-edit-sm:hover { background: var(--primary); color: white; border-color: var(--primary); }
     .res-item-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+
+    /* ── ASISTEN AI: cek kelengkapan catatan ── */
+    #ai-loading-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 5200;
+      justify-content: center; align-items: center;
+    }
+    #ai-loading-overlay.show { display: flex; }
+    .ai-loading-box { background: white; padding: 28px; border-radius: 14px; text-align: center; min-width: 250px; max-width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.25); }
+    .ai-loading-box i { font-size: 1.8rem; color: var(--primary); margin-bottom: 12px; }
+    .ai-loading-box p { margin: 0 0 14px; font-weight: 700; color: var(--primary-dark); font-size: 0.88rem; }
+    .ai-progress-track { background: #eee; border-radius: 10px; overflow: hidden; height: 9px; }
+    .ai-progress-fill { background: var(--primary); height: 100%; width: 0%; transition: width 0.2s ease; }
+    #ai-progress-text { margin-top: 7px; font-size: 0.76rem; color: var(--text-muted); }
+
+    #ai-check-modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 5150;
+      justify-content: center; align-items: center; padding: 20px 16px; overflow-y: auto;
+    }
+    #ai-check-modal-overlay.show { display: flex; }
+    #ai-check-modal {
+      background: white; border-radius: 16px; width: 100%; max-width: 460px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin: auto;
+      display: flex; flex-direction: column; max-height: calc(100vh - 40px);
+      animation: slideUp 0.22s ease;
+    }
+    .ai-flag-item { padding: 8px 2px; border-bottom: 1px solid var(--border); font-size: 0.84rem; color: var(--text-main); }
+    .ai-flag-item:last-child { border-bottom: none; }
+    .ai-item-card { padding: 10px 2px; border-bottom: 1px solid var(--border); }
+    .ai-item-card:last-child { border-bottom: none; }
+    .ai-item-card .mentioned-text { font-size: 0.86rem; }
+    .ai-item-card .mentioned-text small { display: block; color: var(--text-muted); font-size: 0.74rem; margin-top: 2px; }
+    .ai-item-inputs { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+    .ai-item-inputs input {
+      padding: 7px 8px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 0.8rem;
+      font-family: inherit; flex: 1 1 75px; min-width: 0;
+    }
+    .ai-item-inputs input:focus { border-color: var(--primary); outline: none; }
+    .ai-item-inputs button {
+      padding: 7px 12px; background: var(--primary); color: white; border: none; border-radius: 7px;
+      font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .ai-item-inputs button:hover { background: var(--primary-dark); }
+    .ai-item-inputs .ai-item-matched-label { flex: 2 1 110px; font-size: 0.78rem; color: var(--text-muted); }
+
+    /* Baris menu custom (nama+harga bebas dari item terdeteksi AI) */
+    .menu-edit-row.custom-menu-row { grid-template-columns: 1fr 55px 85px 32px; }
+    .menu-edit-row.custom-menu-row input[type=text] {
+      padding: 8px 9px; border: 1.5px solid var(--border); border-radius: 7px;
+      font-size: 0.85rem; font-family: inherit; background: white;
+    }
+    .menu-edit-row.custom-menu-row input[type=text]:focus { border-color: var(--primary); outline: none; }
   </style>
 </head>
 <body>
@@ -987,7 +1038,9 @@ function openWA(id) {
 
   let totalFood = 0, menuLines = '';
   (r.menus || []).forEach(m => {
-    const price = globalMenuPrices[m.name] || 0;
+    // Item custom (dari Asisten AI) bawa harganya sendiri; menu master selalu
+    // pakai harga TERKINI dari koleksi menus.
+    const price = (typeof m.price === 'number') ? m.price : (globalMenuPrices[m.name] || 0);
     const sub   = price * m.quantity;
     totalFood  += sub;
     menuLines  += `- ${m.name} (${m.quantity}x) : Rp ${fmtIDR(sub)}\n`;
@@ -1060,7 +1113,8 @@ async function approveRequest(id) {
              || !(r.menus && r.menus.length > 0);
   let totalFood = 0;
   (r.menus || []).forEach(m => {
-    totalFood += (globalMenuPrices[m.name] || 0) * m.quantity;
+    const price = (typeof m.price === 'number') ? m.price : (globalMenuPrices[m.name] || 0);
+    totalFood += price * m.quantity;
   });
   const estDP = isOTS ? 200000
               : Math.round((totalFood + Math.round(totalFood * 0.1)) * 0.5);
@@ -1408,6 +1462,33 @@ function closeSidebar() {
   </div>
 </div>
 
+<!-- ASISTEN AI: overlay loading saat menganalisa -->
+<div id="ai-loading-overlay">
+  <div class="ai-loading-box">
+    <i class="fas fa-robot"></i>
+    <p>Asisten AI sedang memeriksa catatan...</p>
+    <div class="ai-progress-track"><div class="ai-progress-fill" id="ai-progress-fill"></div></div>
+    <div id="ai-progress-text">0%</div>
+  </div>
+</div>
+
+<!-- ASISTEN AI: hasil pemeriksaan kelengkapan data -->
+<div id="ai-check-modal-overlay" onclick="if(event.target===this) closeAiCheckModal()">
+  <div id="ai-check-modal">
+    <div class="modal-header">
+      <div><h3><i class="fas fa-robot"></i> Asisten AI</h3><small>Cek Kelengkapan Data</small></div>
+      <button class="modal-close" onclick="closeAiCheckModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="ai-check-content"></div>
+    <div class="modal-footer">
+      <button class="btn-modal-cancel" onclick="closeAiCheckModal()">Perbaiki Dulu</button>
+      <button class="btn-modal-save" id="ai-check-save-anyway-btn">
+        <i class="fas fa-save"></i> Tetap Simpan
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ==============================================
 // EDIT MODAL STATE
@@ -1498,7 +1579,16 @@ async function openEditModal(docId, source) {
     const menuRows = document.getElementById('edit-menu-rows');
     menuRows.innerHTML = '';
     const menus = (r.menus && Array.isArray(r.menus)) ? r.menus : [];
-    menus.forEach(m => addMenuRow(m.name, m.quantity));
+    menus.forEach(m => {
+      // Menu yang masih ada di master pakai baris select biasa (harga selalu
+      // ikut harga TERKINI). Item custom/menu yang sudah dihapus dari master
+      // pakai baris custom supaya harga yang TERSIMPAN tidak diam-diam hilang.
+      if (Object.prototype.hasOwnProperty.call(globalMenuPrices, m.name)) {
+        addMenuRow(m.name, m.quantity);
+      } else {
+        addCustomMenuRow(m.name, m.quantity, m.price || 0);
+      }
+    });
     updateMenuEmpty();
   })()]);
 
@@ -1532,6 +1622,22 @@ function addMenuRow(menuName, qty) {
       '<button class="btn-del-row" onclick="removeMenuRow(this)"><i class="fas fa-trash"></i></button>';
     document.getElementById('edit-menu-rows').appendChild(row);
   }
+  updateMenuEmpty();
+}
+
+// Baris item custom (nama+harga bebas, bukan dari master menu). Dipakai saat
+// Asisten AI menemukan item di catatan yang tidak cocok dengan menu manapun,
+// supaya tetap bisa dihitung ke total pesanan tanpa harus dibuatkan menu
+// permanen dulu di master data.
+function addCustomMenuRow(name, qty, price) {
+  const row = document.createElement('div');
+  row.className = 'menu-edit-row custom-menu-row';
+  row.innerHTML =
+    '<input type="text" class="me-name" placeholder="Nama item custom" value="' + (name||'').replace(/"/g,'&quot;') + '">' +
+    '<input type="number" class="me-qty" min="1" value="' + (qty||1) + '" placeholder="Qty">' +
+    '<input type="number" class="me-price" min="0" value="' + (price||0) + '" placeholder="Harga">' +
+    '<button class="btn-del-row" onclick="removeMenuRow(this)"><i class="fas fa-trash"></i></button>';
+  document.getElementById('edit-menu-rows').appendChild(row);
   updateMenuEmpty();
 }
 
@@ -1572,11 +1678,18 @@ async function saveEdit() {
   // Collect menus
   const menus = [];
   document.querySelectorAll('#edit-menu-rows .menu-edit-row').forEach(row => {
+    const isCustom = row.classList.contains('custom-menu-row');
     const nameEl = row.querySelector('.me-name');
     const qtyEl  = row.querySelector('.me-qty');
     const name   = (nameEl ? nameEl.value.trim() : '');
     const qty    = parseInt(qtyEl ? qtyEl.value : 1) || 1;
-    if (name) menus.push({ name, quantity: qty });
+    if (!name) return;
+    if (isCustom) {
+      const priceEl = row.querySelector('.me-price');
+      menus.push({ name, quantity: qty, price: parseInt(priceEl ? priceEl.value : 0) || 0 });
+    } else {
+      menus.push({ name, quantity: qty });
+    }
   });
 
   const updates = {
@@ -1592,21 +1705,31 @@ async function saveEdit() {
     updates.tipeDp = document.getElementById('ef-tipe-dp').value;
   }
 
-  try {
-    await db.collection(editCollection).doc(editingDocId).update(updates);
-    closeEditModal();
-    Swal.fire({
-      icon: 'success', title: 'Tersimpan!',
-      text: 'Data reservasi ' + nama + ' berhasil diperbarui.',
-      timer: 2000, showConfirmButton: false
-    });
-    // Re-render will happen automatically via onSnapshot listeners
-  } catch(e) {
-    Swal.fire('Error', e.message, 'error');
-  }
+  const resetSaveBtn = () => {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
+  };
 
-  saveBtn.disabled = false;
-  saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
+  await runAiCompletenessCheck(
+    { nomorHp, tempat, jumlah, tambahan: note, menus },
+    async () => {
+      try {
+        await db.collection(editCollection).doc(editingDocId).update(updates);
+        closeEditModal();
+        Swal.fire({
+          icon: 'success', title: 'Tersimpan!',
+          text: 'Data reservasi ' + nama + ' berhasil diperbarui.',
+          timer: 2000, showConfirmButton: false
+        });
+        // Re-render will happen automatically via onSnapshot listeners
+      } catch(e) {
+        Swal.fire('Error', e.message, 'error');
+      }
+      resetSaveBtn();
+    },
+    'edit-menu-rows',
+    resetSaveBtn
+  );
 }
 
 // ==============================================
@@ -1626,6 +1749,171 @@ function handleOverlayClick(e) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeEditModal();
 });
+
+// =========================================
+// ASISTEN AI: CEK KELENGKAPAN CATATAN
+// =========================================
+// Dipanggil sebelum menyimpan edit reservasi/request. Cloud Function yang
+// sama dipakai di app kalender admin (reservasids) -- 1 backend, dua
+// frontend, karena keduanya berbagi Firestore project reservasi-dolan-sawah.
+// Fail-open: kalau AI gagal/timeout, simpan tetap jalan tanpa peringatan.
+const AI_FUNCTIONS_BASE_URL = 'https://asia-southeast2-reservasi-dolan-sawah.cloudfunctions.net';
+let pendingAiCheckSaveCallback = null;
+let pendingAiItems = [];
+
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function getCapacityForLocationNameAdmin(name) {
+  const loc = editLocations.find(l => l.name === name);
+  return loc ? loc.capacity : null;
+}
+
+async function callAiFunction(functionName, payload) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Belum login');
+  const token = await user.getIdToken();
+  const res = await fetch(`${AI_FUNCTIONS_BASE_URL}/${functionName}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error(`AI function gagal (${res.status})`);
+  return res.json();
+}
+
+// --- Progress bar simulasi (bukan API streaming, lihat catatan di reservasids) ---
+let aiProgressInterval = null;
+let aiProgressValue = 0;
+
+function showAiLoadingProgress() {
+  aiProgressValue = 0;
+  document.getElementById('ai-progress-fill').style.width = '0%';
+  document.getElementById('ai-progress-text').textContent = '0%';
+  document.getElementById('ai-loading-overlay').classList.add('show');
+  if (aiProgressInterval) clearInterval(aiProgressInterval);
+  aiProgressInterval = setInterval(() => {
+    const remaining = 90 - aiProgressValue;
+    aiProgressValue += Math.max(remaining * 0.08, 0.3);
+    if (aiProgressValue > 90) aiProgressValue = 90;
+    document.getElementById('ai-progress-fill').style.width = aiProgressValue + '%';
+    document.getElementById('ai-progress-text').textContent = Math.round(aiProgressValue) + '%';
+  }, 200);
+}
+
+function hideAiLoadingProgress() {
+  if (aiProgressInterval) { clearInterval(aiProgressInterval); aiProgressInterval = null; }
+  document.getElementById('ai-progress-fill').style.width = '100%';
+  document.getElementById('ai-progress-text').textContent = '100%';
+  setTimeout(() => { document.getElementById('ai-loading-overlay').classList.remove('show'); }, 250);
+}
+
+// reservationLike: { nomorHp, tempat, jumlah, tambahan, menus }
+// saveCallback: dipanggil kalau tidak ada temuan, atau admin pilih "Tetap Simpan"
+// onDecided: dipanggil segera setelah AI selesai (baik ada temuan atau gagal) --
+//   dipakai caller untuk reset tombol Simpan ke keadaan normal.
+async function runAiCompletenessCheck(reservationLike, saveCallback, menuContainerId, onDecided) {
+  showAiLoadingProgress();
+  let result;
+  try {
+    result = await callAiFunction('checkReservationCompleteness', {
+      reservation: reservationLike,
+      capacity: getCapacityForLocationNameAdmin(reservationLike.tempat),
+      knownMenuNames: Object.keys(globalMenuPrices)
+    });
+  } catch (e) {
+    console.warn('Pengecekan AI tidak tersedia, lanjut simpan tanpa peringatan:', e);
+    hideAiLoadingProgress();
+    if (onDecided) onDecided();
+    saveCallback();
+    return;
+  }
+  hideAiLoadingProgress();
+
+  const ruleFlags = result.ruleFlags || [];
+  const aiItems = (result.tambahanAnalysis && result.tambahanAnalysis.items) || [];
+
+  if (ruleFlags.length === 0 && aiItems.length === 0) {
+    saveCallback();
+    return;
+  }
+
+  if (onDecided) onDecided();
+  showAiCheckModal(ruleFlags, aiItems, saveCallback);
+}
+
+function showAiCheckModal(ruleFlags, aiItems, saveCallback) {
+  pendingAiCheckSaveCallback = saveCallback;
+  pendingAiItems = aiItems;
+  const content = document.getElementById('ai-check-content');
+
+  let html = '';
+  if (ruleFlags.length > 0) {
+    html += '<div style="font-size:0.72rem;font-weight:700;color:var(--primary-dark);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;"><i class="fas fa-exclamation-triangle"></i> Data Kurang Lengkap</div>';
+    html += ruleFlags.map(f => `<div class="ai-flag-item">${escapeHtml(f.message)}</div>`).join('');
+  }
+  if (aiItems.length > 0) {
+    html += '<div style="font-size:0.72rem;font-weight:700;color:var(--primary-dark);text-transform:uppercase;letter-spacing:0.04em;margin:14px 0 6px;"><i class="fas fa-comment-dots"></i> Kemungkinan Menu Tambahan Belum Dihitung</div>';
+    html += aiItems.map((item, idx) => {
+      const qty = parseInt(item.suggestedQuantity) > 0 ? parseInt(item.suggestedQuantity) : 1;
+      const matchedPrice = item.possibleMatch ? (globalMenuPrices[item.possibleMatch] || 0) : 0;
+      return `
+        <div class="ai-item-card">
+          <div class="mentioned-text">"${escapeHtml(item.mentionedText || '')}"<small>${escapeHtml(item.note || '')}</small></div>
+          <div class="ai-item-inputs">
+            <input type="number" id="ai-item-${idx}-qty" value="${qty}" min="1" placeholder="Jml">
+            ${item.possibleMatch
+              ? `<span class="ai-item-matched-label">x Rp${fmtIDR(matchedPrice)} (${escapeHtml(item.possibleMatch)})</span>`
+              : `<input type="number" id="ai-item-${idx}-price" min="0" placeholder="Harga satuan (Rp)">`}
+            <button type="button" onclick="addAiItemToForm(${idx})"><i class="fas fa-plus"></i> Tambahkan</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+  content.innerHTML = html || '<p>Tidak ada catatan.</p>';
+
+  document.getElementById('ai-check-save-anyway-btn').onclick = () => {
+    closeAiCheckModal();
+    if (pendingAiCheckSaveCallback) pendingAiCheckSaveCallback();
+  };
+
+  document.getElementById('ai-check-modal-overlay').classList.add('show');
+}
+
+function closeAiCheckModal() {
+  document.getElementById('ai-check-modal-overlay').classList.remove('show');
+}
+
+// Dipanggil dari tombol "Tambahkan" per item di modal AI. Kalau item cocok
+// dengan menu asli (possibleMatch), harga ikut menu tsb & hanya jumlah yang
+// dipakai dari input. Kalau tidak cocok, admin isi harga manual di situ juga
+// -- item custom ini tetap ikut terhitung (lihat .custom-menu-row di saveEdit).
+function addAiItemToForm(idx) {
+  const item = pendingAiItems[idx];
+  if (!item) return;
+
+  const qtyInput = document.getElementById(`ai-item-${idx}-qty`);
+  const quantity = parseInt(qtyInput.value) || 1;
+
+  if (item.possibleMatch) {
+    addMenuRow(item.possibleMatch, quantity);
+  } else {
+    const priceInput = document.getElementById(`ai-item-${idx}-price`);
+    const price = parseInt(priceInput.value) || 0;
+    if (price <= 0) {
+      priceInput.style.borderColor = 'var(--danger)';
+      Swal.fire({ icon:'warning', title:'Isi harga dulu', text:'Harga satuan wajib diisi sebelum menambahkan.', timer:2200, showConfirmButton:false });
+      return;
+    }
+    addCustomMenuRow(item.mentionedText, quantity, price);
+  }
+
+  closeAiCheckModal();
+  Swal.fire({ icon:'success', title:'Item ditambahkan', text:'Cek jumlah/harganya di form lalu simpan lagi.', timer:2200, showConfirmButton:false });
+}
 </script>
 </body>
 </html>
