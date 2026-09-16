@@ -1010,7 +1010,7 @@ function buildCard(r) {
 }
 
 // ─── Handle Chat toggle ───
-function handleChat(id) {
+async function handleChat(id) {
   if (isChatted(id)) {
     Swal.fire({
       title: 'Reset Status Chat?',
@@ -1025,19 +1025,40 @@ function handleChat(id) {
     });
     return;
   }
-  // Buka WA dulu, lalu tandai
-  openWA(id);
-  markChatted(id);
-  renderInbox();
+  // openWA menjalankan cek AI dulu -- baru tandai "sudah dichat" SETELAH
+  // WA benar-benar terkirim (bukan kalau admin membatalkan di popup AI).
+  await openWA(id);
 }
 
 // ─── WhatsApp pesan ───
-function openWA(id) {
+// Sebelum membuka WA, catatan (note/catatan/pesan/tambahan) dicek AI dulu --
+// kalau ada kemungkinan item tambahan berbayar yang belum terhitung, admin
+// bisa lengkapi harga+jumlahnya di situ juga supaya Rincian Pesanan & Total
+// Tagihan di pesan WA sudah benar sebelum terkirim ke customer.
+async function openWA(id) {
   const r = requestsCache.find(x => x.id === id);
   if (!r) return;
 
+  const note = r.note || r.catatan || r.pesan || r.tambahan || '';
+  const workingMenus = (r.menus || []).map(m => ({ ...m }));
+
+  await runAiCompletenessCheck(
+    { nomorHp: r.nomorHp, tempat: r.tempat, jumlah: r.jumlah, tambahan: note, menus: workingMenus },
+    {
+      proceedLabel: 'Tetap Kirim',
+      onItemAdd: (entry) => { workingMenus.push(entry); },
+      onProceed: () => {
+        sendWaMessage(r, workingMenus, note);
+        markChatted(id);
+        renderInbox();
+      }
+    }
+  );
+}
+
+function sendWaMessage(r, menus, note) {
   let totalFood = 0, menuLines = '';
-  (r.menus || []).forEach(m => {
+  (menus || []).forEach(m => {
     // Item custom (dari Asisten AI) bawa harganya sendiri; menu master selalu
     // pakai harga TERKINI dari koleksi menus.
     const price = (typeof m.price === 'number') ? m.price : (globalMenuPrices[m.name] || 0);
@@ -1051,9 +1072,8 @@ function openWA(id) {
   // OTS: DP flat 200.000 jika tidak ada menu pre-order atau tempat/via OTS
   const isOTS_wa = (r.tempat || '').toUpperCase().includes('OTS')
                 || (r.via    || '').toUpperCase().includes('OTS')
-                || !(r.menus && r.menus.length > 0);
+                || !(menus && menus.length > 0);
   const dp    = isOTS_wa ? 200000 : Math.round(total * 0.5);
-  const note  = r.note || r.catatan || r.pesan || r.tambahan || '';
 
   const msg =
     `Halo Kak *${r.nama}* 👋\n` +
@@ -1102,17 +1122,35 @@ function rejectRequest(id) {
 }
 
 // ─── Approve request ───
+// Sebelum menampilkan dialog approve (yang menghitung estimasi DP), catatan
+// dicek AI dulu -- kalau ada item tambahan yang kemungkinan berbayar, admin
+// lengkapi harga+jumlahnya di situ juga supaya ikut masuk ke totalFood/DP,
+// bukan cuma nempel di teks catatan tanpa pernah kehitung.
 async function approveRequest(id) {
   const r = requestsCache.find(x => x.id === id);
   if (!r) return;
 
+  const note = r.note || r.catatan || r.pesan || r.tambahan || '';
+  const workingMenus = (r.menus || []).map(m => ({ ...m }));
+
+  await runAiCompletenessCheck(
+    { nomorHp: r.nomorHp, tempat: r.tempat, jumlah: r.jumlah, tambahan: note, menus: workingMenus },
+    {
+      proceedLabel: 'Lanjutkan',
+      onItemAdd: (entry) => { workingMenus.push(entry); },
+      onProceed: () => showApproveDpDialog(id, r, workingMenus)
+    }
+  );
+}
+
+async function showApproveDpDialog(id, r, menus) {
   // hitung estimasi DP
   // OTS = On The Spot: tempat/via mengandung 'OTS' atau tidak ada pre-order menu
   const isOTS = (r.tempat || '').toUpperCase().includes('OTS')
              || (r.via    || '').toUpperCase().includes('OTS')
-             || !(r.menus && r.menus.length > 0);
+             || !(menus && menus.length > 0);
   let totalFood = 0;
-  (r.menus || []).forEach(m => {
+  (menus || []).forEach(m => {
     const price = (typeof m.price === 'number') ? m.price : (globalMenuPrices[m.name] || 0);
     totalFood += price * m.quantity;
   });
@@ -1157,7 +1195,7 @@ async function approveRequest(id) {
   if (form) {
     try {
       const data = {
-        ...r, status: 'approved', dp: form.dp, tipeDp: form.pay,
+        ...r, menus, status: 'approved', dp: form.dp, tipeDp: form.pay,
         approvedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
       delete data.id;
@@ -1675,35 +1713,28 @@ async function saveEdit() {
     return Swal.fire('Periksa Form', 'Nama, tanggal, jam, jumlah, dan tempat wajib diisi.', 'warning');
   }
 
-  // Collect menus
-  const menus = [];
-  document.querySelectorAll('#edit-menu-rows .menu-edit-row').forEach(row => {
-    const isCustom = row.classList.contains('custom-menu-row');
-    const nameEl = row.querySelector('.me-name');
-    const qtyEl  = row.querySelector('.me-qty');
-    const name   = (nameEl ? nameEl.value.trim() : '');
-    const qty    = parseInt(qtyEl ? qtyEl.value : 1) || 1;
-    if (!name) return;
-    if (isCustom) {
-      const priceEl = row.querySelector('.me-price');
-      menus.push({ name, quantity: qty, price: parseInt(priceEl ? priceEl.value : 0) || 0 });
-    } else {
-      menus.push({ name, quantity: qty });
-    }
-  });
-
-  const updates = {
-    nama, nomorHp, date, jam,
-    jumlah: jumlah.toString(),
-    tempat, note, menus,
-    lastEditedAt: firebase.firestore.FieldValue.serverTimestamp()
+  // Collect menus dari DOM. Dibuat sebagai fungsi (bukan sekali di awal) karena
+  // Asisten AI bisa menambah baris menu (item custom yang dilengkapi harga)
+  // SETELAH titik ini tapi SEBELUM admin benar-benar klik "Tetap Simpan" --
+  // jadi harus dibaca ulang tepat sebelum disimpan, bukan pakai snapshot lama.
+  const collectMenusFromDom = () => {
+    const menus = [];
+    document.querySelectorAll('#edit-menu-rows .menu-edit-row').forEach(row => {
+      const isCustom = row.classList.contains('custom-menu-row');
+      const nameEl = row.querySelector('.me-name');
+      const qtyEl  = row.querySelector('.me-qty');
+      const name   = (nameEl ? nameEl.value.trim() : '');
+      const qty    = parseInt(qtyEl ? qtyEl.value : 1) || 1;
+      if (!name) return;
+      if (isCustom) {
+        const priceEl = row.querySelector('.me-price');
+        menus.push({ name, quantity: qty, price: parseInt(priceEl ? priceEl.value : 0) || 0 });
+      } else {
+        menus.push({ name, quantity: qty });
+      }
+    });
+    return menus;
   };
-
-  // DP fields only for approved reservations
-  if (editCollection === 'reservations') {
-    updates.dp     = parseInt(document.getElementById('ef-dp').value) || 0;
-    updates.tipeDp = document.getElementById('ef-tipe-dp').value;
-  }
 
   const resetSaveBtn = () => {
     saveBtn.disabled = false;
@@ -1711,24 +1742,41 @@ async function saveEdit() {
   };
 
   await runAiCompletenessCheck(
-    { nomorHp, tempat, jumlah, tambahan: note, menus },
-    async () => {
-      try {
-        await db.collection(editCollection).doc(editingDocId).update(updates);
-        closeEditModal();
-        Swal.fire({
-          icon: 'success', title: 'Tersimpan!',
-          text: 'Data reservasi ' + nama + ' berhasil diperbarui.',
-          timer: 2000, showConfirmButton: false
-        });
-        // Re-render will happen automatically via onSnapshot listeners
-      } catch(e) {
-        Swal.fire('Error', e.message, 'error');
+    { nomorHp, tempat, jumlah, tambahan: note, menus: collectMenusFromDom() },
+    {
+      proceedLabel: 'Tetap Simpan',
+      onCancel: resetSaveBtn,
+      onItemAdd: (entry) => {
+        if (typeof entry.price === 'number') addCustomMenuRow(entry.name, entry.quantity, entry.price);
+        else addMenuRow(entry.name, entry.quantity);
+      },
+      onProceed: async () => {
+        const updates = {
+          nama, nomorHp, date, jam,
+          jumlah: jumlah.toString(),
+          tempat, note,
+          menus: collectMenusFromDom(),
+          lastEditedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if (editCollection === 'reservations') {
+          updates.dp     = parseInt(document.getElementById('ef-dp').value) || 0;
+          updates.tipeDp = document.getElementById('ef-tipe-dp').value;
+        }
+        try {
+          await db.collection(editCollection).doc(editingDocId).update(updates);
+          closeEditModal();
+          Swal.fire({
+            icon: 'success', title: 'Tersimpan!',
+            text: 'Data reservasi ' + nama + ' berhasil diperbarui.',
+            timer: 2000, showConfirmButton: false
+          });
+          // Re-render will happen automatically via onSnapshot listeners
+        } catch(e) {
+          Swal.fire('Error', e.message, 'error');
+        }
+        resetSaveBtn();
       }
-      resetSaveBtn();
-    },
-    'edit-menu-rows',
-    resetSaveBtn
+    }
   );
 }
 
@@ -1753,12 +1801,12 @@ document.addEventListener('keydown', e => {
 // =========================================
 // ASISTEN AI: CEK KELENGKAPAN CATATAN
 // =========================================
-// Dipanggil sebelum menyimpan edit reservasi/request. Cloud Function yang
-// sama dipakai di app kalender admin (reservasids) -- 1 backend, dua
-// frontend, karena keduanya berbagi Firestore project reservasi-dolan-sawah.
-// Fail-open: kalau AI gagal/timeout, simpan tetap jalan tanpa peringatan.
+// Dipanggil sebelum menyimpan edit / mengirim WA chat / lanjut approve.
+// Cloud Function yang sama dipakai di app kalender admin (reservasids) --
+// 1 backend, dua frontend, karena keduanya berbagi Firestore project
+// reservasi-dolan-sawah. Fail-open: kalau AI gagal/timeout, aksi tetap
+// jalan tanpa peringatan.
 const AI_FUNCTIONS_BASE_URL = 'https://asia-southeast2-reservasi-dolan-sawah.cloudfunctions.net';
-let pendingAiCheckSaveCallback = null;
 let pendingAiItems = [];
 
 function escapeHtml(str) {
@@ -1767,7 +1815,13 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-function getCapacityForLocationNameAdmin(name) {
+// editLocations biasanya sudah diisi loadLocationsForModal() saat modal Edit
+// dibuka -- tapi Chat/Approve bisa terjadi TANPA pernah membuka modal Edit,
+// jadi di-load di sini juga kalau masih kosong.
+async function getCapacityForLocationNameAdmin(name) {
+  if (editLocations.length === 0) {
+    try { await loadLocationsForModal(); } catch (e) { /* fail-open, biar rule capacity dilewati */ }
+  }
   const loc = editLocations.find(l => l.name === name);
   return loc ? loc.capacity : null;
 }
@@ -1812,23 +1866,30 @@ function hideAiLoadingProgress() {
 }
 
 // reservationLike: { nomorHp, tempat, jumlah, tambahan, menus }
-// saveCallback: dipanggil kalau tidak ada temuan, atau admin pilih "Tetap Simpan"
-// onDecided: dipanggil segera setelah AI selesai (baik ada temuan atau gagal) --
-//   dipakai caller untuk reset tombol Simpan ke keadaan normal.
-async function runAiCompletenessCheck(reservationLike, saveCallback, menuContainerId, onDecided) {
+// opts.onProceed(): dipanggil kalau tidak ada temuan sama sekali, ATAU admin
+//   pilih tombol lanjut (label sesuai opts.proceedLabel) -- di sinilah aksi
+//   sesungguhnya (simpan / kirim WA / lanjut approve) benar-benar dijalankan.
+// opts.onItemAdd(entry): dipanggil setiap admin klik "Tambahkan" pada 1 item.
+//   entry = {name, quantity} (cocok menu asli) atau {name, quantity, price}
+//   (item custom). Popup TIDAK tertutup setelah ini -- admin bisa lengkapi
+//   beberapa item sekaligus sebelum klik tombol lanjut.
+// opts.onCancel(): dipanggil kalau admin pilih "Perbaiki Dulu"/tutup popup
+//   TANPA klik tombol lanjut (mis. reset tombol Simpan di form Edit).
+// opts.proceedLabel: teks tombol lanjut, default "Tetap Simpan".
+async function runAiCompletenessCheck(reservationLike, opts) {
+  const { onProceed, onItemAdd, onCancel, proceedLabel } = opts;
   showAiLoadingProgress();
   let result;
   try {
     result = await callAiFunction('checkReservationCompleteness', {
       reservation: reservationLike,
-      capacity: getCapacityForLocationNameAdmin(reservationLike.tempat),
+      capacity: await getCapacityForLocationNameAdmin(reservationLike.tempat),
       knownMenuNames: Object.keys(globalMenuPrices)
     });
   } catch (e) {
-    console.warn('Pengecekan AI tidak tersedia, lanjut simpan tanpa peringatan:', e);
+    console.warn('Pengecekan AI tidak tersedia, lanjut tanpa peringatan:', e);
     hideAiLoadingProgress();
-    if (onDecided) onDecided();
-    saveCallback();
+    onProceed();
     return;
   }
   hideAiLoadingProgress();
@@ -1837,18 +1898,43 @@ async function runAiCompletenessCheck(reservationLike, saveCallback, menuContain
   const aiItems = (result.tambahanAnalysis && result.tambahanAnalysis.items) || [];
 
   if (ruleFlags.length === 0 && aiItems.length === 0) {
-    saveCallback();
+    onProceed();
     return;
   }
 
-  if (onDecided) onDecided();
-  showAiCheckModal(ruleFlags, aiItems, saveCallback);
+  showAiCheckModal(ruleFlags, aiItems, { onProceed, onItemAdd, onCancel, proceedLabel });
 }
 
-function showAiCheckModal(ruleFlags, aiItems, saveCallback) {
-  pendingAiCheckSaveCallback = saveCallback;
+let pendingAiRuleFlags = [];
+let pendingAiAddedFlags = [];
+let pendingAiOnProceed = null;
+let pendingAiOnItemAdd = null;
+let pendingAiOnCancel = null;
+
+function showAiCheckModal(ruleFlags, aiItems, { onProceed, onItemAdd, onCancel, proceedLabel }) {
+  pendingAiRuleFlags = ruleFlags;
   pendingAiItems = aiItems;
+  pendingAiAddedFlags = aiItems.map(() => false);
+  pendingAiOnProceed = onProceed;
+  pendingAiOnItemAdd = onItemAdd;
+  pendingAiOnCancel = onCancel || null;
+
+  renderAiCheckModalContent();
+
+  const btn = document.getElementById('ai-check-save-anyway-btn');
+  btn.innerHTML = `<i class="fas fa-save"></i> ${escapeHtml(proceedLabel || 'Tetap Simpan')}`;
+  btn.onclick = () => {
+    closeAiCheckModalNoCancel();
+    pendingAiOnProceed();
+  };
+
+  document.getElementById('ai-check-modal-overlay').classList.add('show');
+}
+
+function renderAiCheckModalContent() {
   const content = document.getElementById('ai-check-content');
+  const ruleFlags = pendingAiRuleFlags;
+  const aiItems = pendingAiItems;
 
   let html = '';
   if (ruleFlags.length > 0) {
@@ -1858,6 +1944,13 @@ function showAiCheckModal(ruleFlags, aiItems, saveCallback) {
   if (aiItems.length > 0) {
     html += '<div style="font-size:0.72rem;font-weight:700;color:var(--primary-dark);text-transform:uppercase;letter-spacing:0.04em;margin:14px 0 6px;"><i class="fas fa-comment-dots"></i> Kemungkinan Menu Tambahan Belum Dihitung</div>';
     html += aiItems.map((item, idx) => {
+      if (pendingAiAddedFlags[idx]) {
+        return `
+        <div class="ai-item-card">
+          <div class="mentioned-text">"${escapeHtml(item.mentionedText || '')}"</div>
+          <div class="ai-item-inputs"><span style="color:var(--success);font-weight:700;font-size:0.82rem;"><i class="fas fa-check-circle"></i> Sudah ditambahkan</span></div>
+        </div>`;
+      }
       const qty = parseInt(item.suggestedQuantity) > 0 ? parseInt(item.suggestedQuantity) : 1;
       const matchedPrice = item.possibleMatch ? (globalMenuPrices[item.possibleMatch] || 0) : 0;
       return `
@@ -1874,32 +1967,37 @@ function showAiCheckModal(ruleFlags, aiItems, saveCallback) {
     }).join('');
   }
   content.innerHTML = html || '<p>Tidak ada catatan.</p>';
-
-  document.getElementById('ai-check-save-anyway-btn').onclick = () => {
-    closeAiCheckModal();
-    if (pendingAiCheckSaveCallback) pendingAiCheckSaveCallback();
-  };
-
-  document.getElementById('ai-check-modal-overlay').classList.add('show');
 }
 
-function closeAiCheckModal() {
+// Tutup popup TANPA menganggap ini "batal" -- dipakai saat tombol lanjut
+// (Tetap Simpan/Kirim/Lanjutkan) yang diklik, bukan saat admin benar-benar
+// membatalkan.
+function closeAiCheckModalNoCancel() {
   document.getElementById('ai-check-modal-overlay').classList.remove('show');
+}
+
+// Dipanggil dari tombol X / "Perbaiki Dulu" / klik di luar popup -- ini
+// pembatalan sungguhan (WA tidak dikirim, approve tidak lanjut, dst).
+function closeAiCheckModal() {
+  closeAiCheckModalNoCancel();
+  if (pendingAiOnCancel) pendingAiOnCancel();
 }
 
 // Dipanggil dari tombol "Tambahkan" per item di modal AI. Kalau item cocok
 // dengan menu asli (possibleMatch), harga ikut menu tsb & hanya jumlah yang
-// dipakai dari input. Kalau tidak cocok, admin isi harga manual di situ juga
-// -- item custom ini tetap ikut terhitung (lihat .custom-menu-row di saveEdit).
+// dipakai dari input. Kalau tidak cocok, admin isi harga manual di situ juga.
+// Popup TETAP TERBUKA setelah ini supaya admin bisa lengkapi item lain,
+// sampai klik tombol lanjut di footer.
 function addAiItemToForm(idx) {
   const item = pendingAiItems[idx];
-  if (!item) return;
+  if (!item || pendingAiAddedFlags[idx]) return;
 
   const qtyInput = document.getElementById(`ai-item-${idx}-qty`);
   const quantity = parseInt(qtyInput.value) || 1;
 
+  let entry;
   if (item.possibleMatch) {
-    addMenuRow(item.possibleMatch, quantity);
+    entry = { name: item.possibleMatch, quantity };
   } else {
     const priceInput = document.getElementById(`ai-item-${idx}-price`);
     const price = parseInt(priceInput.value) || 0;
@@ -1908,11 +2006,12 @@ function addAiItemToForm(idx) {
       Swal.fire({ icon:'warning', title:'Isi harga dulu', text:'Harga satuan wajib diisi sebelum menambahkan.', timer:2200, showConfirmButton:false });
       return;
     }
-    addCustomMenuRow(item.mentionedText, quantity, price);
+    entry = { name: item.mentionedText, quantity, price };
   }
 
-  closeAiCheckModal();
-  Swal.fire({ icon:'success', title:'Item ditambahkan', text:'Cek jumlah/harganya di form lalu simpan lagi.', timer:2200, showConfirmButton:false });
+  pendingAiAddedFlags[idx] = true;
+  pendingAiOnItemAdd(entry);
+  renderAiCheckModalContent();
 }
 </script>
 </body>
