@@ -1567,6 +1567,26 @@
       }
       else if(currentStep === 3) {
         if(Object.keys(selectedMenus).length === 0) return Swal.fire('Menu Kosong', 'Pilih minimal 1 menu.', 'warning');
+
+        // Menu kategori Prasmanan hanya ditandai badge "Min. order 20 porsi"
+        // di tampilan (getMenuNote) tapi tidak pernah benar-benar dicegah --
+        // customer bisa checkout dengan 1 porsi dan admin baru tahu belakangan.
+        const belowMinimum = Object.entries(selectedMenus).filter(([name, qty]) => {
+          const item = menusData[name];
+          return item && item.category === 'Prasmanan' && qty < 20;
+        });
+        if (belowMinimum.length > 0) {
+          const listHtml = belowMinimum
+            .map(([name, qty]) => `${escapeHtml(name)} (baru ${qty} porsi)`)
+            .join('<br>');
+          return Swal.fire({
+            icon: 'warning',
+            title: 'Minimal Order Prasmanan',
+            html: `Menu kategori Prasmanan minimal <b>20 porsi</b> per menu:<br>${listHtml}`,
+            confirmButtonColor: 'var(--primary)'
+          });
+        }
+
         document.getElementById('summaryDate').textContent = document.getElementById('displayDate').textContent;
         document.getElementById('summaryTime').textContent = document.getElementById('inputTime').value;
         document.getElementById('summaryPax').textContent = document.getElementById('inputPax').value + " Orang";
@@ -1578,7 +1598,16 @@
         const name = document.getElementById('inputName').value.trim();
         const phone = document.getElementById('inputPhone').value.trim();
         if(!name) return document.getElementById('groupName').classList.add('error');
-        if(!phone) return document.getElementById('groupPhone').classList.add('error');
+        const groupPhone = document.getElementById('groupPhone');
+        const phoneErrEl = groupPhone.querySelector('.error-msg');
+        if(!phone) {
+          if (phoneErrEl) phoneErrEl.textContent = 'Nomor wajib diisi.';
+          return groupPhone.classList.add('error');
+        }
+        if(!isValidPhoneFormat(phone)) {
+          if (phoneErrEl) phoneErrEl.textContent = 'Nomor HP tidak valid (isi angka saja, minimal 9 digit).';
+          return groupPhone.classList.add('error');
+        }
         submitReservation();
         return;
       }
@@ -1741,6 +1770,15 @@
       if (p.startsWith('0')) p = '62' + p.slice(1);
       if (!p.startsWith('62')) p = '62' + p;
       return p;
+    }
+
+    // Nomor HP Indonesia (lokal 08xx atau internasional 62xx) berisi 9-13
+    // digit selain kode negara/awalan 0 -- dipakai supaya input asal ("-",
+    // "123", huruf) tidak lolos dan merusak fitur WhatsApp (Chat admin,
+    // Asisten AI) yang bergantung pada nomor ini valid, bukan cuma "terisi".
+    function isValidPhoneFormat(phone) {
+      const digits = phone.replace(/\D/g, '');
+      return digits.length >= 9 && digits.length <= 15;
     }
 
     async function submitReservation() {
