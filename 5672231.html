@@ -1865,6 +1865,27 @@ function hideAiLoadingProgress() {
   setTimeout(() => { document.getElementById('ai-loading-overlay').classList.remove('show'); }, 250);
 }
 
+// Sama persis dengan buildRuleFlags di functions/index.js -- dihitung di sisi
+// klien juga supaya kalau ternyata tidak ada catatan untuk dianalisis AI,
+// hasilnya sudah langsung diketahui TANPA menunggu jaringan sama sekali.
+function buildRuleFlagsClient(reservation, capacity) {
+  const flags = [];
+  const r = reservation || {};
+  if (!r.nomorHp) {
+    flags.push({ field: 'nomorHp', severity: 'warning', message: 'Nomor HP kosong -- tidak bisa kirim konfirmasi/ucapan terima kasih via WhatsApp.' });
+  }
+  if ((r.dp || 0) > 0 && !r.tipeDp) {
+    flags.push({ field: 'tipeDp', severity: 'warning', message: 'DP diisi tapi tipe pembayaran DP belum dipilih.' });
+  }
+  if (!Array.isArray(r.menus) || r.menus.length === 0) {
+    flags.push({ field: 'menus', severity: 'warning', message: 'Belum ada paket menu dipilih -- estimasi total akan Rp0.' });
+  }
+  if (typeof capacity === 'number' && r.jumlah && r.jumlah > capacity) {
+    flags.push({ field: 'jumlah', severity: 'warning', message: `Jumlah peserta (${r.jumlah}) melebihi kapasitas tempat (${capacity} orang).` });
+  }
+  return flags;
+}
+
 // reservationLike: { nomorHp, tempat, jumlah, tambahan, menus }
 // opts.onProceed(): dipanggil kalau tidak ada temuan sama sekali, ATAU admin
 //   pilih tombol lanjut (label sesuai opts.proceedLabel) -- di sinilah aksi
@@ -1878,12 +1899,24 @@ function hideAiLoadingProgress() {
 // opts.proceedLabel: teks tombol lanjut, default "Tetap Simpan".
 async function runAiCompletenessCheck(reservationLike, opts) {
   const { onProceed, onItemAdd, onCancel, proceedLabel } = opts;
+  const capacity = await getCapacityForLocationNameAdmin(reservationLike.tempat);
+  const ruleFlags = buildRuleFlagsClient(reservationLike, capacity);
+  const note = (reservationLike.tambahan || '').trim();
+
+  // Tidak ada catatan untuk dianalisis -> tidak perlu hubungi server sama
+  // sekali (skip cold start + panggilan Gemini yang percuma).
+  if (!note) {
+    if (ruleFlags.length === 0) { onProceed(); return; }
+    showAiCheckModal(ruleFlags, [], { onProceed, onItemAdd, onCancel, proceedLabel });
+    return;
+  }
+
   showAiLoadingProgress();
   let result;
   try {
     result = await callAiFunction('checkReservationCompleteness', {
       reservation: reservationLike,
-      capacity: await getCapacityForLocationNameAdmin(reservationLike.tempat),
+      capacity,
       knownMenuNames: Object.keys(globalMenuPrices)
     });
   } catch (e) {
@@ -1894,7 +1927,6 @@ async function runAiCompletenessCheck(reservationLike, opts) {
   }
   hideAiLoadingProgress();
 
-  const ruleFlags = result.ruleFlags || [];
   const aiItems = (result.tambahanAnalysis && result.tambahanAnalysis.items) || [];
 
   if (ruleFlags.length === 0 && aiItems.length === 0) {
