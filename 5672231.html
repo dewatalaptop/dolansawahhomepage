@@ -1069,11 +1069,15 @@ function sendWaMessage(r, menus, note) {
 
   const ppn   = Math.round(totalFood * 0.1);
   const total = totalFood + ppn;
-  // OTS: DP flat 200.000 jika tidak ada menu pre-order atau tempat/via OTS
+  // OTS atau ada menu custom: DP minimal 200.000 (tetap naik ke 50% kalau
+  // 50%-nya lebih besar dari 200rb, bukan flat 200rb selalu).
   const isOTS_wa = (r.tempat || '').toUpperCase().includes('OTS')
                 || (r.via    || '').toUpperCase().includes('OTS')
                 || !(menus && menus.length > 0);
-  const dp    = isOTS_wa ? 200000 : Math.round(total * 0.5);
+  const hasCustomMenu_wa = (menus || []).some(m => typeof m.price === 'number');
+  const normalDp_wa = Math.round(total * 0.5);
+  const dp    = (isOTS_wa || hasCustomMenu_wa) ? Math.max(200000, normalDp_wa) : normalDp_wa;
+  const dpLabel_wa = dp === normalDp_wa ? 'DP 50%' : 'DP';
 
   const msg =
     `Halo Kak *${r.nama}* 👋\n` +
@@ -1091,7 +1095,7 @@ function sendWaMessage(r, menus, note) {
     `PPN (10%)     : Rp ${fmtIDR(ppn)}\n` +
     `*Total Tagihan : Rp ${fmtIDR(total)}*\n` +
     `─────────────────────\n\n` +
-    `Mohon lakukan pembayaran *DP 50%* sebesar:\n` +
+    `Mohon lakukan pembayaran *${dpLabel_wa}* sebesar:\n` +
     `👉 *Rp ${fmtIDR(dp)}*\n\n` +
     `Transfer ke:\n` +
     `🏦 *BNI* — *1993086184* a.n *CV Dolan Sawah*\n\n` +
@@ -1149,18 +1153,24 @@ async function showApproveDpDialog(id, r, menus) {
   const isOTS = (r.tempat || '').toUpperCase().includes('OTS')
              || (r.via    || '').toUpperCase().includes('OTS')
              || !(menus && menus.length > 0);
+  // Menu custom = item di luar master menu (dari Asisten AI / admin), dikenali
+  // dari price yang menempel langsung di item (lihat sendWaMessage di atas).
+  const hasCustomMenu = (menus || []).some(m => typeof m.price === 'number');
   let totalFood = 0;
   (menus || []).forEach(m => {
     const price = (typeof m.price === 'number') ? m.price : (globalMenuPrices[m.name] || 0);
     totalFood += price * m.quantity;
   });
-  const estDP = isOTS ? 200000
-              : Math.round((totalFood + Math.round(totalFood * 0.1)) * 0.5);
+  // OTS atau ada menu custom: DP minimal 200.000 (naik ke 50% kalau 50%-nya
+  // lebih besar, bukan flat 200rb selalu).
+  const isMinDp200k = isOTS || hasCustomMenu;
+  const normalDp = Math.round((totalFood + Math.round(totalFood * 0.1)) * 0.5);
+  const estDP = isMinDp200k ? Math.max(200000, normalDp) : normalDp;
 
   const { value: form } = await Swal.fire({
     title: `Setujui — ${r.nama}`,
     html: `
-      ${isOTS ? '<div style="background:#fff7ed;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px;margin-bottom:10px;font-size:0.8rem;color:#92400e;text-align:left;"><i class=\'fas fa-bolt\'></i> <b>OTS</b> — DP otomatis Rp 200.000</div>' : ''}
+      ${isMinDp200k ? `<div style="background:#fff7ed;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px;margin-bottom:10px;font-size:0.8rem;color:#92400e;text-align:left;"><i class='fas fa-bolt'></i> <b>${isOTS ? 'OTS' : 'Menu Custom'}</b> — DP minimal Rp 200.000</div>` : ''}
       <div style="text-align:left; margin-bottom:4px;">
         <label style="font-size:0.82rem; font-weight:600; color:#555;">Nominal DP (Rp)</label>
       </div>
