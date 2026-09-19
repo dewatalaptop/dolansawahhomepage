@@ -1071,10 +1071,18 @@ function sendWaMessage(r, menus, note) {
   const total = totalFood + ppn;
   // OTS atau ada menu custom: DP minimal 200.000 (tetap naik ke 50% kalau
   // 50%-nya lebih besar dari 200rb, bukan flat 200rb selalu).
-  const isOTS_wa = (r.tempat || '').toUpperCase().includes('OTS')
+  // "OTS" dan "Custom" adalah entri menu master (harga Rp 0 di Data Master —
+  // customer memilihnya sebagai penanda, bukan menu berharga sungguhan), jadi
+  // dideteksi dari NAMA menu yang dipilih, bukan dari field tempat/via (yang
+  // selalu "Web App V9"/nama lokasi asli, tidak pernah berisi teks "OTS").
+  const hasOTSMenu_wa = (menus || []).some(m => (m.name || '').trim().toUpperCase() === 'OTS');
+  const isOTS_wa = hasOTSMenu_wa
+                || (r.tempat || '').toUpperCase().includes('OTS')
                 || (r.via    || '').toUpperCase().includes('OTS')
                 || !(menus && menus.length > 0);
-  const hasCustomMenu_wa = (menus || []).some(m => typeof m.price === 'number');
+  const hasCustomMenu_wa = (menus || []).some(m =>
+    typeof m.price === 'number' || (m.name || '').trim().toUpperCase() === 'CUSTOM'
+  );
   const normalDp_wa = Math.round(total * 0.5);
   const dp    = (isOTS_wa || hasCustomMenu_wa) ? Math.max(200000, normalDp_wa) : normalDp_wa;
   const dpLabel_wa = dp === normalDp_wa ? 'DP 50%' : 'DP';
@@ -1149,13 +1157,21 @@ async function approveRequest(id) {
 
 async function showApproveDpDialog(id, r, menus) {
   // hitung estimasi DP
-  // OTS = On The Spot: tempat/via mengandung 'OTS' atau tidak ada pre-order menu
-  const isOTS = (r.tempat || '').toUpperCase().includes('OTS')
+  // OTS = customer memilih menu master "OTS" (harga Rp 0, penanda "on the
+  // spot" di Data Master) — atau tempat/via mengandung 'OTS', atau tidak ada
+  // pre-order menu sama sekali. Dicek dari NAMA menu, bukan cuma tempat/via,
+  // karena tempat/via yang sebenarnya tidak pernah berisi teks "OTS".
+  const hasOTSMenu = (menus || []).some(m => (m.name || '').trim().toUpperCase() === 'OTS');
+  const isOTS = hasOTSMenu
+             || (r.tempat || '').toUpperCase().includes('OTS')
              || (r.via    || '').toUpperCase().includes('OTS')
              || !(menus && menus.length > 0);
-  // Menu custom = item di luar master menu (dari Asisten AI / admin), dikenali
-  // dari price yang menempel langsung di item (lihat sendWaMessage di atas).
-  const hasCustomMenu = (menus || []).some(m => typeof m.price === 'number');
+  // Menu custom = item di luar master menu (dari Asisten AI / admin, dikenali
+  // dari price yang menempel langsung di item — lihat sendWaMessage di atas)
+  // ATAU customer memilih menu master "Custom" (harga Rp 0 di Data Master).
+  const hasCustomMenu = (menus || []).some(m =>
+    typeof m.price === 'number' || (m.name || '').trim().toUpperCase() === 'CUSTOM'
+  );
   let totalFood = 0;
   (menus || []).forEach(m => {
     const price = (typeof m.price === 'number') ? m.price : (globalMenuPrices[m.name] || 0);
