@@ -1225,6 +1225,10 @@ async function showApproveDpDialog(id, r, menus) {
         approvedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
       delete data.id;
+      // Website utama (reservasids) hanya membaca `tambahan`. Catatan bisa saja
+      // tersimpan di `note` (hasil Edit sebelumnya) -- satukan ke `tambahan`.
+      data.tambahan = r.note || r.catatan || r.pesan || r.tambahan || '';
+      delete data.note; delete data.catatan; delete data.pesan;
       await db.collection('reservations').add(data);
       await db.collection('reservation_requests').doc(id).delete();
       unmarkChatted(id);
@@ -1780,7 +1784,12 @@ async function saveEdit() {
         const updates = {
           nama, nomorHp, date, jam,
           jumlah: jumlah.toString(),
-          tempat, note,
+          tempat,
+          // Catatan disimpan di field `tambahan` (dibaca website utama reservasids
+          // & form reservasimandiri). Field `note` lama dihapus supaya tidak ada
+          // dua versi catatan yang saling bertentangan.
+          tambahan: note,
+          note: firebase.firestore.FieldValue.delete(),
           menus: collectMenusFromDom(),
           lastEditedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
