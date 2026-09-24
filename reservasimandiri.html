@@ -192,6 +192,29 @@
       z-index: 10;
     }
 
+    /* Branding kecil di akhir konten — ditaruh di alur normal (bukan fixed)
+       karena bottom-bar reservasi sudah memenuhi seluruh bagian bawah layar;
+       body sudah punya padding-bottom:110px jadi ini selalu tampil di atas
+       bottom-bar, tidak pernah tertutup. */
+    #nuvora-branding {
+      display: block;
+      width: fit-content;
+      margin: 22px auto 0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      color: rgba(44,26,8,0.55);
+      text-decoration: none;
+      background: rgba(255,255,255,0.30);
+      backdrop-filter: var(--blur-sm, blur(10px));
+      -webkit-backdrop-filter: var(--blur-sm, blur(10px));
+      border: 1px solid var(--glass-border);
+      padding: 4px 13px;
+      border-radius: 20px;
+      transition: color 0.2s, background 0.2s;
+    }
+    #nuvora-branding:hover { color: var(--text); background: rgba(255,255,255,0.46); }
+
     /* ─────────────────────────────────────────────
        CARD  —  Glass morphism
     ───────────────────────────────────────────── */
@@ -1229,6 +1252,8 @@
     </div>
   </div>
 </div>
+
+  <a id="nuvora-branding" href="https://www.nuvora-systems.com" target="_blank" rel="noopener noreferrer">by Nuvora Systems</a>
 
   </div>
 
