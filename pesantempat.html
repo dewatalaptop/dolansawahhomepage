@@ -697,6 +697,19 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
     scroll-behavior: auto !important;
   }
 }
+
+/* Branding kecil di bawah, tampil di semua tampilan halaman ini.
+   Halaman ini tidak punya bottom-bar/tombol mengambang aktif, jadi aman
+   dipasang fixed di bawah tengah (sama seperti index.html). */
+#nuvora-branding {
+  position: fixed; bottom: 6px; left: 50%; transform: translateX(-50%);
+  z-index: 1500; font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
+  color: rgba(255,255,255,0.75); text-decoration: none;
+  background: rgba(0,0,0,0.28); padding: 3px 11px; border-radius: 20px;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  transition: color 0.2s, background 0.2s;
+}
+#nuvora-branding:hover { color: #fff; background: rgba(0,0,0,0.45); }
   </style>
 
 </head>
@@ -708,6 +721,8 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
       <small>Dolan Sawah RSVP System</small>
     </div>
   </header>
+
+  <a id="nuvora-branding" href="https://www.nuvora-systems.com" target="_blank" rel="noopener noreferrer">by Nuvora Systems</a>
 
   <div class="main-container">
 
