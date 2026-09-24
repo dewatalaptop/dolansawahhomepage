@@ -213,6 +213,17 @@
         }
         #floating-member-button img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
+        /* Branding kecil di bawah, tampil di semua halaman */
+        #nuvora-branding {
+            position: fixed; bottom: 6px; left: 50%; transform: translateX(-50%);
+            z-index: 3400; font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
+            color: rgba(255,255,255,0.75); text-decoration: none;
+            background: rgba(0,0,0,0.28); padding: 3px 11px; border-radius: 20px;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            transition: color 0.2s, background 0.2s;
+        }
+        #nuvora-branding:hover { color: #fff; background: rgba(0,0,0,0.45); }
+
         /* =========================================
            MENU RESERVASI PAGE
            ========================================= */
@@ -536,6 +547,7 @@
     <a id="floating-member-button" href="https://www.dolansawah.my.id/daftarmember.html" target="_blank" rel="noopener noreferrer">
         <img id="member-btn-img" src="" alt="Tombol Member Area">
     </a>
+    <a id="nuvora-branding" href="https://www.nuvora-systems.com" target="_blank" rel="noopener noreferrer">by Nuvora Systems</a>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -614,6 +626,48 @@
        BROKEN IMAGE PLACEHOLDER (FIX #4)
        ============================================================ */
     const PLACEHOLDER_SVG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23ffe0b2'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='32' fill='%23ff8c42'%3E🌾%3C/text%3E%3C/svg%3E";
+
+    /* ============================================================
+       CLOUDINARY URL OPTIMIZER (loads popups/photos much faster)
+       ============================================================
+       Foto default situs ini di-host di Cloudinary, yang bisa mengubah
+       ukuran/format gambar lewat URL saja (tanpa upload ulang). Foto baru
+       yang diupload lewat panel admin disimpan di Firebase Storage, yang
+       TIDAK punya fitur ini — fungsi ini otomatis mengenali dan membiarkan
+       URL Firebase Storage apa adanya, supaya aman dipakai di semua tempat.
+       Kalau URL Cloudinary sudah punya transformasi sendiri (mis. paket
+       Jeep yang sudah diatur w_400 dari awal), dibiarkan juga — tidak
+       ditumpuk dua kali. */
+    function optimizeImageUrl(url, width) {
+        if (!url || typeof url !== 'string') return url;
+        const marker = '/upload/';
+        const mi = url.indexOf(marker);
+        if (!url.includes('res.cloudinary.com') || mi === -1) return url;
+        const i = mi + marker.length;
+        const firstSegment = url.slice(i).split('/')[0];
+        const alreadyTransformed = !/^v\d+$/.test(firstSegment); // "v1234567" = belum ada transformasi
+        if (alreadyTransformed) return url;
+        return url.slice(0, i) + `f_auto,q_auto,w_${width}/` + url.slice(i);
+    }
+
+    /* Popup menu (Jeep Adventure, dsb) dimuat instan saat diklik: gambarnya
+       sudah didownload browser di latar belakang begitu halaman selesai
+       render, bukan baru mulai download saat popup dibuka. Pakai
+       requestIdleCallback supaya tidak berebut bandwidth dengan foto utama
+       yang tampil duluan (header, slideshow). */
+    function preloadPopupImages(data) {
+        if (!data || !data.menuPopups) return;
+        const run = () => {
+            Object.values(data.menuPopups).forEach(p => {
+                if (p && p.active && p.image) {
+                    const img = new Image();
+                    img.src = optimizeImageUrl(p.image, 900);
+                }
+            });
+        };
+        if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 2500 });
+        else setTimeout(run, 300);
+    }
 
     function addImgErrorHandler(img) {
         img.onerror = function() {
@@ -788,16 +842,16 @@
     function renderWebsite(data) {
         if (data.general) {
             const headerImg = document.getElementById('header-main-img');
-            headerImg.src   = data.general.headerImage  || '';
+            headerImg.src   = optimizeImageUrl(data.general.headerImage, 1200)  || '';
             addImgErrorHandler(headerImg);
             headerImg.onload = syncHeaderHeight; // FIX #5: sync setelah gambar load
 
             const frameImg  = document.getElementById('overlay-frame-img');
-            frameImg.src    = data.general.overlayImage || '';
+            frameImg.src    = optimizeImageUrl(data.general.overlayImage, 1200) || '';
             addImgErrorHandler(frameImg);
 
             const memberImg = document.getElementById('member-btn-img');
-            memberImg.src   = data.general.memberBtnImage || '';
+            memberImg.src   = optimizeImageUrl(data.general.memberBtnImage, 200) || '';
             addImgErrorHandler(memberImg);
 
             // FIX #11: jadwal dari Firestore
@@ -813,7 +867,7 @@
         if (data.slideshow && data.slideshow.length > 0) {
             data.slideshow.forEach((url, i) => {
                 const img     = document.createElement('img');
-                img.src       = url;
+                img.src       = optimizeImageUrl(url, 1000);
                 img.alt       = 'Foto suasana Dolan Sawah ' + (i + 1);
                 img.className = 'slide-image' + (i === 0 ? ' active' : '');
                 img.loading   = i === 0 ? 'eager' : 'lazy';
@@ -837,7 +891,7 @@
                 div.addEventListener('click', () => openPopup(item.title, item.desc));
 
                 const img    = document.createElement('img');
-                img.src      = item.image;
+                img.src      = optimizeImageUrl(item.image, 500);
                 img.alt      = item.title;
                 img.loading  = 'lazy';
                 addImgErrorHandler(img); // FIX #4
@@ -856,7 +910,8 @@
             const frag = document.createDocumentFragment();
             data.gallery.forEach(url => {
                 const img    = document.createElement('img');
-                img.src      = url;
+                img.src      = optimizeImageUrl(url, 500); // thumbnail grid — kecil biar cepat dimuat
+                img.dataset.fullSrc = url; // dipakai openFullscreen() supaya versi besar tetap tajam
                 img.loading  = 'lazy';
                 addImgErrorHandler(img); // FIX #4
                 img.addEventListener('click', function() { openFullscreen(this); });
@@ -876,7 +931,7 @@
                 card.addEventListener('click', () => openFullscreenImage(pkg.image));
 
                 const img       = document.createElement('img');
-                img.src         = pkg.image;
+                img.src         = optimizeImageUrl(pkg.image, 500);
                 img.loading     = 'lazy';
                 addImgErrorHandler(img); // FIX #4
 
@@ -940,6 +995,10 @@
 
         // FIX #5: sync header height setelah semua render
         requestAnimationFrame(syncHeaderHeight);
+
+        // Preload gambar popup menu (Jeep Adventure, dsb) di latar belakang
+        // supaya saat diklik nanti gambarnya sudah ada di cache browser.
+        preloadPopupImages(data);
     }
 
     // XSS guard — tetap dipakai di admin form
@@ -1218,11 +1277,49 @@
     /* ============================================================
        FILE UPLOAD
        ============================================================ */
-    window.uploadFile = async (input, type, key) => {
-        const file = input.files[0];
-        if (!file) return;
+    /* Sebagian besar foto sekarang tersimpan di Firebase Storage (bukan
+       Cloudinary lagi), yang tidak bisa diubah ukurannya lewat URL —
+       satu-satunya cara membuat foto baru tetap cepat dimuat pengunjung
+       adalah mengecilkannya SEBELUM diupload. Foto HP biasanya 3000-4000px;
+       dikecilkan ke maxDim di sini sudah lebih dari cukup untuk layar apa
+       pun, dan ukuran filenya turun drastis (sering 5-10x lebih kecil).
+       Kalau proses ini gagal (format aneh, browser lama), file asli tetap
+       diupload apa adanya — upload tidak pernah gagal gara-gara ini. */
+    function compressImageForUpload(file, maxDim = 1600, quality = 0.82) {
+        return new Promise((resolve) => {
+            if (!file.type || !file.type.startsWith('image/') || file.type === 'image/svg+xml') {
+                resolve(file);
+                return;
+            }
+            const objectUrl = URL.createObjectURL(file);
+            const img = new Image();
+            img.onload = () => {
+                URL.revokeObjectURL(objectUrl);
+                let { width, height } = img;
+                if (width <= maxDim && height <= maxDim) { resolve(file); return; } // sudah cukup kecil
+                const scale = maxDim / Math.max(width, height);
+                width  = Math.round(width * scale);
+                height = Math.round(height * scale);
+                const canvas = document.createElement('canvas');
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) { resolve(file); return; }
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob((blob) => {
+                    if (!blob) { resolve(file); return; }
+                    resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }));
+                }, 'image/jpeg', quality);
+            };
+            img.onerror = () => { URL.revokeObjectURL(objectUrl); resolve(file); };
+            img.src = objectUrl;
+        });
+    }
 
-        if (file.size > 5 * 1024 * 1024) {
+    window.uploadFile = async (input, type, key) => {
+        const rawFile = input.files[0];
+        if (!rawFile) return;
+
+        if (rawFile.size > 5 * 1024 * 1024) {
             alert("Ukuran file maksimal 5MB. Silakan kompres gambar terlebih dahulu.");
             input.value = '';
             return;
@@ -1230,8 +1327,12 @@
 
         const btnSave = document.querySelector('.btn-save');
         btnSave.disabled  = true;
-        btnSave.innerText = "UPLOADING...";
+        btnSave.innerText = "MENGOPTIMALKAN...";
         try {
+            // Popup menu ditampilkan lebih kecil di layar HP, jadi cukup dikecilkan
+            // lebih agresif; foto lain (header, galeri, dst) dijaga tetap tajam.
+            const file = await compressImageForUpload(rawFile, type === 'menuPopup' ? 1000 : 1600);
+            btnSave.innerText = "UPLOADING...";
             const storageRef = ref(storage, `uploads_v4/${type}_${Date.now()}_${file.name}`);
             const snapshot   = await uploadBytes(storageRef, file);
             const url        = await getDownloadURL(snapshot.ref);
@@ -1331,9 +1432,9 @@
     /* ── Modals & Popups ── */
     const menuPopup    = document.getElementById('menu-image-popup');
     const menuPopupImg = document.getElementById('menu-popup-img');
-    window.openMenuPopup       = (url) => { menuPopupImg.src = url; menuPopup.style.display = 'flex'; };
+    window.openMenuPopup       = (url) => { menuPopupImg.src = optimizeImageUrl(url, 900); menuPopup.style.display = 'flex'; };
     window.closeMenuPopup      = ()    => { menuPopup.style.display = 'none'; };
-    window.openFullscreen      = (img) => { document.getElementById('fullscreen-img').src = img.src; document.getElementById('fullscreen-modal').classList.add('show'); };
+    window.openFullscreen      = (img) => { document.getElementById('fullscreen-img').src = img.dataset.fullSrc || img.src; document.getElementById('fullscreen-modal').classList.add('show'); };
     window.openFullscreenImage = (url) => { document.getElementById('fullscreen-img').src = url; document.getElementById('fullscreen-modal').classList.add('show'); };
     window.closeFullscreen     = ()    => document.getElementById('fullscreen-modal').classList.remove('show');
 
