@@ -3,7 +3,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Viewer Reservasi Dolan Sawah</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,6 +33,14 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Tanda fokus default untuk navigasi keyboard — sebagian tombol/link di
+   halaman ini sebelumnya cuma punya state :active (sentuh/klik), jadi
+   pengguna keyboard tidak tahu elemen mana yang sedang aktif. */
+a:focus-visible, button:focus-visible {
+  outline: 2.5px solid var(--primary);
+  outline-offset: 2px;
 }
 
 html, body { height: 100%; }
@@ -208,6 +216,12 @@ header {
   transition: transform 0.15s ease;
 }
 .day-cell:active { transform: scale(0.90); }
+.day-cell:hover  { background: rgba(255,255,255,0.40); }
+.day-cell:focus-visible {
+  outline: 2.5px solid #fff;
+  outline-offset: 2px;
+  background: rgba(255,255,255,0.42);
+}
 
 .day-num {
   font-weight: 700;
@@ -286,14 +300,17 @@ header {
   padding: 28px 22px;
   text-align: center;
   box-shadow: 0 16px 48px rgba(0,0,0,0.20);
-  border-top: 5px solid var(--danger);
+  /* Oranye (--highlight), bukan merah (--danger) — pesannya sebenarnya
+     kabar baik (tempat masih ada untuk walk-in), cuma kuota reservasi
+     yang penuh. Merah/tanda seru membuatnya terbaca seperti error. */
+  border-top: 5px solid var(--highlight);
   animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.info-popup-icon { font-size: 2.8rem; color: var(--danger); margin-bottom: 12px; }
+.info-popup-icon { font-size: 2.8rem; color: var(--highlight); margin-bottom: 12px; }
 .info-popup-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 9px; }
 .info-popup-text { font-size: 0.84rem; color: #555; line-height: 1.58; margin-bottom: 22px; }
 .info-popup-btn {
-  background: var(--danger); color: white; border: none;
+  background: var(--highlight); color: white; border: none;
   padding: 13px 28px; border-radius: 50px; font-weight: 700;
   cursor: pointer; font-size: 0.90rem; width: 100%;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -630,9 +647,11 @@ header {
   color: white; font-size: 1.6rem; cursor: pointer;
   background: rgba(255,255,255,0.14);
   width: 44px; height: 44px;
+  padding: 0;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(255,255,255,0.22);
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .btn-close-modal {
@@ -646,8 +665,6 @@ header {
 }
 
 /* ── ADMIN ── */
-.floating-admin { display: none !important; }
-
 .admin-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.52);
@@ -703,7 +720,10 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
    dipasang fixed di bawah tengah (sama seperti index.html). */
 #nuvora-branding {
   position: fixed; bottom: 6px; left: 50%; transform: translateX(-50%);
-  z-index: 1500; font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
+  /* Rendah sengaja — harus tetap di BAWAH semua overlay/modal halaman ini
+     (detail-overlay:1000, admin:2000, popup:2500, image-modal:3000), cuma
+     perlu tampil di atas konten biasa (header:100, main-container:10). */
+  z-index: 50; font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
   color: rgba(255,255,255,0.75); text-decoration: none;
   background: rgba(0,0,0,0.28); padding: 3px 11px; border-radius: 20px;
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -764,12 +784,10 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
 
   </div>
 
-  <div class="floating-admin" id="adminBtn"><i class="fas fa-lock"></i></div>
-
   <!-- Detail Sheet -->
 
   <div class="detail-overlay" id="detailOverlay">
-    <div class="detail-sheet" id="detailSheet">
+    <div class="detail-sheet" id="detailSheet" role="dialog" aria-modal="true" aria-label="Detail reservasi">
       <div class="pulsing-badge">Tempat non reservasi tersedia</div>
       <div class="sheet-handle"></div>
       <div class="sheet-header">
@@ -789,9 +807,9 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
 
   <!-- Warning Popup -->
 
-  <div class="info-popup-overlay" id="fullWarningPopup">
+  <div class="info-popup-overlay" id="fullWarningPopup" role="alertdialog" aria-modal="true" aria-label="Peringatan kuota reservasi">
     <div class="info-popup-content">
-      <div class="info-popup-icon"><i class="fas fa-exclamation-circle"></i></div>
+      <div class="info-popup-icon"><i class="fas fa-info-circle"></i></div>
       <div class="info-popup-title">Tempat masih tersedia untuk walk in</div>
       <div class="info-popup-text">
         Tempat Masih Tersedia! Namun Kuota Reservasi untuk tanggal ini sudah penuh.
@@ -804,8 +822,8 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
 
   <!-- Image Modal -->
 
-  <div class="img-modal-overlay" id="imgModal">
-    <span class="close-img" id="btnCloseImg">&times;</span>
+  <div class="img-modal-overlay" id="imgModal" role="dialog" aria-modal="true" aria-label="Foto lokasi">
+    <button type="button" class="close-img" id="btnCloseImg" aria-label="Tutup gambar">&times;</button>
     <img class="img-modal-content" id="imgTarget" alt="">
     <div class="img-caption" id="imgCaption"></div>
     <button class="btn-close-modal" id="btnCloseModal">
@@ -815,7 +833,7 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
 
   <!-- Admin -->
 
-  <div class="admin-overlay" id="adminOverlay">
+  <div class="admin-overlay" id="adminOverlay" role="dialog" aria-modal="true" aria-label="Kontrol admin">
     <div class="admin-modal">
       <h3 style="margin-top:0;text-align:center;color:var(--primary-dark);margin-bottom:16px;">
         <i class="fas fa-shield-alt"></i> Kontrol Manual
@@ -860,7 +878,11 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
   const auth = firebase.auth();
   db.enablePersistence({ synchronizeTabs: false }).catch(() => {});
 
-  const DEFAULT_IMG = "https://via.placeholder.com/300x200?text=Lokasi";
+  // SVG inline, bukan via.placeholder.com — placeholder pihak ketiga itu
+  // pernah down sebelumnya (dipakai di project lain di bawah Nuvora Systems),
+  // dan kalaupun tidak, tetap satu request jaringan ekstra untuk sesuatu
+  // yang bisa digambar langsung. Selalu tersedia, tidak pernah gagal load.
+  const DEFAULT_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23bed0cc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='42' fill='%232a9d8f'%3E%F0%9F%8C%BE%3C/text%3E%3C/svg%3E";
   const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
   let curMonth   = new Date().getMonth();
@@ -959,26 +981,39 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
 
       const el = document.createElement('div');
       el.className = 'day-cell';
+      // Bisa dioperasikan keyboard — sebelumnya <div> ini cuma bisa diklik
+      // mouse/sentuh, sama sekali tidak bisa dijangkau lewat Tab/Enter.
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
       let html = `<span class="day-num">${d}</span>`;
 
       if (full) {
         el.classList.add('is-full');
         html += `<div class="res-indicator"><div class="res-count">${tot > 0 ? tot : 'FULL'}</div></div>`;
+        el.setAttribute('aria-label', `${d} ${MONTHS[curMonth]}, reservasi penuh${tot > 0 ? ', ' + tot + ' tamu' : ''}`);
       } else if (isT) {
         el.classList.add('today');
         if (list.length) html += `<div class="res-indicator"><div class="res-count">${tot}</div></div>`;
+        el.setAttribute('aria-label', `${d} ${MONTHS[curMonth]}, hari ini${list.length ? ', ' + tot + ' tamu' : ''}`);
       } else if (list.length) {
         el.classList.add('has-res');
         html += `<div class="res-indicator"><div class="res-count">${tot}</div></div>`;
+        el.setAttribute('aria-label', `${d} ${MONTHS[curMonth]}, ${tot} tamu`);
+      } else {
+        el.setAttribute('aria-label', `${d} ${MONTHS[curMonth]}, belum ada reservasi`);
       }
 
       el.innerHTML = html;
 
       ;(function(day, lst, isFull) {
-        el.addEventListener('click', () => {
+        const activate = () => {
           if (isFull) { pendingDay = { day, lst }; $('fullWarningPopup').style.display = 'flex'; }
           else openDetail(day, lst, false);
-        }, { passive: true });
+        };
+        el.addEventListener('click', activate, { passive: true });
+        el.addEventListener('keydown', e => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+        });
       })(d, list, full);
 
       frag.appendChild(el);
@@ -1005,7 +1040,12 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
       grouped[loc].push(r);
     });
 
-    const allLocs = Array.from(new Set([...Object.keys(locImg), ...Object.keys(locCap)])).sort();
+    // Termasuk nama tempat yang MUNCUL di reservasi tapi tidak (lagi) ada
+    // di koleksi "locations" (typo, tempat dihapus/diganti nama, dll) —
+    // sebelumnya reservasi seperti ini hilang tanpa jejak dari tampilan
+    // (total tamu di atas tetap benar, tapi tidak ada kartu yang
+    // menampilkannya), padahal datanya sebenarnya ada.
+    const allLocs = Array.from(new Set([...Object.keys(locImg), ...Object.keys(locCap), ...Object.keys(grouped)])).sort();
     const frag    = document.createDocumentFragment();
     const imgQueue = []; // antrian gambar untuk load
 
@@ -1067,6 +1107,7 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
       const viewBtn = document.createElement('button');
       viewBtn.className = 'btn-view-photo';
       viewBtn.type = 'button';
+      viewBtn.setAttribute('aria-label', `Perbesar foto ${loc}`);
       viewBtn.innerHTML = '<i class="fas fa-expand-alt"></i>';
 
       // Closure untuk capture URL & nama lokasi
@@ -1253,6 +1294,16 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
 
     $('markFullBtn').addEventListener('click',      () => setStatus(true));
     $('markAvailableBtn').addEventListener('click', () => setStatus(false));
+
+    // Esc menutup overlay yang sedang terbuka — sebelumnya cuma bisa
+    // ditutup dengan klik di luar/tombol, pengguna keyboard terjebak.
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      if ($('imgModal').classList.contains('show'))        { closeModal(); return; }
+      if ($('adminOverlay').classList.contains('show'))    { $('adminOverlay').classList.remove('show'); return; }
+      if ($('fullWarningPopup').style.display === 'flex')  { $('fullWarningPopup').style.display = 'none'; return; }
+      if ($('detailOverlay').classList.contains('active'))   $('detailOverlay').classList.remove('active');
+    });
   }
   </script>
 
