@@ -362,16 +362,19 @@ header {
 .detail-sheet.red-mode .sheet-header { border-bottom: 2px solid var(--danger); }
 .detail-sheet.red-mode .sheet-date { color: var(--danger) !important; }
 
+/* Pita pengingat, BUKAN pil mengambang lagi — sebelumnya position:absolute
+   di dalam .detail-sheet (tinggi tetap, isi bisa discroll), jadi dia
+   nempel di satu titik layar dan menimpa kartu lokasi/tombol akordeon
+   apa pun yang kebetulan lewat di baliknya saat daftar discroll. Sekarang
+   elemen alur biasa (flex child .detail-sheet, sejajar dgn sheet-header/
+   sheet-content) — punya baris sendiri, tidak pernah menutupi apa pun,
+   dan ikut "flex-shrink:0" jadi tetap terlihat walau daftar discroll.*/
 .pulsing-badge {
-  position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
   background: var(--danger); color: white;
-  padding: 8px 20px; border-radius: 28px;
-  font-weight: 700; font-size: 0.86rem;
-  box-shadow: 0 3px 14px rgba(192,57,43,0.40);
+  padding: 8px 16px; text-align: center;
+  font-weight: 700; font-size: 0.8rem;
   animation: pulseFade 2s ease-in-out infinite;
-  z-index: 100; pointer-events: none;
-  display: none; white-space: nowrap;
-  border: 2px solid white;
+  flex-shrink: 0; display: none;
 }
 .detail-sheet.red-mode .pulsing-badge { display: block; }
 
@@ -407,7 +410,10 @@ header {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 16px 14px 80px;
+  /* 80px dulu disediakan khusus supaya pulsing-badge (dulu mengambang)
+     tidak menimpa kartu terakhir — sekarang badge itu baris sendiri di
+     atas, jadi ruang kosong berlebih ini tidak perlu lagi. */
+  padding: 16px 14px 20px;
 }
 
 #locGrid {
@@ -715,21 +721,24 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
   }
 }
 
-/* Branding kecil di bawah, tampil di semua tampilan halaman ini.
-   Halaman ini tidak punya bottom-bar/tombol mengambang aktif, jadi aman
-   dipasang fixed di bawah tengah (sama seperti index.html). */
+/* Branding kecil di akhir konten — sengaja BUKAN position:fixed lagi.
+   Halaman ini (kalender sebulan penuh) bisa jauh lebih tinggi dari satu
+   layar, apalagi di HP — badge fixed sebelumnya menempel di layar dan ikut
+   menimpa baris kalender/legenda apa pun yang lewat di bawahnya saat
+   discroll. Ditaruh di alur normal (elemen terakhir halaman) supaya cuma
+   pernah muncul sekali, di ujung bawah asli, tidak pernah menutupi apa pun. */
 #nuvora-branding {
-  position: fixed; bottom: 6px; left: 50%; transform: translateX(-50%);
-  /* Rendah sengaja — harus tetap di BAWAH semua overlay/modal halaman ini
-     (detail-overlay:1000, admin:2000, popup:2500, image-modal:3000), cuma
-     perlu tampil di atas konten biasa (header:100, main-container:10). */
-  z-index: 50; font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
+  display: block;
+  width: fit-content;
+  margin: 22px auto 0;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.2px;
   color: rgba(255,255,255,0.75); text-decoration: none;
-  background: rgba(0,0,0,0.28); padding: 3px 11px; border-radius: 20px;
+  background: rgba(0,0,0,0.20); padding: 4px 13px; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.28);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   transition: color 0.2s, background 0.2s;
 }
-#nuvora-branding:hover { color: #fff; background: rgba(0,0,0,0.45); }
+#nuvora-branding:hover { color: #fff; background: rgba(0,0,0,0.38); }
   </style>
 
 </head>
@@ -741,8 +750,6 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
       <small>Dolan Sawah RSVP System</small>
     </div>
   </header>
-
-  <a id="nuvora-branding" href="https://www.nuvora-systems.com" target="_blank" rel="noopener noreferrer">by Nuvora Systems</a>
 
   <div class="main-container">
 
@@ -782,13 +789,14 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
   </a>
 </div>
 
+<a id="nuvora-branding" href="https://www.nuvora-systems.com" target="_blank" rel="noopener noreferrer">by Nuvora Systems</a>
+
   </div>
 
   <!-- Detail Sheet -->
 
   <div class="detail-overlay" id="detailOverlay">
     <div class="detail-sheet" id="detailSheet" role="dialog" aria-modal="true" aria-label="Detail reservasi">
-      <div class="pulsing-badge">Tempat non reservasi tersedia</div>
       <div class="sheet-handle"></div>
       <div class="sheet-header">
         <button class="btn-back" id="btnBack">
@@ -799,6 +807,7 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
           <span class="sheet-stats" id="sheetStats">...</span>
         </div>
       </div>
+      <div class="pulsing-badge">Tempat non reservasi tersedia</div>
       <div class="sheet-content">
         <div id="locGrid"></div>
       </div>
