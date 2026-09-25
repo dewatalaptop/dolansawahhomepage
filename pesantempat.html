@@ -111,7 +111,12 @@ header {
   margin: -24px auto 0;
   padding: 0 14px;
   position: relative;
-  z-index: 10;
+  /* Sengaja LEBIH TINGGI dari z-index header (100) — .main-container
+     ditarik naik -24px supaya kartu "Info Reservasi" mengambang sedikit
+     di atas header (efek layar berlapis yang disengaja). Sebelumnya
+     z-index-nya (10) lebih RENDAH dari header, jadi malah header yang
+     menang dan menutupi 24px bagian atas kartu itu — bukan sebaliknya. */
+  z-index: 150;
 }
 
 /* ── INFO CARD ── */
