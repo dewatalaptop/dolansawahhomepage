@@ -157,6 +157,18 @@
         .bg-green  { background: linear-gradient(135deg, rgba(56,176,0,0.82), rgba(30,120,0,0.90)); }
         .bg-blue   { background: linear-gradient(135deg, rgba(33,150,243,0.85), rgba(25,118,210,0.92)); }
 
+        /* Lencana kecil "BARU" di pojok kartu menu -- pakai bahasa visual pill emas
+           yang sama dengan .item-price di halaman menu reguler, supaya terasa satu
+           sistem, bukan elemen baru yang asing. */
+        .card-badge {
+            position: absolute; top: 8px; right: 8px; z-index: 2;
+            background: linear-gradient(135deg, var(--secondary), #e6a800);
+            color: var(--dark); font-size: 0.62rem; font-weight: 900; letter-spacing: 0.03em;
+            padding: 3px 8px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            animation: badge-pulse 1.6s infinite ease-in-out;
+        }
+        @keyframes badge-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+
         .full-width-btn {
             grid-column: span 2; flex-direction: row; aspect-ratio: auto; padding: 15px;
             background: linear-gradient(135deg, rgba(200,30,30,0.90), rgba(180,10,10,0.95));
@@ -469,6 +481,10 @@
                 </a>
                 <a onclick="handlePageNavigation('page-jeep', 'jeep')" class="menu-card bg-orange" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handlePageNavigation('page-jeep', 'jeep');}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,12H5L6,8H18L19,12M20,13V7H4V13L2,13V16C2,17.1 2.9,18 4,18V21C4,21.55 4.45,22 5,22H7C7.55,22 8,21.55 8,21V18H16V21C16,21.55 16.45,22 17,22H19C19.55,22 20,21.55 20,21V18C21.1,18 22,17.1 22,16V13L20,13M6.5,16C5.67,16 5,15.33 5,14.5C5,13.67 5.67,13 6.5,13C7.33,13 8,13.67 8,14.5C8,15.33 7.33,16 6.5,16M17.5,16C16.67,16 16,15.33 16,14.5C16,13.67 16.67,13 17.5,13C18.33,13 19,13.67 19,14.5C19,15.33 18.33,16 17.5,16Z"/></svg><span>Jeep<br>Adventure</span>
+                </a>
+                <a href="dolan-aviary-game.html" target="_blank" rel="noopener noreferrer" class="menu-card bg-blue">
+                    <span class="card-badge">BARU</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM11 13H9v2H7v-2H5v-2h2V9h2v2h2v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm3-3c-.83 0-1.5-.67-1.5-1.5S17.67 9 18.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg><span>Main Game<br>Dolan Aviary</span>
                 </a>
                 <a href="https://maps.app.goo.gl/gCyTugKbGJEdobXs8?g_st=ic" target="_blank" rel="noopener noreferrer" class="menu-card bg-green">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg><span>Lokasi<br>Maps</span>
