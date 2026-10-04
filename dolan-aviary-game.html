@@ -416,16 +416,22 @@
             imgKucing: null, imgBurungMandar: null
         };
 
+        // Dulu di-hosting di Cloudinary (akun dn60ib3ur) -- akun itu kena disable otomatis
+        // oleh Cloudinary ("exceeding usage limits", padahal cuma pakai 0.25 dari kuota 25
+        // kredit) sehingga SEMUA gambar di akun itu ikut mati, bukan cuma punya game ini.
+        // Dipindah 2026-10-04 ke assets/aviary-game/ di repo ini sendiri -- tidak lagi
+        // bergantung pada kuota/status akun pihak ketiga mana pun. Pemilik asli file ini
+        // ditemukan lagi lewat Google Photos (nama IMG_xxxx di komentar tiap baris).
         const imageURLs = {
-            birdUp: 'https://res.cloudinary.com/dn60ib3ur/image/upload/v1766581827/IMG_7776_qlmxw3.png',
-            birdDown: 'https://res.cloudinary.com/dn60ib3ur/image/upload/v1766581827/IMG_7775_teoy4m.png',
-            rusa: 'https://res.cloudinary.com/dn60ib3ur/image/upload/v1766583160/IMG_7781_s5gqsi.png',
-            kelinci: 'https://res.cloudinary.com/dn60ib3ur/image/upload/v1766583166/IMG_7780_fdrcyi.png',
-            domba: 'https://res.cloudinary.com/dn60ib3ur/image/upload/v1766583165/IMG_7782_f6h4cq.png',
-            bgMountain: 'https://res.cloudinary.com/dn60ib3ur/image/upload/v1766664445/IMG_7828_f3chf3.png',
-            plang: 'https://res.cloudinary.com/dn60ib3ur/image/upload/v1766589101/IMG_7793_y4fyap.png',
-            kucing: 'https://res.cloudinary.com/dn60ib3ur/image/upload/v1766620401/IMG_7803_jwata3.png',
-            burungMandar: 'https://res.cloudinary.com/dn60ib3ur/image/upload/v1766620401/IMG_7804_xznsju.png'
+            birdUp: 'assets/aviary-game/bird-up.png',       // IMG_7776
+            birdDown: 'assets/aviary-game/bird-down.png',   // IMG_7775
+            rusa: 'assets/aviary-game/rusa.png',             // IMG_7781
+            kelinci: 'assets/aviary-game/kelinci.png',       // IMG_7780
+            domba: 'assets/aviary-game/domba.png',           // IMG_7782
+            bgMountain: 'assets/aviary-game/bg-mountain.png', // IMG_7828
+            plang: 'assets/aviary-game/plang.png',           // IMG_7793
+            kucing: 'assets/aviary-game/kucing.png',         // IMG_7803
+            burungMandar: 'assets/aviary-game/burung-mandar.png' // IMG_7804
         };
 
         function loadImg(url) {
@@ -436,25 +442,37 @@
         }
 
         async function initAllAssets() {
-            try {
-                const [bUp, bDown, rusa, kelinci, domba, mtn, plangImg, kucingImg, mandarImg] = await Promise.all([
-                    loadImg(imageURLs.birdUp), loadImg(imageURLs.birdDown),
-                    loadImg(imageURLs.rusa), loadImg(imageURLs.kelinci), loadImg(imageURLs.domba),
-                    loadImg(imageURLs.bgMountain), loadImg(imageURLs.plang),
-                    loadImg(imageURLs.kucing), loadImg(imageURLs.burungMandar)
-                ]);
-                assets.imgBirdUp = bUp; assets.imgBirdDown = bDown;
-                assets.imgRusa = rusa; assets.imgKelinci = kelinci; assets.imgDomba = domba;
-                assets.bgFarImage = mtn;
-                assets.imgPlang = plangImg;
-                assets.imgKucing = kucingImg;
-                assets.imgBurungMandar = mandarImg;
+            // Promise.allSettled, bukan Promise.all -- satu gambar dekorasi gagal (hosting
+            // down, koneksi putus, dll) TIDAK BOLEH membuat seluruh game tidak bisa
+            // dimainkan. Semua fungsi gambar di bawah (plantResized, drawBird) sudah
+            // null-check (`if(!img) return`), jadi aman kalau satu aset-nya kosong -- game
+            // tetap jalan, cuma elemen itu saja yang tidak tampak. Pelajaran nyata dari
+            // insiden 2026-10-04: akun Cloudinary mati total, dan desain lama (Promise.all)
+            // bikin game ikut mati meski penyebabnya cuma hosting gambar, bukan kode game.
+            const keys = ["birdUp", "birdDown", "rusa", "kelinci", "domba", "bgMountain", "plang", "kucing", "burungMandar"];
+            const results = await Promise.allSettled(keys.map((k) => loadImg(imageURLs[k])));
+            const loaded = {};
+            results.forEach((r, i) => {
+                const key = keys[i];
+                if (r.status === "fulfilled") {
+                    loaded[key] = r.value;
+                } else {
+                    console.warn(`Gagal memuat aset "${key}" dari ${imageURLs[key]} -- game tetap jalan tanpa elemen ini.`, r.reason);
+                }
+            });
+            assets.imgBirdUp = loaded.birdUp || null; assets.imgBirdDown = loaded.birdDown || null;
+            assets.imgRusa = loaded.rusa || null; assets.imgKelinci = loaded.kelinci || null; assets.imgDomba = loaded.domba || null;
+            assets.bgFarImage = loaded.bgMountain || null;
+            assets.imgPlang = loaded.plang || null;
+            assets.imgKucing = loaded.kucing || null;
+            assets.imgBurungMandar = loaded.burungMandar || null;
 
+            try {
                 const cP = createAssetCanvas(CONFIG.pipeW, 600); drawPixelLog(cP.ctx, CONFIG.pipeW, 600); assets.pipe = cP.cvs;
                 const cG = createAssetCanvas(480, 130); drawCleanGround(cG.ctx, 480, 130); assets.ground = cG.cvs;
-                
-                const cS = createAssetCanvas(480, 240); 
-                drawCleanBgMid(cS.ctx, 480, 240); 
+
+                const cS = createAssetCanvas(480, 240);
+                drawCleanBgMid(cS.ctx, 480, 240);
                 assets.bgMid = cS.cvs;
 
                 document.getElementById('loading-screen').style.display = 'none';
