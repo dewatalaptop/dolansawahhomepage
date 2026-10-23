@@ -1311,6 +1311,12 @@
 
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    // Beberapa jaringan (WiFi kantor/hotel, operator seluler tertentu, proxy) memblokir koneksi
+    // streaming WebChannel yang dipakai Firestore. Kalau terblokir, panggilan .get() menggantung
+    // tanpa error -- inilah yang membuat layar "Menyiapkan Data..." macet selamanya di sebagian
+    // perangkat. Auto-detect long polling membuat SDK otomatis beralih ke mode HTTP biasa yang
+    // lolos di jaringan seperti itu. Harus diset SEBELUM operasi Firestore pertama.
+    try { db.settings({ experimentalAutoDetectLongPolling: true, merge: true }); } catch (e) { /* sudah diinisialisasi */ }
     const auth = firebase.auth();
 
     const defaultImage = "https://via.placeholder.com/300x200?text=Dolan+Sawah";
@@ -1356,14 +1362,24 @@
     });
 
     document.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('inputDate').setAttribute('min', new Date().toISOString().split('T')[0]);
-      listenFullDates();
-      await loadData();
       const loader = document.getElementById('loader');
-      loader.style.display = 'none';
-      loader.style.pointerEvents = 'none';
-      updateUIState();
-      
+      const hideLoader = () => { if (!loader) return; loader.style.display = 'none'; loader.style.pointerEvents = 'none'; };
+      // Jaring pengaman terakhir: apa pun yang terjadi (jaringan memblokir Firestore, kueri
+      // menggantung), loader tidak boleh menahan layar lebih dari 12 detik. Timer ini berdiri
+      // sendiri, jadi tetap menyembunyikan loader walau 'await loadData()' di bawah tak pernah selesai.
+      const failsafe = setTimeout(hideLoader, 12000);
+      try {
+        document.getElementById('inputDate').setAttribute('min', new Date().toISOString().split('T')[0]);
+        listenFullDates();
+        await loadData();
+      } catch (e) {
+        console.error('Inisialisasi gagal:', e);
+      } finally {
+        clearTimeout(failsafe);
+        hideLoader();
+        updateUIState();
+      }
+
       const headerTitle = document.querySelector('#mainHeader h1');
       headerTitle.addEventListener('click', () => {
         clickCount++;
@@ -1434,16 +1450,23 @@
     }
 
     async function loadData() {
+      // Jangan biarkan satu kueri Firestore yang lambat/menggantung menahan seluruh halaman.
+      // Kalau lewat batas waktu, lanjutkan tanpa data itu (data tetap bisa dimuat lagi saat
+      // pengguna menekan "Cari Tempat"), sehingga layar "Menyiapkan Data..." tidak macet.
+      const getT = (q, ms = 10000) => Promise.race([
+        q.get(),
+        new Promise((_, r) => setTimeout(() => r(new Error("Firestore timeout")), ms)),
+      ]);
       try {
         try {
-          let snap = await db.collection('locations').get();
-          if(snap.empty) snap = await db.collection('Locations').get();
+          let snap = await getT(db.collection('locations'));
+          if(snap.empty) snap = await getT(db.collection('Locations'));
           locationsData = [];
           snap.forEach(doc => locationsData.push({ id: doc.id, ...doc.data() }));
         } catch(e) { console.error("Error loading locations:", e); }
 
         try {
-          let snap = await db.collection('menus').get();
+          let snap = await getT(db.collection('menus'));
           menusData = {};
           snap.forEach(doc => {
             let d = doc.data();
