@@ -1233,11 +1233,12 @@ async function showApproveDpDialog(id, r, menus) {
       // tersimpan di `note` (hasil Edit sebelumnya) -- satukan ke `tambahan`.
       data.tambahan = r.note || r.catatan || r.pesan || r.tambahan || '';
       delete data.note; delete data.catatan; delete data.pesan;
-      await db.collection('reservations').add(data);
+      const newRef = await db.collection('reservations').add(data);
       await db.collection('reservation_requests').doc(id).delete();
       unmarkChatted(id);
 
-      const viewerUrl = `https://dewatalaptop.github.io/reservasids/upgradeV2.html?autoOpen=true&date=${r.date}&search=${encodeURIComponent(r.nama)}`;
+      // Sertakan ID dokumen baru supaya viewer bisa buka tepat by-ID (bukan tebak nama).
+      const viewerUrl = `https://dewatalaptop.github.io/reservasids/upgradeV2.html?autoOpen=true&date=${r.date}&search=${encodeURIComponent(r.nama)}&id=${encodeURIComponent(newRef.id)}`;
       if (viewer && !viewer.closed) {
         viewer.location.href = viewerUrl;
         Swal.fire({ icon:'success', title:'Berhasil!', text:'Reservasi disetujui.', timer:2000, showConfirmButton:false });
