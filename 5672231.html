@@ -575,6 +575,145 @@
       font-size: 0.85rem; font-family: inherit; background: white;
     }
     .menu-edit-row.custom-menu-row input[type=text]:focus { border-color: var(--primary); outline: none; }
+
+    /* ════════════════════════════════════════════════════════════════
+       VISUAL UPGRADE 2026-10 — blok override (tanpa mengubah markup/JS)
+       Token tambahan, latar, sidebar gelap, kartu statistik gradien,
+       kartu lebih dalam, list & tombol dipercantik.
+       ════════════════════════════════════════════════════════════════ */
+    :root {
+      --grad-side: linear-gradient(185deg, #1f3a34 0%, #16514a 55%, #1c7568 100%);
+      --shadow-sm: 0 1px 3px rgba(16,24,40,.06), 0 1px 2px rgba(16,24,40,.04);
+      --shadow-md: 0 10px 28px rgba(16,24,40,.08);
+      --shadow-lg: 0 20px 48px rgba(16,24,40,.14);
+      --radius-lg: 18px;
+    }
+
+    body {
+      background:
+        radial-gradient(1200px 620px at 100% -8%, #e4f6f1 0%, rgba(228,246,241,0) 55%),
+        radial-gradient(900px 520px at -8% 112%, #fdf3df 0%, rgba(253,243,223,0) 50%),
+        var(--bg-body);
+    }
+
+    /* ── Sidebar gelap elegan ── */
+    .sidebar {
+      background: var(--grad-side);
+      border-right: none;
+      box-shadow: 6px 0 30px rgba(10,30,26,.18);
+    }
+    .brand { color: #fff; border-bottom: 1px solid rgba(255,255,255,.12); letter-spacing: .2px; }
+    .brand i { color: #8fe9db; }
+    .nav-item { color: rgba(255,255,255,.74); }
+    .nav-item i { width: 20px; text-align: center; opacity: .9; }
+    .nav-item:hover { background: rgba(255,255,255,.09); color: #fff; }
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(143,233,219,.22), rgba(143,233,219,.06));
+      color: #fff; font-weight: 600;
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+    .nav-item.active i { color: #8fe9db; opacity: 1; }
+    .sidebar-footer { border-top: 1px solid rgba(255,255,255,.12); }
+    .btn-logout {
+      background: rgba(255,255,255,.1); color: #ffd9d1;
+      backdrop-filter: blur(2px);
+    }
+    .btn-logout:hover { background: rgba(231,111,81,.9); color: #fff; }
+
+    /* ── Judul halaman ── */
+    .section > h2, .inbox-toolbar h2 {
+      font-size: 1.5rem; font-weight: 800; letter-spacing: -.01em;
+      color: var(--secondary);
+    }
+
+    /* ── Kartu statistik gradien ── */
+    .stats-grid { gap: 18px; }
+    .stat-card {
+      position: relative; overflow: hidden; border: none;
+      color: #fff; padding: 22px 22px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      transition: transform .22s ease, box-shadow .22s ease;
+    }
+    .stat-card::after {
+      content: ""; position: absolute; right: -28px; top: -34px;
+      width: 120px; height: 120px; border-radius: 50%;
+      background: rgba(255,255,255,.14);
+    }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .stats-grid > .stat-card:nth-child(1) { background: linear-gradient(135deg, #2bb0a0, #1f7a6e); }
+    .stats-grid > .stat-card:nth-child(2) { background: linear-gradient(135deg, #f7ad53, #e97f2e); }
+    .stats-grid > .stat-card:nth-child(3) { background: linear-gradient(135deg, #37c98f, #178a52); }
+    .stat-card .stat-icon {
+      width: 54px; height: 54px; border-radius: 14px;
+      background: rgba(255,255,255,.22) !important;
+      color: #fff !important; font-size: 1.5rem;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+      z-index: 1;
+    }
+    .stat-card .stat-info { z-index: 1; }
+    .stat-card .stat-info h4 { color: rgba(255,255,255,.9); font-weight: 600; }
+    .stat-card .stat-info .value { color: #fff; font-size: 1.9rem; }
+
+    /* ── Kartu/panel lebih dalam ── */
+    .calendar-wrapper, .chart-wrap {
+      border: 1px solid rgba(16,24,40,.06);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+    .calendar-wrapper h3, .chart-wrap h3 {
+      font-size: 1.05rem; font-weight: 700; color: var(--secondary);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── Item list reservasi ── */
+    .reservation-list-item {
+      border-left: 4px solid transparent;
+      border-image: linear-gradient(180deg, var(--primary), var(--accent)) 1;
+      border-radius: 10px; box-shadow: var(--shadow-sm);
+      transition: transform .16s ease, box-shadow .16s ease;
+    }
+    .reservation-list-item:hover { transform: translateX(3px); box-shadow: var(--shadow-md); }
+
+    /* ── Kartu permintaan (inbox) ── */
+    .request-card {
+      border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .request-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+
+    /* ── Tombol aksen gradien ── */
+    .btn-terima { background: linear-gradient(135deg, #16c784, #0f9c66); }
+    .btn-modal-save { background: linear-gradient(135deg, #2bb0a0, #21867a); }
+    .btn-modal-save:hover { background: linear-gradient(135deg, #21867a, #1b6e64); }
+    .filter-tab.active { background: var(--primary); box-shadow: 0 4px 12px rgba(42,157,143,.3); }
+
+    /* ── Kalender ── */
+    .cal-day.has-res { border-color: rgba(42,157,143,.35); }
+    .cal-dot { background: var(--primary); box-shadow: 0 0 0 3px rgba(42,157,143,.15); }
+
+    /* ── Analisis: kartu ringkasan + grid grafik ── */
+    .analysis-tiles {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 20px;
+    }
+    .mini-tile {
+      background: #fff; border: 1px solid rgba(16,24,40,.06);
+      border-radius: 16px; padding: 16px 18px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: var(--shadow-sm);
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .mini-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .mini-ic {
+      width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+    }
+    .mini-lbl { font-size: .76rem; color: var(--text-muted); font-weight: 600; }
+    .mini-val { font-size: 1.3rem; font-weight: 800; color: var(--secondary); line-height: 1.15; margin-top: 2px; }
+    .analysis-charts-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;
+    }
   </style>
 </head>
 <body>
@@ -721,10 +860,25 @@
   <!-- ANALISIS -->
   <div id="tab-analysis" class="section">
     <h2 style="margin:0 0 20px;">Analisis Bisnis</h2>
-    <div class="chart-wrap">
-      <h3>Reservasi per Bulan — <span id="chart-year"></span></h3>
-      <div style="position:relative; height:340px;">
+    <div class="analysis-tiles" id="analysis-tiles"></div>
+    <div class="chart-wrap" style="margin-bottom:20px;">
+      <h3><i class="fas fa-chart-column" style="color:var(--primary)"></i> Reservasi per Bulan — <span id="chart-year"></span></h3>
+      <div style="position:relative; height:320px;">
         <canvas id="chartAnalysis"></canvas>
+      </div>
+    </div>
+    <div class="analysis-charts-grid">
+      <div class="chart-wrap">
+        <h3><i class="fas fa-location-dot" style="color:var(--primary)"></i> Lokasi Terpopuler — <span id="chart-year3"></span></h3>
+        <div style="position:relative; height:300px;">
+          <canvas id="chartLokasi"></canvas>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <h3><i class="fas fa-user-group" style="color:var(--primary)"></i> Tamu per Bulan — <span id="chart-year2"></span></h3>
+        <div style="position:relative; height:300px;">
+          <canvas id="chartPax"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -757,6 +911,8 @@ let globalMenuPrices  = {};
 let currentMonth = new Date().getMonth();
 let currentYear  = new Date().getFullYear();
 let myChart = null;
+let myChartLokasi = null;
+let myChartPax = null;
 let activeFilter = 'all';
 
 // ─── Chat-status (localStorage) ───
@@ -1375,36 +1531,144 @@ function changeMonth(dir) {
 // ═══════════════════════════════════════════
 // CHART
 // ═══════════════════════════════════════════
+const MONTH_LABELS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+const CHART_PALETTE = ['#2bb0a0','#f7ad53','#37c98f','#7c6cf0','#e76f51','#4aa3df','#f4c152','#e9748b'];
+
+// Gradasi vertikal untuk batang/garis (scriptable agar ikut area chart).
+function vGradient(context, c1, c2) {
+  const chart = context.chart;
+  const { ctx, chartArea } = chart;
+  if (!chartArea) return c1;
+  const g = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+  g.addColorStop(0, c1); g.addColorStop(1, c2);
+  return g;
+}
+
 function updateChart() {
   const canvas = document.getElementById('chartAnalysis');
   if (!canvas) return;
-  document.getElementById('chart-year').textContent = currentYear;
-  const data = Array(12).fill(0);
+  const curMonth = (currentYear === new Date().getFullYear()) ? new Date().getMonth() : -1;
+
+  // Agregasi setahun: jumlah reservasi & jumlah tamu per bulan, serta per lokasi.
+  const resPerMonth = Array(12).fill(0);
+  const paxPerMonth = Array(12).fill(0);
+  const perLokasi = {};
+  let totalRes = 0, totalPax = 0;
   reservationsCache.forEach(r => {
     const d = new Date(r.date);
-    if (d.getFullYear() === currentYear) data[d.getMonth()]++;
+    if (d.getFullYear() !== currentYear) return;
+    const pax = parseInt(r.jumlah) || 0;
+    resPerMonth[d.getMonth()]++;
+    paxPerMonth[d.getMonth()] += pax;
+    totalRes++; totalPax += pax;
+    const loc = (r.tempat || 'Lainnya').trim() || 'Lainnya';
+    perLokasi[loc] = (perLokasi[loc] || 0) + 1;
   });
+
+  ['chart-year','chart-year2','chart-year3'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.textContent = currentYear;
+  });
+
+  // ── Kartu ringkasan ──
+  const topLok = Object.entries(perLokasi).sort((a,b)=>b[1]-a[1]);
+  const tiles = document.getElementById('analysis-tiles');
+  if (tiles) {
+    const avg = totalRes ? Math.round(totalPax / totalRes) : 0;
+    const topName = topLok.length ? topLok[0][0] : '–';
+    const items = [
+      ['fa-calendar-check', 'Total Reservasi', totalRes.toLocaleString('id-ID'), '#2bb0a0'],
+      ['fa-users', 'Total Tamu', totalPax.toLocaleString('id-ID'), '#e97f2e'],
+      ['fa-user-group', 'Rata-rata Tamu/Resv', avg.toLocaleString('id-ID'), '#178a52'],
+      ['fa-location-dot', 'Lokasi Teratas', topName, '#7c6cf0'],
+    ];
+    tiles.innerHTML = items.map(t => `
+      <div class="mini-tile">
+        <div class="mini-ic" style="background:${t[3]}22;color:${t[3]}"><i class="fas ${t[0]}"></i></div>
+        <div><div class="mini-lbl">${t[1]}</div><div class="mini-val" title="${t[2]}">${t[2]}</div></div>
+      </div>`).join('');
+  }
+
+  // ── Bar: reservasi per bulan (gradasi + sorot bulan berjalan) ──
   if (myChart) { myChart.destroy(); myChart = null; }
   myChart = new Chart(canvas.getContext('2d'), {
     type: 'bar',
     data: {
-      labels: ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"],
+      labels: MONTH_LABELS,
       datasets: [{
         label: 'Jumlah Reservasi',
-        data,
-        backgroundColor: 'rgba(42,157,143,0.75)',
-        borderColor: '#2a9d8f',
-        borderWidth: 2,
-        borderRadius: 6
+        data: resPerMonth,
+        backgroundColor: (c) => c.dataIndex === curMonth
+          ? vGradient(c, '#e9a93f', '#f7cf7a')
+          : vGradient(c, '#1f7a6e', '#5fd3c2'),
+        borderWidth: 0,
+        borderRadius: 8,
+        maxBarThickness: 46
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { backgroundColor: '#264653', padding: 10, cornerRadius: 8, displayColors: false }
+      },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#9aa4b2' }, grid: { color: 'rgba(16,24,40,.06)' } },
+        x: { ticks: { color: '#9aa4b2' }, grid: { display: false } }
+      }
     }
   });
+
+  // ── Doughnut: lokasi terpopuler (top 6 + Lainnya) ──
+  const locCanvas = document.getElementById('chartLokasi');
+  if (locCanvas) {
+    const top = topLok.slice(0, 6);
+    const restSum = topLok.slice(6).reduce((s, x) => s + x[1], 0);
+    const labels = top.map(x => x[0]); const vals = top.map(x => x[1]);
+    if (restSum > 0) { labels.push('Lainnya'); vals.push(restSum); }
+    if (myChartLokasi) { myChartLokasi.destroy(); myChartLokasi = null; }
+    myChartLokasi = new Chart(locCanvas.getContext('2d'), {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: vals, backgroundColor: CHART_PALETTE.slice(0, labels.length), borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '62%',
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, boxHeight: 12, usePointStyle: true, color: '#475467', font: { size: 11 } } },
+          tooltip: { backgroundColor: '#264653', padding: 10, cornerRadius: 8 }
+        }
+      }
+    });
+  }
+
+  // ── Line: tamu per bulan ──
+  const paxCanvas = document.getElementById('chartPax');
+  if (paxCanvas) {
+    if (myChartPax) { myChartPax.destroy(); myChartPax = null; }
+    myChartPax = new Chart(paxCanvas.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: MONTH_LABELS,
+        datasets: [{
+          label: 'Jumlah Tamu',
+          data: paxPerMonth,
+          borderColor: '#2a9d8f', borderWidth: 3,
+          pointBackgroundColor: '#2a9d8f', pointRadius: 3, pointHoverRadius: 5,
+          tension: 0.38, fill: true,
+          backgroundColor: (c) => vGradient(c, 'rgba(42,157,143,0)', 'rgba(42,157,143,.35)')
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#264653', padding: 10, cornerRadius: 8, displayColors: false }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { color: '#9aa4b2' }, grid: { color: 'rgba(16,24,40,.06)' } },
+          x: { ticks: { color: '#9aa4b2' }, grid: { display: false } }
+        }
+      }
+    });
+  }
 }
 
 // ═══════════════════════════════════════════
