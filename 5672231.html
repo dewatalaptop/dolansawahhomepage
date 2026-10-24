@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Admin Dashboard - Dolan Sawah</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -32,6 +32,13 @@
     }
 
     * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+
+    /* Kembalikan indikator fokus untuk pengguna keyboard (dihapus oleh outline:none di atas).
+       Hanya muncul saat navigasi keyboard, tidak saat klik mouse. */
+    a:focus-visible, button:focus-visible,
+    input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid var(--primary-dark); outline-offset: 2px;
+    }
 
     body {
       font-family: 'Inter', sans-serif;
