@@ -1219,6 +1219,10 @@ async function showApproveDpDialog(id, r, menus) {
   });
 
   if (form) {
+    // Buka tab SEGERA setelah konfirmasi (masih dalam konteks gesture klik) supaya
+    // tidak diblokir popup. Kalau dibuka setelah `await` di bawah, browser sering
+    // memblokirnya karena gesture-nya sudah hilang. Diarahkan ke URL setelah simpan.
+    const viewer = window.open('about:blank', '_blank');
     try {
       const data = {
         ...r, menus, status: 'approved', dp: form.dp, tipeDp: form.pay,
@@ -1234,9 +1238,20 @@ async function showApproveDpDialog(id, r, menus) {
       unmarkChatted(id);
 
       const viewerUrl = `https://dewatalaptop.github.io/reservasids/upgradeV2.html?autoOpen=true&date=${r.date}&search=${encodeURIComponent(r.nama)}`;
-      window.open(viewerUrl, '_blank');
-      Swal.fire({ icon:'success', title:'Berhasil!', text:'Reservasi disetujui.', timer:2000, showConfirmButton:false });
+      if (viewer && !viewer.closed) {
+        viewer.location.href = viewerUrl;
+        Swal.fire({ icon:'success', title:'Berhasil!', text:'Reservasi disetujui.', timer:2000, showConfirmButton:false });
+      } else {
+        // Popup diblokir: jangan gagal diam-diam, beri link manual.
+        Swal.fire({
+          icon:'success', title:'Berhasil!',
+          html:`Reservasi disetujui.<br><a href="${viewerUrl}" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;padding:9px 16px;background:#10b981;color:#fff;border-radius:6px;text-decoration:none;font-weight:600;">Buka kalender reservasi</a>`,
+          showConfirmButton:true, confirmButtonText:'Tutup'
+        });
+      }
     } catch (e) {
+      // Batal/gagal simpan: tutup tab kosong yang terlanjur dibuka.
+      if (viewer && !viewer.closed) viewer.close();
       Swal.fire('Error', e.message, 'error');
     }
   }
