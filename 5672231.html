@@ -1233,7 +1233,7 @@ async function showApproveDpDialog(id, r, menus) {
       await db.collection('reservation_requests').doc(id).delete();
       unmarkChatted(id);
 
-      const viewerUrl = `https://dewatalaptop.github.io/reservasids?autoOpen=true&date=${r.date}&search=${encodeURIComponent(r.nama)}`;
+      const viewerUrl = `https://dewatalaptop.github.io/reservasids/upgradeV2.html?autoOpen=true&date=${r.date}&search=${encodeURIComponent(r.nama)}`;
       window.open(viewerUrl, '_blank');
       Swal.fire({ icon:'success', title:'Berhasil!', text:'Reservasi disetujui.', timer:2000, showConfirmButton:false });
     } catch (e) {
