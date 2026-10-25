@@ -2016,6 +2016,7 @@
 
     /* ── DIAGNOSTIC REPORTER ── */
     const diagLogs = [];
+    const DIAG_VISIBLE = /[?&]debug=1(&|$)/.test(location.search);
 
     function diagLog(type, msg) {
       const time = new Date().toTimeString().slice(0,8);
@@ -2029,7 +2030,8 @@
       span.textContent = `[${time}] ${msg}\n`;
       el.appendChild(span);
       el.scrollTop = el.scrollHeight;
-      if (type === 'err') document.getElementById('diagBox').style.display = 'block';
+      // Panel diagnostik hanya untuk admin: tampil otomatis bila URL memuat ?debug=1. Pelanggan tidak melihatnya.
+      if (type === 'err' && DIAG_VISIBLE) document.getElementById('diagBox').style.display = 'block';
     }
 
     function diagToggle() {
