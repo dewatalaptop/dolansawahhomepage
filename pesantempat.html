@@ -932,6 +932,25 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
   }
 
   // ─────────────────────────────────────────
+  const AVAIL_URL = 'https://asia-southeast2-reservasi-dolan-sawah.cloudfunctions.net/publicAvailability';
+  function startAvailability(from, to) {
+    let stopped = false;
+    const load = async () => {
+      try {
+        const r = await fetch(AVAIL_URL + '?from=' + from + '&to=' + to);
+        if (!r.ok) throw new Error('status ' + r.status);
+        const items = (await r.json()).items || [];
+        if (stopped) return;
+        allRes = {};
+        items.filter(it => it.kind === 'confirmed').forEach(it => { (allRes[it.date] = allRes[it.date] || []).push(it); });
+        renderCalendar();
+      } catch (e) { console.warn('ketersediaan:', e); }
+    };
+    load();
+    const t = setInterval(() => { if (!document.hidden) load(); }, 30000);
+    return () => { stopped = true; clearInterval(t); };
+  }
+
   function startListeners() {
     if (unsubRes)  unsubRes();
     if (unsubStat) unsubStat();
@@ -943,17 +962,9 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
     $('monthYear').textContent = `${MONTHS[curMonth]} ${curYear}`;
     renderSkeleton();
 
-    unsubRes = db.collection("reservations")
-      .where('date', '>=', start).where('date', '<=', end)
-      .onSnapshot(snap => {
-        allRes = {};
-        snap.forEach(doc => {
-          const r = doc.data();
-          if (!allRes[r.date]) allRes[r.date] = [];
-          allRes[r.date].push(r);
-        });
-        renderCalendar();
-      }, e => console.warn(e));
+    // Ketersediaan lewat fungsi server (tanpa nama/HP/menu tamu); disegarkan berkala selagi tab terlihat.
+    const lastDay = String(new Date(curYear, curMonth + 1, 0).getDate()).padStart(2, '0');
+    unsubRes = startAvailability(start, `${curYear}-${m}-${lastDay}`);
 
     unsubStat = db.collection("date_status")
       .where('date', '>=', start).where('date', '<=', end)
@@ -1074,23 +1085,14 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
       // ── HTML isi reservasi ──
       let bodyHTML = '';
       if (items.length > 0) {
-        items.sort((a,b) => (a.jam||'').localeCompare(b.jam||'')).forEach(r => {
-          let mHTML = '';
-          if (r.menus && r.menus.length) {
-            mHTML = `<div class="menu-detail-text">${r.menus.map(m => m.quantity+'x '+m.name).join('<br>')}</div>`;
-          } else if (r.menu) {
-            mHTML = `<div class="menu-detail-text">${r.menu}</div>`;
-          }
-          const ph = r.nomorHp && r.nomorHp.length > 4 ? r.nomorHp.slice(0,-3)+'xxx' : (r.nomorHp||'');
+        items.sort((a,b) => (a.jam||'').localeCompare(b.jam||'')).forEach((r, i) => {
           bodyHTML += `
             <div class="res-item">
               <div class="res-info">
-                <strong>${r.nama}</strong>
-                <small><i class="far fa-clock"></i> ${r.jam} WIB${ph ? ' &bull; <i class="fab fa-whatsapp"></i> '+ph : ''}</small>
-                ${mHTML}
-                ${r.tambahan ? `<div style="color:var(--highlight);font-size:0.72rem;margin-top:3px;font-style:italic;">Note: ${r.tambahan}</div>` : ''}
+                <strong>Reservasi ${i + 1}</strong>
+                <small><i class="far fa-clock"></i> ${String(r.jam || '-').replace(/[^0-9:\-]/g, '')} WIB</small>
               </div>
-              <div class="res-qty">${r.jumlah}</div>
+              <div class="res-qty">${parseInt(r.jumlah) || 0}</div>
             </div>`;
         });
       } else {
