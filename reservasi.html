@@ -288,11 +288,20 @@ function statusBayar(r, total){
 
 let CUR = null; // { id, r, sub (sebelum PPN), ppn, total (sesudah PPN), bayar, menuDetail }
 
+/* Status reservasi: tersimpan 'batal'/'hadir'/'konfirmasi'/'approved' atau kosong (= terkonfirmasi). Nilai lain yang artinya dibatalkan atau belum dikonfirmasi jangan tampil "Terkonfirmasi". */
+function statusReservasi(r){
+  const v = String(r.status == null ? '' : r.status).trim().toLowerCase();
+  if (['batal', 'dibatalkan', 'cancel', 'cancelled', 'canceled', 'ditolak', 'rejected'].includes(v)) return { kode: 'batal', label: 'Reservasi Dibatalkan' };
+  if (['pending', 'menunggu', 'waiting'].includes(v)) return { kode: 'tunggu', label: 'Menunggu Konfirmasi' };
+  return { kode: 'ok', label: 'Reservasi Terkonfirmasi' };
+}
+
 function render(){
   const { r, sub, ppn, total, bayar, menuDetail } = CUR;
-  const batal = r.status === 'batal';
+  const stat = statusReservasi(r);
+  const batal = stat.kode === 'batal', tunggu = stat.kode === 'tunggu';
   const d = selisihHari(r.date);
-  const hitung = batal ? '' : d === 0 ? 'Hari ini — sampai jumpa! 🌾' : d === 1 ? 'Besok — kami tunggu kedatangan Anda' : d > 1 ? `${d} hari lagi` : '';
+  const hitung = batal || tunggu ? '' : d === 0 ? 'Hari ini — sampai jumpa! 🌾' : d === 1 ? 'Besok — kami tunggu kedatangan Anda' : d > 1 ? `${d} hari lagi` : '';
   const items = (Array.isArray(r.menus) && r.menus.length ? r.menus : (r.menu ? [{ name: r.menu, quantity: 1 }] : []));
   const menuHtml = items.length ? items.map(m => {
     const price = typeof m.price === 'number' ? m.price : 0;
@@ -310,13 +319,14 @@ function render(){
   view.innerHTML = `
   <article class="ticket">
     <header class="hero">
-      <span class="chip ${batal ? 'bad' : ''}"><i></i>${batal ? 'Reservasi Dibatalkan' : 'Reservasi Terkonfirmasi'}</span>
+      <span class="chip ${batal ? 'bad' : ''}"><i></i>${esc(stat.label)}</span>
       <p class="hi">Atas nama</p>
       <h1>${esc(r.nama)}</h1>
       <div class="when">
         <div class="date"><small>Tanggal</small><strong>${esc(tanggalPanjang(r.date))}</strong></div>
         <div class="date" style="flex:.55"><small>Jam</small><strong>${esc(r.jam || '-')}</strong></div>
       </div>
+      ${tunggu ? '<p class="count">Reservasi Anda sedang menunggu konfirmasi dari tim Dolan Sawah.</p>' : ''}
       ${hitung ? `<p class="count">${esc(hitung)}</p>` : ''}
     </header>
     <div class="tear"><span></span></div>
@@ -333,7 +343,7 @@ function render(){
         <p class="must"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.700 21a2 2 0 01-3.400 0"/></svg><span>Mohon baca Peraturan Reservasi sebelum kedatangan Anda.</span></p>
         <button class="btn rulesbtn" id="btnRules" type="button">${ICON.book}Peraturan Reservasi<span class="tag">Wajib</span></button>
         <button class="btn ghost" id="btnInv" type="button">${ICON.dl}Download Invoice</button>
-        <div class="row2">${batal ? '' : `<button class="btn ghost" id="btnCal" type="button">${ICON.cal}Ke Kalender</button>`}<a class="btn wa" id="btnWa" href="#" target="_blank" rel="noopener noreferrer">${ICON.wa}Hubungi Kami</a></div>
+        <div class="row2">${batal || tunggu ? '' : `<button class="btn ghost" id="btnCal" type="button">${ICON.cal}Ke Kalender</button>`}<a class="btn wa" id="btnWa" href="#" target="_blank" rel="noopener noreferrer">${ICON.wa}Hubungi Kami</a></div>
       </div>
       <p class="cap">Halaman ini berlaku sampai <b>${esc(tanggalPanjang(r.date))}</b> dan otomatis tidak dapat dibuka setelahnya.</p>
     </div>
