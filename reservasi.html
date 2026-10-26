@@ -111,6 +111,17 @@ h2::before{content:"";flex:none;width:5px;height:18px;border-radius:4px;backgrou
 .btn.ghost{background:var(--paper);border:2px solid var(--leaf);color:var(--leaf-deep)}
 .btn.ghost:active{transform:scale(.97);background:var(--cream)}
 .btn[disabled]{opacity:.6;pointer-events:none}
+.must{display:flex;align-items:center;gap:10px;background:var(--amber-soft);border:1.5px solid #ffcfa6;color:#7a3a0c;border-radius:14px;padding:10px 13px;font-size:13.5px;font-weight:700;line-height:1.35}
+.must svg{flex:none;width:22px;height:22px;color:var(--sun-deep);animation:wob 2.4s ease-in-out infinite;transform-origin:50% 0}
+@keyframes wob{0%,70%,100%{transform:rotate(0)}76%{transform:rotate(14deg)}82%{transform:rotate(-12deg)}88%{transform:rotate(8deg)}94%{transform:rotate(-4deg)}}
+.btn.rulesbtn{position:relative;overflow:hidden;min-height:60px;font-size:17px;background:linear-gradient(135deg,var(--leaf),var(--leaf-deep));color:#fff;
+  box-shadow:0 0 0 0 rgba(255,140,66,.7),0 14px 26px -10px rgba(20,69,46,.75);animation:glow 2.1s ease-out infinite}
+.btn.rulesbtn:active{transform:scale(.97)}
+.btn.rulesbtn::after{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;transform:skewX(-20deg);
+  background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.38),rgba(255,255,255,0));animation:shine 3.2s ease-in-out infinite}
+.btn.rulesbtn .tag{background:var(--sun);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.6px;padding:3px 8px;border-radius:99px;text-transform:uppercase}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(255,140,66,.7),0 14px 26px -10px rgba(20,69,46,.75)}70%,100%{box-shadow:0 0 0 16px rgba(255,140,66,0),0 14px 26px -10px rgba(20,69,46,.75)}}
+@keyframes shine{0%,55%{left:-60%}100%{left:130%}}
 .foot{margin-top:22px;text-align:center;font-size:12.5px;color:var(--ink-soft)}
 .foot b{color:var(--leaf-deep)}
 .cap{margin-top:18px;text-align:center;font-size:12px;color:var(--ink-soft)}
@@ -303,8 +314,9 @@ function render(){
       ${r.tambahan ? `<h2>Request Tambahan</h2><p class="note">${esc(r.tambahan)}</p>` : ''}
       <h2>Pembayaran</h2><div class="pay">${payRows}</div>
       <div class="actions">
-        <button class="btn primary" id="btnInv" type="button">${ICON.dl}Download Invoice</button>
-        <button class="btn ghost" id="btnRules" type="button">${ICON.book}Peraturan Reservasi</button>
+        <p class="must"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.700 21a2 2 0 01-3.400 0"/></svg><span>Mohon baca Peraturan Reservasi sebelum kedatangan Anda.</span></p>
+        <button class="btn rulesbtn" id="btnRules" type="button">${ICON.book}Peraturan Reservasi<span class="tag">Wajib</span></button>
+        <button class="btn ghost" id="btnInv" type="button">${ICON.dl}Download Invoice</button>
       </div>
       <p class="cap">Halaman ini berlaku sampai <b>${esc(tanggalPanjang(r.date))}</b> dan otomatis tidak dapat dibuka setelahnya.</p>
     </div>
@@ -331,7 +343,8 @@ function openRules(){
     : '<p class="empty-rules">Peraturan reservasi akan segera diinformasikan.</p>';
   $('sheetOv').classList.add('open');
   document.body.style.overflow = 'hidden';
-  setTimeout(() => $('closeSheet').focus(), 60);
+  $('sheet').scrollTop = 0;
+  setTimeout(() => { $('closeSheet').focus({ preventScroll: true }); $('sheet').scrollTop = 0; }, 60);
 }
 function closeRules(){
   $('sheetOv').classList.remove('open');
