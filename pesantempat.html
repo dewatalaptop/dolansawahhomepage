@@ -1118,7 +1118,7 @@ header.tap-flash { animation: headerFlash 0.15s ease; }
 
       const info = document.createElement('div');
       info.className = 'loc-photo-info';
-      info.innerHTML = `<span class="loc-name">${loc}</span><span class="loc-badge">${curr}/${cap} Org</span>`;
+      info.innerHTML = `<span class="loc-name">${String(loc).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}</span><span class="loc-badge">${curr}/${cap} Org</span>`;
 
       const viewBtn = document.createElement('button');
       viewBtn.className = 'btn-view-photo';
