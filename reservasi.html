@@ -87,6 +87,8 @@ h2::before{content:"";flex:none;width:5px;height:18px;border-radius:4px;backgrou
 .menu-row .n em{font-style:normal;color:var(--sun-deep);margin-right:4px}
 .menu-row .p{font-weight:700;white-space:nowrap}
 .menu-item ul{margin:6px 0 0 18px;color:var(--ink-soft);font-size:13.5px}
+.ppnnote{margin-top:8px;font-size:12.5px;color:var(--ink-soft)}
+.pay .r span strong{font-weight:800;color:var(--ink)}
 .note{overflow-wrap:anywhere;background:var(--amber-soft);border-radius:14px;padding:12px 14px;font-size:14px;color:#6b3a14}
 
 /* pembayaran */
@@ -258,6 +260,7 @@ function stateView(kind, title, msg){
 }
 
 /* ── Perhitungan pembayaran (satu sumber kebenaran untuk halaman & invoice) ── */
+const PPN_RATE = 0.10; // PPN 10% (orderTotal & harga menu tersimpan SEBELUM pajak)
 function hitungTotal(r, menuPrices){
   if (typeof r.orderTotal === 'number') return r.orderTotal;
   if (Array.isArray(r.menus)) return r.menus.reduce((s, m) => s + (typeof m.price === 'number' ? m.price : (menuPrices[m.name] || 0)) * (parseInt(m.quantity) || 0), 0);
@@ -270,10 +273,10 @@ function statusBayar(r, total){
   return { kode: 'belum', label: 'BELUM ADA PEMBAYARAN', dibayar: 0, sisa: total > 0 ? total : null };
 }
 
-let CUR = null; // { id, r, total, bayar, menuDetail }
+let CUR = null; // { id, r, sub (sebelum PPN), ppn, total (sesudah PPN), bayar, menuDetail }
 
 function render(){
-  const { r, total, bayar, menuDetail } = CUR;
+  const { r, sub, ppn, total, bayar, menuDetail } = CUR;
   const batal = r.status === 'batal';
   const d = selisihHari(r.date);
   const hitung = batal ? '' : d === 0 ? 'Hari ini — sampai jumpa! 🌾' : d === 1 ? 'Besok — kami tunggu kedatangan Anda' : d > 1 ? `${d} hari lagi` : '';
@@ -285,7 +288,7 @@ function render(){
   }).join('') : '<p class="note">Belum ada pesanan menu.</p>';
   const badgeCls = bayar.kode === 'lunas' ? 'ok' : bayar.kode === 'dp' ? 'dp' : 'no';
   const payRows = [
-    total > 0 ? `<div class="r"><span>Total pesanan</span><b>${rp(total)}</b></div>` : '',
+    sub > 0 ? `<div class="r"><span>Subtotal pesanan</span><b>${rp(sub)}</b></div><div class="r"><span>PPN 10%</span><b>${rp(ppn)}</b></div><div class="r"><span><strong>Total (termasuk PPN)</strong></span><b>${rp(total)}</b></div>` : '',
     bayar.dibayar > 0 ? `<div class="r"><span>${bayar.kode === 'lunas' ? 'Telah dibayar' : 'DP dibayar' + (r.tipeDp ? ' (' + esc(r.tipeDp) + ')' : '')}</span><b>${rp(bayar.dibayar)}</b></div>` : '',
     bayar.sisa != null ? `<div class="r total"><span>Sisa pembayaran</span><b>${bayar.sisa === 0 ? 'Rp 0' : rp(bayar.sisa)}</b></div>` : '',
     `<div class="r"><span>Status</span><span class="badge ${badgeCls}">${esc(bayar.label)}</span></div>`
@@ -310,7 +313,7 @@ function render(){
         <div class="cell"><small>Jumlah tamu</small><b>${esc(r.jumlah || '-')} orang</b></div>
       </div>
       ${(CUR.fotos || []).map(f => `<figure class="place"><img src="${esc(f.url)}" alt="Foto ${esc(f.name)}" loading="lazy" decoding="async"><figcaption>${esc(f.name)}</figcaption></figure>`).join('')}
-      <h2>Pesanan Menu</h2>${menuHtml}
+      <h2>Pesanan Menu</h2>${menuHtml}${sub > 0 ? '<p class="ppnnote">Harga menu belum termasuk PPN 10%.</p>' : ''}
       ${r.tambahan ? `<h2>Request Tambahan</h2><p class="note">${esc(r.tambahan)}</p>` : ''}
       <h2>Pembayaran</h2><div class="pay">${payRows}</div>
       <div class="actions">
@@ -361,7 +364,7 @@ function downloadInvoice(){
   if (!window.jspdf || !window.jspdf.jsPDF) { toast('Pembuat invoice belum siap. Coba lagi sebentar.'); return; }
   btn.disabled = true;
   try {
-    const { r, total, bayar, id } = CUR;
+    const { r, sub, ppn, total, bayar, id } = CUR;
     const doc = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4' });
     const W = 210, M = 16;
     const noInv = 'INV/DS/' + String(r.date || '').replace(/-/g, '').slice(2) + '/' + id.slice(-5).toUpperCase();
@@ -369,12 +372,12 @@ function downloadInvoice(){
     const T = (txt, x, y, o) => doc.text(String(txt), x, y, o);
 
     // header
-    doc.setFillColor(58, 34, 16); doc.rect(0, 0, W, 42, 'F');
+    doc.setFillColor(20, 69, 46); doc.rect(0, 0, W, 42, 'F');
     doc.setFillColor(255, 140, 66); doc.rect(0, 42, W, 2.200, 'F');
     doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(22); T('Dolan Sawah', M, 20);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(255, 214, 180); T('dolansawah.my.id', M, 27);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(200, 230, 214); T('dolansawah.my.id', M, 27);
     doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(26); T('INVOICE', W - M, 21, { align: 'right' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(255, 214, 180); T(noInv, W - M, 28, { align: 'right' });
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(200, 230, 214); T(noInv, W - M, 28, { align: 'right' });
 
     // status
     const col = bayar.kode === 'lunas' ? green : orange;
@@ -423,7 +426,7 @@ function downloadInvoice(){
     y += 8;
     const bx = 108, bw = W - M - bx;
     const rows = [];
-    if (total > 0) rows.push(['Total pesanan', rp(total), false]);
+    if (sub > 0) rows.push(['Subtotal pesanan', rp(sub), false], ['PPN 10%', rp(ppn), false], ['Total (termasuk PPN)', rp(total), false]);
     if (bayar.dibayar > 0) rows.push([bayar.kode === 'lunas' ? 'Telah dibayar' : 'DP dibayar' + (r.tipeDp ? ' (' + r.tipeDp + ')' : ''), rp(bayar.dibayar), false]);
     if (bayar.sisa != null) rows.push(['Sisa pembayaran', bayar.sisa === 0 ? 'Rp 0' : rp(bayar.sisa), true]);
     rows.forEach(([k, v, strong]) => {
@@ -438,7 +441,8 @@ function downloadInvoice(){
     y += 8;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...soft);
     const cat = bayar.kode === 'lunas' ? 'Pembayaran reservasi ini telah lunas. Terima kasih atas kepercayaan Anda.' : bayar.kode === 'dp' ? 'Invoice ini menunjukkan DP yang telah diterima. Sisa pembayaran dilunasi pada hari kunjungan.' : 'Belum ada pembayaran yang tercatat untuk reservasi ini.';
-    T(doc.splitTextToSize(cat, W - 2 * M), M, y);
+    const catL = doc.splitTextToSize(cat, W - 2 * M); T(catL, M, y); y += catL.length * 4.500;
+    if (sub > 0) { T(doc.splitTextToSize('Harga item belum termasuk PPN 10 persen. Total di atas sudah termasuk PPN.', W - 2 * M), M, y + 1); }
     const pages = doc.getNumberOfPages();
     for (let i = 1; i <= pages; i++) {
       doc.setPage(i); doc.setDrawColor(...line); doc.setLineWidth(.3); doc.line(M, 280, W - M, 280);
@@ -471,7 +475,7 @@ function downloadInvoice(){
       ms.forEach(m => { const x = m.data(); menuDetail[m.id] = Array.isArray(x.details) ? x.details : []; menuPrices[m.id] = typeof x.price === 'number' ? x.price : 0; });
     } catch (e) {}
     if (Array.isArray(r.menus)) r.menus = r.menus.map(m => ({ ...m, price: typeof m.price === 'number' ? m.price : (menuPrices[m.name] || 0) }));
-    const total = hitungTotal(r, menuPrices);
+    const sub = hitungTotal(r, menuPrices), ppn = Math.round(sub * PPN_RATE), total = sub + ppn;
     // Foto lokasi: foto di koleksi locations berupa data-URI (~100 KB/lokasi), jadi ambil HANYA lokasi yang dipilih (query nama), bukan seluruh koleksi.
     const fotos = [];
     try {
@@ -484,7 +488,7 @@ function downloadInvoice(){
         if (n === tp && fotos.length) break;
       }
     } catch (e) {}
-    CUR = { id, r, total, bayar: statusBayar(r, total), menuDetail, fotos };
+    CUR = { id, r, sub, ppn, total, bayar: statusBayar(r, total), menuDetail, fotos };
     render();
   } catch (e) {
     console.error(e);
