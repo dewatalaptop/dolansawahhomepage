@@ -1002,6 +1002,20 @@ const cleanPhone = hp => {
 // ═══════════════════════════════════════════
 // AUTH
 // ═══════════════════════════════════════════
+// Jembatan ke aplikasi Android (WebView). Di browser biasa window.DolanAndroid tidak ada, jadi tidak melakukan apa pun.
+// Mengabarkan login/logout supaya aplikasi bisa mendaftarkan perangkat untuk notifikasi (token hanya dikirim ke aplikasi native).
+async function kabariAplikasi(user) {
+  try {
+    if (!window.DolanAndroid) return;
+    if (user) {
+      const t = await user.getIdToken();
+      window.DolanAndroid.postMessage('session\n' + t + '\n' + (user.email || ''));
+    } else {
+      window.DolanAndroid.postMessage('logout');
+    }
+  } catch (e) { /* tidak boleh mengganggu aplikasi web */ }
+}
+
 auth.onAuthStateChanged(user => {
   if (user) {
     document.getElementById('login-overlay').style.display = 'none';
@@ -1012,6 +1026,7 @@ auth.onAuthStateChanged(user => {
     document.getElementById('main-content').style.display  = 'none';
     stopListeners();
   }
+  kabariAplikasi(user);
 });
 
 async function handleLogin() {
