@@ -1239,6 +1239,7 @@
     <div style="margin-bottom:14px;">
       <label class="field-label">Catatan (Opsional)</label>
       <textarea id="inputNote" rows="2" placeholder="Contoh: Kursi bayi, dll..."></textarea>
+      <input type="text" id="inputWebsite" name="company_url_hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
     </div>
     <div style="background:rgba(100,200,100,0.12); padding:15px; border-radius:16px; border:1.5px solid rgba(100,180,100,0.3);">
       <h5 style="margin:0 0 10px; color:#1a6640; font-weight:800; font-size:0.95rem;"><i class="fas fa-check-circle"></i> Ringkasan</h5>
@@ -1313,6 +1314,7 @@
     const db = firebase.firestore();
     // Ketersediaan tempat lewat fungsi server (tanpa nama/HP tamu), bukan baca langsung koleksi reservations.
     const AVAIL_URL = 'https://asia-southeast2-reservasi-dolan-sawah.cloudfunctions.net/publicAvailability';
+    const SUBMIT_URL = 'https://asia-southeast2-reservasi-dolan-sawah.cloudfunctions.net/submitReservation';
     async function fetchAvailabilityDay(dateVal){
       const r = await fetch(AVAIL_URL + '?from=' + encodeURIComponent(dateVal) + '&to=' + encodeURIComponent(dateVal), { cache: 'no-store' });
       if (!r.ok) throw new Error('Ketersediaan gagal (' + r.status + ')');
@@ -1852,39 +1854,31 @@
 
       try {
         const paxVal = parseInt(document.getElementById('inputPax').value) || 1;
-        const [snapConfirmed, snapPending] = await fetchAvailabilityDay(dateVal);
 
-        const usageMap = {};
-        const countUsage = (d) => {
-          if (d.tempat) usageMap[d.tempat] = (usageMap[d.tempat] || 0) + (parseInt(d.jumlah) || 0);
-        };
-        snapConfirmed.forEach(doc => countUsage(doc.data()));
-        snapPending.forEach(doc => countUsage(doc.data()));
-
-        const chosenLoc = locationsData.find(l => l.name === selectedLocationName);
-        if (!chosenLoc) throw new Error('Lokasi tidak ditemukan.');
-
-        const capacity = (chosenLoc.capacity !== undefined && chosenLoc.capacity !== null) ? parseInt(chosenLoc.capacity) : 50;
-        const used = usageMap[selectedLocationName] || 0;
-        const remaining = capacity - used;
-
-        if (remaining < paxVal) {
-          throw new Error(`KAPASITAS_PENUH:Tempat "${selectedLocationName}" sudah tidak tersedia untuk ${paxVal} orang (sisa ${remaining}). Silahkan pilih tempat lain.`);
-        }
-
-        await db.collection('reservation_requests').add({
-          date: dateVal,
-          jam: document.getElementById('inputTime').value,
-          jumlah: paxVal,
-          tempat: selectedLocationName,
-          nama: document.getElementById('inputName').value,
-          nomorHp: normalizePhone(document.getElementById('inputPhone').value),
-          tambahan: document.getElementById('inputNote').value,
-          menus: Object.entries(selectedMenus).map(([k, v]) => ({ name: k, quantity: v })),
-          status: 'pending',
-          via: 'Web App V9',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        // Kapasitas, tanggal ditutup, duplikat, dan batas laju diperiksa di server
+        // (satu transaksi) lewat submitReservation -- bukan di browser.
+        const resp = await fetch(SUBMIT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date: dateVal,
+            jam: document.getElementById('inputTime').value,
+            jumlah: paxVal,
+            tempat: selectedLocationName,
+            nama: document.getElementById('inputName').value,
+            nomorHp: document.getElementById('inputPhone').value,
+            tambahan: document.getElementById('inputNote').value,
+            menus: Object.entries(selectedMenus).map(([k, v]) => ({ name: k, quantity: v })),
+            website: document.getElementById('inputWebsite').value
+          })
         });
+        let out = {};
+        try { out = await resp.json(); } catch (_) {}
+        if (!resp.ok) {
+          if (out.code === 'kapasitas_penuh') throw new Error('KAPASITAS_PENUH:' + out.message);
+          if (out.message) throw new Error('SERVER_MSG:' + out.message);
+          throw new Error('Gagal koneksi');
+        }
 
         Swal.fire({ icon:'success', title:'Terkirim!', text:'Admin akan menghubungi WhatsApp Anda.', confirmButtonColor:'var(--primary)' })
           .then(() => window.location.reload());
@@ -1896,6 +1890,8 @@
             .then(() => {
               currentStep = 2; selectedLocationName = ""; updateUIState(); availabilityLoading = false; checkAvailability().catch(() => {});
             });
+        } else if (e.message && e.message.startsWith('SERVER_MSG:')) {
+          Swal.fire({ icon:'warning', title:'Belum Bisa Dikirim', text:e.message.replace('SERVER_MSG:', ''), confirmButtonColor:'var(--primary)' });
         } else {
           console.error('submitReservation error:', e);
           Swal.fire('Error', 'Gagal koneksi. Silahkan coba lagi.', 'error');

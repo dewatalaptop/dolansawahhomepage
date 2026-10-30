@@ -1046,7 +1046,8 @@ function listenRequests() {
   unsubRequests = db.collection('reservation_requests')
     .orderBy('createdAt','desc')
     .onSnapshot(snap => {
-      requestsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      // Permintaan yang kedaluwarsa (dilepas otomatis oleh server) tidak ditampilkan di kotak masuk.
+      requestsCache = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.status !== 'kedaluwarsa');
       pruneChat();
       renderInbox();
     });
