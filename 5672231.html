@@ -1056,7 +1056,7 @@ function listenMasterData() {
       const d = doc.data();
       globalMenuPrices[doc.id] = d.price || 0;
       el.innerHTML += `<div class="master-item">
-        <span>${doc.id} — <b style="color:var(--success)">Rp ${fmtIDR(d.price)}</b></span>
+        <span>${escapeHtml(doc.id)} — <b style="color:var(--success)">Rp ${fmtIDR(d.price)}</b></span>
         <i class="fas fa-trash" style="color:var(--danger);cursor:pointer" onclick="deleteDoc('menus','${doc.id}')"></i>
       </div>`;
     });
@@ -1069,7 +1069,7 @@ function listenMasterData() {
     snap.forEach(doc => {
       const d = doc.data();
       el.innerHTML += `<div class="master-item">
-        <span>${d.name} <span style="color:#aaa;">(${d.capacity} pax)</span></span>
+        <span>${escapeHtml(d.name)} <span style="color:#aaa;">(${escapeHtml(d.capacity)} pax)</span></span>
         <i class="fas fa-trash" style="color:var(--danger);cursor:pointer" onclick="deleteDoc('locations','${doc.id}')"></i>
       </div>`;
     });
@@ -1130,7 +1130,7 @@ function renderInbox() {
     container.innerHTML = '';
     emptyEl.style.display = 'block';
     let msg = 'Inbox kosong';
-    if (q)                           msg = `Tidak ada hasil untuk "<b>${q}</b>"`;
+    if (q)                           msg = `Tidak ada hasil untuk "<b>${escapeHtml(q)}</b>"`;
     else if (activeFilter === 'chatted')   msg = 'Belum ada yang dichat';
     else if (activeFilter === 'unchatted') msg = 'Semua sudah dichat 🎉';
     emptyEl.querySelector('p').innerHTML = msg;
@@ -1398,7 +1398,7 @@ async function showApproveDpDialog(id, r, menus) {
              || !(menus && menus.length > 0);
 
   const { value: form } = await Swal.fire({
-    title: `Setujui — ${r.nama}`,
+    title: `Setujui — ${escapeHtml(r.nama)}`,
     html: `
       ${isMinDp200k ? `<div style="background:#fff7ed;border:1px solid #fcd34d;border-radius:6px;padding:6px 10px;margin-bottom:10px;font-size:0.8rem;color:#92400e;text-align:left;"><i class='fas fa-bolt'></i> <b>${isOTS ? 'OTS' : 'Menu Custom'}</b> — DP minimal Rp 200.000</div>` : ''}
       <div style="text-align:left; margin-bottom:4px;">
@@ -1441,7 +1441,7 @@ async function showApproveDpDialog(id, r, menus) {
       const newRef = await simpanApprove(id, r, menus, form);
 
       // Sertakan ID dokumen baru supaya viewer bisa buka tepat by-ID (bukan tebak nama).
-      const viewerUrl = `https://dewatalaptop.github.io/reservasids/upgradeV2.html?autoOpen=true&date=${r.date}&search=${encodeURIComponent(r.nama)}&id=${encodeURIComponent(newRef.id)}`;
+      const viewerUrl = `https://dewatalaptop.github.io/reservasids/upgradeV2.html?autoOpen=true&date=${encodeURIComponent(r.date)}&search=${encodeURIComponent(r.nama)}&id=${encodeURIComponent(newRef.id)}`;
       if (viewer && !viewer.closed) {
         viewer.location.href = viewerUrl;
         Swal.fire({ icon:'success', title:'Berhasil!', text:'Reservasi disetujui.', timer:2000, showConfirmButton:false });
@@ -1491,12 +1491,12 @@ function renderDashboardStats() {
     ? sorted.map(r => `
       <div class="reservation-list-item">
         <span>
-          <b>${r.nama}</b><br>
-          <small style="color:var(--text-muted)">${r.date} | ${r.jam} | ${r.tempat}</small>
+          <b>${escapeHtml(r.nama)}</b><br>
+          <small style="color:var(--text-muted)">${escapeHtml(r.date)} | ${escapeHtml(r.jam)} | ${escapeHtml(r.tempat)}</small>
         </span>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-          <button class="btn-edit-sm" onclick="openEditModal('${r.id}','reservations')"><i class="fas fa-pencil-alt"></i></button>
-          <span style="background:var(--primary);color:white;padding:3px 10px;border-radius:12px;font-size:0.78rem;font-weight:700;">${r.jumlah} pax</span>
+          <button class="btn-edit-sm" data-id="${escapeHtml(r.id)}" onclick="openEditModal(this.dataset.id,'reservations')"><i class="fas fa-pencil-alt"></i></button>
+          <span style="background:var(--primary);color:white;padding:3px 10px;border-radius:12px;font-size:0.78rem;font-weight:700;">${escapeHtml(r.jumlah)} pax</span>
         </div>
       </div>`).join('')
     : '<p style="color:#bbb; margin:0; font-size:0.9rem;">Belum ada reservasi.</p>';
@@ -1548,11 +1548,11 @@ function showDateDetail(date) {
         return `
       <div class="reservation-list-item">
         <div>
-          <b>${r.jam} — ${r.nama}</b><br>
-          <small style="color:var(--text-muted)">${r.tempat} · ${r.jumlah} pax · DP: Rp ${fmtIDR(r.dp)} (${r.tipeDp||'–'})</small>
+          <b>${escapeHtml(r.jam)} — ${escapeHtml(r.nama)}</b><br>
+          <small style="color:var(--text-muted)">${escapeHtml(r.tempat)} · ${escapeHtml(r.jumlah)} pax · DP: Rp ${fmtIDR(r.dp)} (${escapeHtml(r.tipeDp||'–')})</small>
         </div>
         <div class="res-item-actions">
-          <button class="btn-edit-sm" onclick="openEditModal('${r.id}','reservations')"><i class="fas fa-pencil-alt"></i> Edit</button>
+          <button class="btn-edit-sm" data-id="${escapeHtml(r.id)}" onclick="openEditModal(this.dataset.id,'reservations')"><i class="fas fa-pencil-alt"></i> Edit</button>
           <button class="btn-wa-sm" onclick="window.open('https://wa.me/${phone}')"><i class="fab fa-whatsapp"></i></button>
         </div>
       </div>`;
@@ -1625,7 +1625,7 @@ function updateChart() {
     tiles.innerHTML = items.map(t => `
       <div class="mini-tile">
         <div class="mini-ic" style="background:${t[3]}22;color:${t[3]}"><i class="fas ${t[0]}"></i></div>
-        <div><div class="mini-lbl">${t[1]}</div><div class="mini-val" title="${t[2]}">${t[2]}</div></div>
+        <div><div class="mini-lbl">${t[1]}</div><div class="mini-val" title="${escapeHtml(t[2])}">${escapeHtml(t[2])}</div></div>
       </div>`).join('');
   }
 
@@ -2128,19 +2128,19 @@ function addMenuRow(menuName, qty) {
     const row = document.createElement('div');
     row.className = 'menu-edit-row';
     row.innerHTML =
-      '<input type="text" class="me-name" placeholder="Nama menu" value="' + (menuName||'') + '">' +
-      '<input type="number" class="me-qty" min="1" value="' + (qty||1) + '" placeholder="Qty">' +
+      '<input type="text" class="me-name" placeholder="Nama menu" value="' + escapeHtml(menuName||'') + '">' +
+      '<input type="number" class="me-qty" min="1" value="' + escapeHtml(qty||1) + '" placeholder="Qty">' +
       '<button class="btn-del-row" onclick="removeMenuRow(this)"><i class="fas fa-trash"></i></button>';
     document.getElementById('edit-menu-rows').appendChild(row);
   } else {
     const options = menuNames.map(n =>
-      '<option value="' + n + '"' + (n === menuName ? ' selected' : '') + '>' + n + '</option>'
+      '<option value="' + escapeHtml(n) + '"' + (n === menuName ? ' selected' : '') + '>' + escapeHtml(n) + '</option>'
     ).join('');
     const row = document.createElement('div');
     row.className = 'menu-edit-row';
     row.innerHTML =
       '<select class="me-name">' + options + '</select>' +
-      '<input type="number" class="me-qty" min="1" value="' + (qty||1) + '" placeholder="Qty">' +
+      '<input type="number" class="me-qty" min="1" value="' + escapeHtml(qty||1) + '" placeholder="Qty">' +
       '<button class="btn-del-row" onclick="removeMenuRow(this)"><i class="fas fa-trash"></i></button>';
     document.getElementById('edit-menu-rows').appendChild(row);
   }
@@ -2155,9 +2155,9 @@ function addCustomMenuRow(name, qty, price) {
   const row = document.createElement('div');
   row.className = 'menu-edit-row custom-menu-row';
   row.innerHTML =
-    '<input type="text" class="me-name" placeholder="Nama item custom" value="' + (name||'').replace(/"/g,'&quot;') + '">' +
-    '<input type="number" class="me-qty" min="1" value="' + (qty||1) + '" placeholder="Qty">' +
-    '<input type="number" class="me-price" min="0" value="' + (price||0) + '" placeholder="Harga">' +
+    '<input type="text" class="me-name" placeholder="Nama item custom" value="' + escapeHtml(name||'') + '">' +
+    '<input type="number" class="me-qty" min="1" value="' + escapeHtml(qty||1) + '" placeholder="Qty">' +
+    '<input type="number" class="me-price" min="0" value="' + escapeHtml(price||0) + '" placeholder="Harga">' +
     '<button class="btn-del-row" onclick="removeMenuRow(this)"><i class="fas fa-trash"></i></button>';
   document.getElementById('edit-menu-rows').appendChild(row);
   updateMenuEmpty();
