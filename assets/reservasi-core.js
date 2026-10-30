@@ -60,10 +60,12 @@
   }
 
   // ---------- Kapasitas tempat per jendela waktu ----------
-  // Keputusan pemilik (2026-10-31): reservasi di tempat yang sama hanya dijumlahkan bila jamnya berdekatan
-  // (selisih < 150 menit = gratis 2,5 jam), bukan jumlah seharian. SALINAN dari reservasids/functions/submit.js
+  // Keputusan pemilik (2026-10-31): tiap reservasi berlangsung 2,5 jam dan di tempat yang sama diberi jeda 2 jam, jadi dua
+  // reservasi bentrok bila jam mulainya berbeda < 4,5 jam (270 menit); hanya yang bentrok dijumlahkan, bukan seharian. SALINAN dari reservasids/functions/submit.js
   // (server = penentu); reservasids/functions/test/parity-core.test.js menjaga keduanya sama.
-  var JENDELA_BENTROK_MENIT = 150;
+  var DURASI_RESERVASI_MENIT = 150;
+  var JEDA_ANTAR_RESERVASI_MENIT = 120;
+  var JENDELA_BENTROK_MENIT = DURASI_RESERVASI_MENIT + JEDA_ANTAR_RESERVASI_MENIT;
   function menitDariJam(t) {
     var m = /^(\d{1,2}):(\d{2})/.exec(String(t || ""));
     return m ? (+m[1]) * 60 + (+m[2]) : NaN;
@@ -158,6 +160,6 @@
     estimasiDp: estimasiDp, statusBayar: statusBayar,
     isBatal: isBatal, tsMillis: tsMillis, ymdWib: ymdWib, tambahHari: tambahHari, selisihHari: selisihHari,
     daftarPengingat: daftarPengingat, nomorWa: nomorWa, pesanPengingat: pesanPengingat,
-    JENDELA_BENTROK_MENIT: JENDELA_BENTROK_MENIT, menitDariJam: menitDariJam, sisaKapasitas: sisaKapasitas
+    DURASI_RESERVASI_MENIT: DURASI_RESERVASI_MENIT, JEDA_ANTAR_RESERVASI_MENIT: JEDA_ANTAR_RESERVASI_MENIT, JENDELA_BENTROK_MENIT: JENDELA_BENTROK_MENIT, menitDariJam: menitDariJam, sisaKapasitas: sisaKapasitas
   };
 });
