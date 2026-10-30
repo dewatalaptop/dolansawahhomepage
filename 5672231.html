@@ -744,6 +744,10 @@
       <i class="fas fa-inbox"></i> Permintaan
       <span class="nav-badge" id="sidebar-badge">0</span>
     </div>
+    <div class="nav-item" data-tab="reminders" onclick="switchTab('reminders',this)">
+      <i class="fas fa-bell"></i> Pengingat
+      <span class="nav-badge" id="reminder-badge">0</span>
+    </div>
     <div class="nav-item" data-tab="calendar" onclick="switchTab('calendar',this)">
       <i class="far fa-calendar-alt"></i> Kalender
     </div>
@@ -813,6 +817,29 @@
       <p>Tidak ada data</p>
     </div>
     <div id="inbox-container" class="request-grid"></div>
+  </div>
+
+  <!-- PENGINGAT -->
+  <div id="tab-reminders" class="section">
+    <style>
+      .rem-group { margin-bottom: 22px; }
+      .rem-group h3 { font-size: 1rem; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+      .rem-group h3 small { font-weight: 500; color: #6b7280; }
+      .rem-row { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); flex-wrap: wrap; }
+      .rem-info { flex: 1; min-width: 200px; }
+      .rem-info b { display: block; }
+      .rem-info span { font-size: 0.82rem; color: #6b7280; }
+      .rem-pay { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; background: #e5e7eb; color: #374151; }
+      .rem-pay.lunas { background: #d1fae5; color: #065f46; }
+      .rem-pay.dp { background: #fef3c7; color: #92400e; }
+      .rem-pay.belum { background: #fee2e2; color: #991b1b; }
+      .rem-btn { border: none; border-radius: 10px; padding: 9px 14px; font-weight: 600; cursor: pointer; background: #25d366; color: #fff; }
+      .rem-btn.alt { background: #f59e0b; }
+      .rem-empty { color: #9ca3af; font-size: 0.9rem; padding: 6px 2px; }
+    </style>
+    <div class="inbox-toolbar"><div class="inbox-left"><h2>Pengingat</h2></div></div>
+    <p style="color:#6b7280;font-size:0.88rem;margin:0 0 14px;">Daftar yang perlu Anda kirim hari ini. Setelah tombol WhatsApp ditekan, pengingat ditandai terkirim dan hilang dari daftar.</p>
+    <div id="reminder-container"></div>
   </div>
 
   <!-- KALENDER -->
@@ -1051,6 +1078,7 @@ function listenRequests() {
       requestsCache = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.status !== 'kedaluwarsa' && r.status !== 'ditolak');
       pruneChat();
       renderInbox();
+      renderReminders();
     });
 }
 
@@ -1418,6 +1446,7 @@ function listenReservations() {
     reservationsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderDashboardStats();
     renderCalendar();
+    renderReminders();
     // chart hanya update jika canvas ada di DOM
     if (document.getElementById('chartAnalysis')) updateChart();
   });
@@ -1710,6 +1739,59 @@ function switchTab(tabId, el) {
   // render chart lazy (first open)
   if (tabId === 'analysis') setTimeout(updateChart, 50);
 }
+
+// ═══════════════════════════════════════════
+// PENGINGAT (logika di assets/reservasi-core.js: ReservasiCore.daftarPengingat)
+// ═══════════════════════════════════════════
+const REMINDER_GROUPS = [
+  { key: 'kedaluwarsa', icon: 'fa-hourglass-half', title: 'Permintaan hampir kedaluwarsa', hint: 'Segera proses, kalau tidak kursinya dilepas otomatis.' },
+  { key: 'h3', icon: 'fa-calendar-check', title: 'Pengingat H-3', hint: 'Batas reschedule dan pembatalan dengan DP kembali.' },
+  { key: 'h1', icon: 'fa-bell', title: 'Pengingat H-1 / hari H', hint: 'Konfirmasi kedatangan dan peraturan.' },
+  { key: 'terimaKasih', icon: 'fa-heart', title: 'Ucapan terima kasih', hint: '3 jam setelah jam reservasi.' }
+];
+
+function renderReminders() {
+  const box = document.getElementById('reminder-container');
+  if (!box || typeof ReservasiCore === 'undefined') return;
+  const out = ReservasiCore.daftarPengingat(reservationsCache, requestsCache, Date.now());
+  const total = REMINDER_GROUPS.reduce((n, g) => n + out[g.key].length, 0);
+  const badge = document.getElementById('reminder-badge');
+  if (badge) { badge.textContent = total; badge.style.display = total > 0 ? 'inline-block' : 'none'; }
+
+  box.innerHTML = REMINDER_GROUPS.map(g => {
+    const items = out[g.key];
+    const rows = items.length ? items.map(it => {
+      if (g.key === 'kedaluwarsa') {
+        const q = it.req, sisa = it.sisaJam < 1 ? 'kurang dari 1 jam' : Math.floor(it.sisaJam) + ' jam lagi';
+        return `<div class="rem-row"><div class="rem-info"><b>${escapeHtml(q.nama || '–')}</b><span>${escapeHtml(q.date || '')} ${escapeHtml(q.jam || '')} · ${escapeHtml(q.tempat || '')} · ${escapeHtml(q.jumlah || '')} orang · kedaluwarsa ${sisa}</span></div>
+          <button class="rem-btn alt" onclick="switchTab('inbox', document.querySelector('[data-tab=inbox]'))"><i class="fas fa-inbox"></i> Proses</button></div>`;
+      }
+      const r = it;
+      const sub = ReservasiCore.hitungSubtotal(r, globalMenuPrices);
+      const bayar = ReservasiCore.statusBayar(r, ReservasiCore.hitungGrandTotal(sub));
+      const jenis = g.key === 'terimaKasih' ? 'thanks' : g.key;
+      return `<div class="rem-row"><div class="rem-info"><b>${escapeHtml(r.nama || '–')}</b><span>${escapeHtml(r.date)} ${escapeHtml(r.jam || '')} · ${escapeHtml(r.tempat || '')} · ${escapeHtml(r.jumlah || '')} orang</span></div>
+        <span class="rem-pay ${bayar.kode}">${escapeHtml(bayar.label)}</span>
+        <button class="rem-btn" onclick="sendReminder('${escapeHtml(r.id)}','${jenis}')"><i class="fab fa-whatsapp"></i> Kirim</button></div>`;
+    }).join('') : '<div class="rem-empty">Tidak ada.</div>';
+    return `<div class="rem-group"><h3><i class="fas ${g.icon}"></i> ${g.title} <small>${items.length ? '(' + items.length + ') ' : ''}${g.hint}</small></h3>${rows}</div>`;
+  }).join('');
+}
+
+function sendReminder(id, jenis) {
+  const r = reservationsCache.find(x => x.id === id);
+  if (!r) return;
+  // Buka WhatsApp SEGERA (masih dalam gesture klik) supaya tidak diblokir popup.
+  const url = 'https://wa.me/' + ReservasiCore.nomorWa(r.nomorHp) + '?text=' + encodeURIComponent(ReservasiCore.pesanPengingat(jenis, r));
+  const w = window.open(url, '_blank');
+  if (!w) Swal.fire({ icon: 'info', title: 'Pop-up diblokir', html: `<a href="${url}" target="_blank" rel="noopener">Buka WhatsApp</a>` });
+  const upd = jenis === 'thanks'
+    ? { thankYouSent: true }
+    : { ['reminders.' + jenis]: firebase.firestore.FieldValue.serverTimestamp() };
+  db.collection('reservations').doc(id).update(upd)
+    .catch(e => Swal.fire('Gagal menandai terkirim', e.message, 'error'));
+}
+setInterval(() => { try { renderReminders(); } catch (e) {} }, 60000);
 
 function openSidebar() {
   document.getElementById('sidebar').classList.add('open');

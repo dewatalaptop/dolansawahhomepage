@@ -59,10 +59,80 @@
     return { kode: "belum", label: "BELUM ADA PEMBAYARAN", dibayar: 0, sisa: total > 0 ? total : null };
   }
 
+  // ---------- Pengingat (dipakai panel dasbor web; aplikasi Android memakai logika yang sama) ----------
+  var STATUS_BATAL = ["batal", "dibatalkan", "cancel", "cancelled", "canceled", "ditolak", "rejected", "kedaluwarsa"];
+  function isBatal(r) { return STATUS_BATAL.indexOf(String((r && r.status) == null ? "" : r.status).trim().toLowerCase()) >= 0; }
+
+  // Firestore Timestamp / {seconds} / angka -> milidetik (null bila tak ada).
+  function tsMillis(t) {
+    if (t == null) return null;
+    if (typeof t === "number") return t;
+    if (typeof t.toMillis === "function") return t.toMillis();
+    if (typeof t.seconds === "number") return t.seconds * 1000;
+    return null;
+  }
+  function ymdWib(ms) { return new Date(ms + 7 * 3600 * 1000).toISOString().slice(0, 10); }
+  function tambahHari(ymd, n) { return new Date(Date.parse(ymd + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10); }
+  function selisihHari(ymd, hariIni) { return Math.round((Date.parse(ymd + "T00:00:00Z") - Date.parse(hariIni + "T00:00:00Z")) / 864e5); }
+
+  var JAM_SEBELUM_KEDALUWARSA = 12; // permintaan pending diperingatkan bila sisa waktunya <= ini
+
+  function waktuReservasi(r) { return r.jam ? Date.parse(r.date + "T" + r.jam + ":00+07:00") : NaN; }
+
+  // reservations: dokumen reservasi disetujui; requests: reservation_requests. now: ms.
+  // Mengembalikan daftar yang perlu tindakan admin (urut tanggal terdekat).
+  function daftarPengingat(reservations, requests, now) {
+    var hariIni = ymdWib(now);
+    var out = { kedaluwarsa: [], h3: [], h1: [], terimaKasih: [] };
+    (reservations || []).forEach(function (r) {
+      if (!r || !r.date || isBatal(r) || !r.nomorHp) return; // tanpa nomor HP tidak bisa dikirimi WhatsApp
+      var d = selisihHari(r.date, hariIni);
+      var sent = r.reminders || {};
+      if (d >= 2 && d <= 3) { if (!sent.h3) out.h3.push(r); }
+      else if (d >= 0 && d <= 1 && !sent.h1) out.h1.push(r);
+      // Ucapan terima kasih: 3 jam setelah jam reservasi, sampai 7 hari ke belakang (sama dengan notifikasi di kalender admin).
+      if (d <= 0 && d >= -7 && r.thankYouSent !== true) {
+        var t = waktuReservasi(r);
+        if (!isNaN(t) && now > t + 3 * 3600000) out.terimaKasih.push(r);
+      }
+    });
+    (requests || []).forEach(function (q) {
+      if (!q || String(q.status || "pending").toLowerCase() !== "pending") return;
+      var exp = tsMillis(q.expiresAt);
+      if (exp == null) return; // permintaan lama tanpa batas waktu
+      var sisaJam = (exp - now) / 3600000;
+      if (sisaJam <= JAM_SEBELUM_KEDALUWARSA) out.kedaluwarsa.push({ req: q, sisaJam: Math.max(0, sisaJam) });
+    });
+    var byDate = function (a, b) { return String(a.date).localeCompare(String(b.date)) || String(a.jam || "").localeCompare(String(b.jam || "")); };
+    out.h3.sort(byDate); out.h1.sort(byDate); out.terimaKasih.sort(byDate);
+    out.kedaluwarsa.sort(function (a, b) { return a.sisaJam - b.sisaJam; });
+    return out;
+  }
+
+  function nomorWa(hp) {
+    var p = String(hp || "").replace(/\D/g, "");
+    if (p.indexOf("0") === 0) p = "62" + p.slice(1);
+    return p;
+  }
+
+  var LINK_TAMU = "https://www.dolansawah.my.id/reservasi.html?id=";
+  function pesanPengingat(jenis, r) {
+    var nama = r.nama || "Kak";
+    var rinci = "📅 " + r.date + (r.jam ? ", " + r.jam : "") + "\n📍 " + (r.tempat || "-") + "\n👥 " + (r.jumlah || "-") + " orang";
+    var link = LINK_TAMU + encodeURIComponent(r.id || "");
+    if (jenis === "h3")
+      return "Halo Kak *" + nama + "*,\n\nPengingat reservasi di *Dolan Sawah*:\n" + rinci + "\n\nPerubahan jadwal (reschedule) dan pembatalan dengan DP kembali penuh dapat dilakukan paling lambat H-3. Jika ada perubahan, mohon kabari kami hari ini ya.\n\nDetail & peraturan: " + link;
+    if (jenis === "h1")
+      return "Halo Kak *" + nama + "*,\n\nKami tunggu kedatangan Kakak di *Dolan Sawah*:\n" + rinci + "\n\nMohon tidak membawa makanan/minuman dari luar. Jumlah menu kami sesuaikan dengan pesanan; silakan minta petugas menghitung ulang sebelum dikonsumsi.\n\nDetail & peraturan: " + link;
+    return "Halo Kak *" + nama + "*,\n\nTerima kasih banyak atas kunjungannya ke *Dolan Sawah*. Semoga Kakak dan rombongan menikmati hidangan dan suasananya. Kami tunggu kedatangan Kakak kembali!";
+  }
+
   return {
     PPN_RATE: PPN_RATE, DP_RATE: DP_RATE, DP_MINIMUM_OTS: DP_MINIMUM_OTS,
     isOtsMenu: isOtsMenu, isCustomMenu: isCustomMenu,
     hitungSubtotal: hitungSubtotal, hitungPpn: hitungPpn, hitungGrandTotal: hitungGrandTotal,
-    estimasiDp: estimasiDp, statusBayar: statusBayar
+    estimasiDp: estimasiDp, statusBayar: statusBayar,
+    isBatal: isBatal, tsMillis: tsMillis, ymdWib: ymdWib, tambahHari: tambahHari, selisihHari: selisihHari,
+    daftarPengingat: daftarPengingat, nomorWa: nomorWa, pesanPengingat: pesanPengingat
   };
 });
