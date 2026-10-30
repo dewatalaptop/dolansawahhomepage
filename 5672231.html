@@ -909,6 +909,7 @@
   <div id="tab-analysis" class="section">
     <h2 style="margin:0 0 20px;">Analisis Bisnis</h2>
     <div class="analysis-tiles" id="analysis-tiles"></div>
+    <div id="laporan-ops" style="margin-top:18px;"></div>
     <div class="chart-wrap" style="margin-bottom:20px;">
       <h3><i class="fas fa-chart-column" style="color:var(--primary)"></i> Reservasi per Bulan — <span id="chart-year"></span></h3>
       <div style="position:relative; height:320px;">
@@ -1059,6 +1060,8 @@ function forceRefresh() {
 // ═══════════════════════════════════════════
 // MASTER DATA
 // ═══════════════════════════════════════════
+let kapasitasLokasi = {}; // { namaTempat: kapasitas } untuk laporan okupansi
+
 function listenMasterData() {
   unsubMenus = db.collection('menus').onSnapshot(snap => {
     const el = document.getElementById('master-menu-list');
@@ -1077,8 +1080,10 @@ function listenMasterData() {
   unsubLocations = db.collection('locations').onSnapshot(snap => {
     const el = document.getElementById('master-location-list');
     el.innerHTML = '';
+    kapasitasLokasi = {};
     snap.forEach(doc => {
       const d = doc.data();
+      kapasitasLokasi[d.name] = parseInt(d.capacity, 10) || 0;
       el.innerHTML += `<div class="master-item">
         <span>${escapeHtml(d.name)} <span style="color:#aaa;">(${escapeHtml(d.capacity)} pax)</span></span>
         <i class="fas fa-trash" style="color:var(--danger);cursor:pointer" onclick="deleteDoc('locations','${doc.id}')"></i>
@@ -1783,7 +1788,7 @@ function switchTab(tabId, el) {
   closeSidebar();
 
   // render chart lazy (first open)
-  if (tabId === 'analysis') setTimeout(updateChart, 50);
+  if (tabId === 'analysis') { setTimeout(updateChart, 50); renderLaporanOps(); }
   if (tabId === 'audit') muatRiwayat();
 }
 
@@ -1913,6 +1918,33 @@ function sendReminder(id, jenis) {
     .catch(e => Swal.fire('Gagal menandai terkirim', e.message, 'error'));
 }
 setInterval(() => { try { renderReminders(); } catch (e) {} }, 60000);
+
+function renderLaporanOps() {
+  const box = document.getElementById('laporan-ops');
+  if (!box || typeof ReservasiCore === 'undefined') return;
+  const bulan = new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 7);
+  const o = ReservasiCore.laporanOkupansi(reservationsCache, kapasitasLokasi, bulan);
+  const k = ReservasiCore.laporanKonversi(requestsCache, reservationsCache);
+  const baris = o.baris.length ? o.baris.map(b => `<tr><td>${escapeHtml(b.tempat)}</td><td>${b.reservasi}</td><td>${b.tamu}</td><td>${b.rataTamu}</td><td>${b.okupansiPersen === null ? '–' : b.okupansiPersen + '%'}</td></tr>`).join('')
+    : '<tr><td colspan="5" style="color:#9ca3af;">Belum ada reservasi bulan ini.</td></tr>';
+  const jam = o.jamTersibuk.length ? o.jamTersibuk.map(j => `${escapeHtml(j.jam)} (${j.jumlah}x)`).join(', ') : '–';
+  box.innerHTML = `
+    <style>
+      .lap-card { background:#fff; border-radius:14px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); margin-bottom:14px; }
+      .lap-card h3 { margin:0 0 4px; font-size:1rem; } .lap-card small { color:#6b7280; }
+      .lap-tbl { width:100%; border-collapse:collapse; margin-top:10px; font-size:0.88rem; }
+      .lap-tbl th, .lap-tbl td { text-align:left; padding:7px 6px; border-bottom:1px solid #f1f5f9; } .lap-tbl th { color:#6b7280; font-weight:600; }
+      .lap-kpi { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; } .lap-kpi div { background:#f8fafc; border-radius:10px; padding:10px 14px; min-width:110px; }
+      .lap-kpi b { display:block; font-size:1.25rem; } .lap-kpi span { font-size:0.75rem; color:#6b7280; }
+    </style>
+    <div class="lap-card"><h3>Okupansi per Tempat — bulan ini</h3>
+      <small>Rata-rata tamu per reservasi dibanding kapasitas tempat. ${o.totalReservasi} reservasi, ${o.totalTamu} tamu. Jam tersibuk: ${jam}.</small>
+      <div style="overflow:auto;"><table class="lap-tbl"><tr><th>Tempat</th><th>Reservasi</th><th>Tamu</th><th>Rata-rata</th><th>vs kapasitas</th></tr>${baris}</table></div></div>
+    <div class="lap-card"><h3>Konversi Permintaan Tamu</h3>
+      <small>Hanya permintaan lewat form baru yang bisa dilacak sampai akhir (sejak 30 Okt 2026). Permintaan lama dihapus saat disetujui sehingga tidak bisa dihitung mundur.</small>
+      <div class="lap-kpi"><div><b>${k.disetujui}</b><span>Disetujui</span></div><div><b>${k.menunggu}</b><span>Menunggu</span></div><div><b>${k.ditolak}</b><span>Ditolak</span></div><div><b>${k.kedaluwarsa}</b><span>Kedaluwarsa</span></div>
+        <div><b>${k.persenDisetujui === null ? '–' : k.persenDisetujui + '%'}</b><span>Tingkat disetujui</span></div></div></div>`;
+}
 
 async function muatRiwayat() {
   const box = document.getElementById('audit-container');

@@ -184,3 +184,34 @@ test("audit: tambah, hapus, setujui, tolak", () => {
   assert.deepEqual(tolak.perubahan.status, { dari: "pending", ke: "ditolak" });
   assert.equal(C.buatCatatanAudit("ubah", "reservations", "z", r, r, "a@x").perubahan.jumlah, undefined); // tanpa perubahan
 });
+
+
+// ---------- laporan ----------
+test("laporan okupansi: per tempat untuk satu bulan, abaikan batal/bulan lain, jam tersibuk", () => {
+  const kap = { "Pondok 1": 30, "Lantai 2": 65 };
+  const rs = [
+    { tempat: "Pondok 1", jumlah: 20, jam: "10:00", date: "2026-11-02" },
+    { tempat: "Pondok 1", jumlah: "10", jam: "10:00", date: "2026-11-09" },
+    { tempat: "Lantai 2", jumlah: 65, jam: "12:00", date: "2026-11-03" },
+    { tempat: "Lantai 2", jumlah: 50, jam: "12:00", date: "2026-11-04", status: "batal" },
+    { tempat: "Lantai 2", jumlah: 99, jam: "08:00", date: "2026-12-01" },
+    { tempat: "Aula", jumlah: 7, jam: "10:00", date: "2026-11-20" }
+  ];
+  const o = C.laporanOkupansi(rs, kap, "2026-11");
+  assert.equal(o.totalReservasi, 4);
+  assert.equal(o.totalTamu, 102);
+  assert.deepEqual(o.baris.map((b) => b.tempat), ["Lantai 2", "Pondok 1", "Aula"]);        // urut total tamu
+  const p1 = o.baris.find((b) => b.tempat === "Pondok 1");
+  assert.deepEqual([p1.reservasi, p1.tamu, p1.rataTamu, p1.kapasitas, p1.okupansiPersen], [2, 30, 15, 30, 50]);
+  assert.equal(o.baris.find((b) => b.tempat === "Aula").okupansiPersen, null);              // kapasitas tak diketahui
+  assert.deepEqual(o.jamTersibuk[0], { jam: "10:00", jumlah: 3 });
+  assert.equal(C.laporanOkupansi([], {}, "2026-11").baris.length, 0);
+});
+
+test("laporan konversi: disetujui dikenali dari requestId; permintaan lama tanpa jejak tidak dihitung", () => {
+  const reqs = [{ status: "pending" }, { status: "ditolak" }, { status: "kedaluwarsa" }, {}, { status: "Pending" }];
+  const res = [{ requestId: "a" }, { requestId: "b" }, { nama: "reservasi lama tanpa requestId" }];
+  const k = C.laporanKonversi(reqs, res);
+  assert.deepEqual([k.menunggu, k.ditolak, k.kedaluwarsa, k.disetujui, k.total, k.persenDisetujui], [3, 1, 1, 2, 7, 29]);
+  assert.equal(C.laporanKonversi([], []).persenDisetujui, null);
+});
