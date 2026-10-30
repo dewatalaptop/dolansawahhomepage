@@ -533,8 +533,39 @@ async function loadFotos(r){
 }
 
 
+/* ── Pelacak status permintaan (?r=<ID permintaan>): untuk tamu yang baru mengirim form ── */
+const STATUS_URL = 'https://asia-southeast2-reservasi-dolan-sawah.cloudfunctions.net/reservationStatus';
+async function statusInit(rid){
+  const ringkas = x => `${tanggalPanjang(x.date)}${x.jam ? ', ' + x.jam : ''} · ${x.tempat} · ${x.jumlah} orang`;
+  try {
+    const resp = await fetch(STATUS_URL + '?id=' + encodeURIComponent(rid), { cache: 'no-store' });
+    const x = await resp.json().catch(() => ({}));
+    if (resp.status === 404) { stateView('bad', 'Permintaan tidak ditemukan', 'Tautan mungkin sudah tidak berlaku. Silakan hubungi Dolan Sawah via WhatsApp.'); return; }
+    if (!resp.ok) throw new Error('status ' + resp.status);
+    if (x.status === 'disetujui' && x.reservationId) { location.replace(location.pathname + '?id=' + encodeURIComponent(x.reservationId)); return; }
+    const info = ringkas(x);
+    if (x.status === 'menunggu') {
+      stateView('', 'Permintaan diterima', `${info}. Admin Dolan Sawah akan menghubungi WhatsApp Anda. Halaman ini diperbarui otomatis; simpan tautan ini untuk memantau statusnya.`);
+      setTimeout(() => statusInit(rid), 30000);
+    } else if (x.status === 'ditolak') {
+      stateView('bad', 'Permintaan belum bisa diterima', `${info}. Silakan hubungi Dolan Sawah via WhatsApp untuk pilihan tanggal atau tempat lain.`);
+    } else if (x.status === 'kedaluwarsa') {
+      stateView('bad', 'Permintaan kedaluwarsa', `${info}. Permintaan ini tidak diproses dalam batas waktu sehingga kursinya dilepas. Silakan kirim ulang atau hubungi Dolan Sawah via WhatsApp.`);
+    } else {
+      stateView('bad', 'Reservasi dibatalkan', `${info}. Silakan hubungi Dolan Sawah via WhatsApp bila ada pertanyaan.`);
+    }
+  } catch (e) {
+    stateView('bad', 'Gagal memuat', 'Periksa koneksi internet Anda lalu muat ulang halaman ini.');
+  }
+}
+
 (async function init(){
   const q = new URLSearchParams(location.search);
+  const rid = (q.get('r') || '').trim();
+  if (rid) {
+    if (!/^[A-Za-z0-9]{15,40}$/.test(rid)) { stateView('bad', 'Tautan tidak valid', 'Mohon gunakan tautan yang ditampilkan setelah Anda mengirim permintaan.'); return; }
+    return statusInit(rid);
+  }
   const id = (q.get('id') || '').trim();
   if (!/^[A-Za-z0-9]{15,40}$/.test(id)) { stateView('bad', 'Tautan tidak valid', 'Mohon gunakan tautan yang dikirim oleh Dolan Sawah melalui WhatsApp.'); return; }
   // Kedaluwarsa diputuskan oleh tanggal pada data (bukan param d), agar reservasi yang di-reschedule tetap bisa dibuka lewat tautan lama.

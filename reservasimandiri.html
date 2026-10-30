@@ -1249,7 +1249,25 @@
         <div style="display:flex; justify-content:space-between;"><span>Orang:</span> <strong id="summaryPax"></strong></div>
         <div style="display:flex; justify-content:space-between;"><span>Tempat:</span> <strong id="summaryLoc"></strong></div>
         <div style="display:flex; justify-content:space-between; margin-top:6px; border-top:1px dashed rgba(100,180,100,0.4); padding-top:6px;"><span>Total Menu:</span> <strong id="summaryMenu">0 Item</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span>Subtotal menu:</span> <strong id="summarySub">-</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span>PPN 10%:</span> <strong id="summaryPpn">-</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span>Total:</span> <strong id="summaryTotal">-</strong></div>
+        <div style="display:flex; justify-content:space-between;"><span>Estimasi DP:</span> <strong id="summaryDp">-</strong></div>
+        <div style="font-size:0.72rem; font-weight:600; opacity:0.85; margin-top:4px;">Estimasi saja. Nominal DP dan total akhir dikonfirmasi admin.</div>
       </div>
+    </div>
+    <div id="rulesBox" style="margin-top:14px; background:#fff8ec; border:1.5px solid #f0d9a8; border-radius:16px; padding:14px;">
+      <h5 style="margin:0 0 8px; color:#8a5a00; font-weight:800; font-size:0.92rem;"><i class="fas fa-scroll"></i> Peraturan Reservasi</h5>
+      <ul style="margin:0 0 10px; padding-left:18px; font-size:0.8rem; color:#6b4a00; line-height:1.6; font-weight:600;">
+        <li>DP tidak dapat dikembalikan bila batal pada H-2, H-1, atau Hari H. Batal maksimal H-3: DP kembali penuh.</li>
+        <li>Reschedule maksimal H-3.</li>
+        <li>Gratis 2,5 jam pertama. Overtime per jam: 20&ndash;30 orang Rp 150.000, 31&ndash;80 orang Rp 250.000, lebih dari 80 orang Rp 350.000 (kurang dari 20 orang dinegosiasikan).</li>
+        <li>Dilarang membawa makanan/minuman dari luar (denda Rp 200.000) dan hewan peliharaan.</li>
+        <li>Jumlah menu disajikan sesuai pesanan. Silakan minta petugas menghitung ulang sebelum dikonsumsi; komplain jumlah setelah dikonsumsi tidak dapat diklaim.</li>
+      </ul>
+      <label style="display:flex; gap:8px; align-items:flex-start; font-size:0.82rem; font-weight:700; color:#5a3d00; cursor:pointer;">
+        <input type="checkbox" id="inputAgree" style="margin-top:3px;"> <span>Saya sudah membaca dan menyetujui peraturan reservasi.</span>
+      </label>
     </div>
   </div>
 </div>
@@ -1482,7 +1500,7 @@
           snap.forEach(doc => {
             let d = doc.data();
             let desc = Array.isArray(d.details) ? d.details.join(", ") : (d.deskripsi || "");
-            menusData[doc.id] = { name: doc.id, desc: desc, category: categorizeMenu(doc.id) };
+            menusData[doc.id] = { name: doc.id, desc: desc, category: categorizeMenu(doc.id), price: typeof d.price === 'number' ? d.price : 0 };
           });
         } catch(e) { console.error("Error loading menus:", e); }
 
@@ -1605,6 +1623,26 @@
       if(badge) { badge.textContent = catCount; badge.style.display = catCount > 0 ? 'inline-block' : 'none'; }
     }
 
+    // Estimasi harga & DP -- mengikuti aturan admin (5672231.html showApproveDpDialog):
+    // DP = 50% (menu + PPN 10%); menu "OTS"/"Custom" (harga Rp 0 sebagai penanda) -> DP minimal Rp 200.000.
+    const rpFmt = n => 'Rp ' + Math.round(n || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    function updateEstimate() {
+      let food = 0, minDp = false;
+      Object.entries(selectedMenus).forEach(([name, qty]) => {
+        const price = (menusData[name] && menusData[name].price) || 0;
+        food += price * qty;
+        const up = name.trim().toUpperCase();
+        if (up === 'OTS' || up === 'CUSTOM') minDp = true;
+      });
+      const ppn = Math.round(food * 0.1);
+      const normalDp = Math.round((food + ppn) * 0.5);
+      const dp = minDp ? Math.max(200000, normalDp) : normalDp;
+      document.getElementById('summarySub').textContent = rpFmt(food);
+      document.getElementById('summaryPpn').textContent = rpFmt(ppn);
+      document.getElementById('summaryTotal').textContent = rpFmt(food + ppn);
+      document.getElementById('summaryDp').textContent = rpFmt(dp);
+    }
+
     function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }
 
     async function nextStep() {
@@ -1651,6 +1689,7 @@
         document.getElementById('summaryPax').textContent = document.getElementById('inputPax').value + " Orang";
         document.getElementById('summaryLoc').textContent = selectedLocationName;
         document.getElementById('summaryMenu').textContent = Object.values(selectedMenus).reduce((a,b)=>a+b,0) + " Item";
+        updateEstimate();
         currentStep = 4;
       }
       else if(currentStep === 4) {
@@ -1666,6 +1705,10 @@
         if(!isValidPhoneFormat(phone)) {
           if (phoneErrEl) phoneErrEl.textContent = 'Nomor HP tidak valid (isi angka saja, minimal 9 digit).';
           return groupPhone.classList.add('error');
+        }
+        if(!document.getElementById('inputAgree').checked) {
+          document.getElementById('rulesBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return Swal.fire({ icon:'info', title:'Peraturan Reservasi', text:'Mohon centang persetujuan peraturan reservasi sebelum mengirim.', confirmButtonColor:'var(--primary)' });
         }
         submitReservation();
         return;
@@ -1880,7 +1923,10 @@
           throw new Error('Gagal koneksi');
         }
 
-        Swal.fire({ icon:'success', title:'Terkirim!', text:'Admin akan menghubungi WhatsApp Anda.', confirmButtonColor:'var(--primary)' })
+        const trackUrl = 'https://www.dolansawah.my.id/reservasi.html?r=' + encodeURIComponent(out.id || '');
+        Swal.fire({ icon:'success', title:'Terkirim!',
+          html:'Admin akan menghubungi WhatsApp Anda.' + (out.id ? '<br><br><a href="' + trackUrl + '" target="_blank" rel="noopener" style="font-weight:600">Pantau status permintaan</a><br><small>Simpan tautan ini untuk melihat status kapan saja.</small>' : ''),
+          confirmButtonColor:'var(--primary)' })
           .then(() => window.location.reload());
 
       } catch(e) {

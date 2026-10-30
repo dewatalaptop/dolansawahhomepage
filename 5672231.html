@@ -1046,8 +1046,8 @@ function listenRequests() {
   unsubRequests = db.collection('reservation_requests')
     .orderBy('createdAt','desc')
     .onSnapshot(snap => {
-      // Permintaan yang kedaluwarsa (dilepas otomatis oleh server) tidak ditampilkan di kotak masuk.
-      requestsCache = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.status !== 'kedaluwarsa');
+      // Permintaan kedaluwarsa (dilepas otomatis oleh server) atau ditolak tidak ditampilkan di kotak masuk.
+      requestsCache = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.status !== 'kedaluwarsa' && r.status !== 'ditolak');
       pruneChat();
       renderInbox();
     });
@@ -1282,7 +1282,7 @@ function rejectRequest(id) {
   const name = r ? r.nama : 'ini';
   Swal.fire({
     title: 'Tolak Permintaan?',
-    text: `Permintaan dari ${name} akan dihapus permanen.`,
+    text: `Permintaan dari ${name} akan ditandai ditolak (tamu bisa melihat statusnya).`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonText: 'Ya, tolak',
@@ -1290,7 +1290,7 @@ function rejectRequest(id) {
     confirmButtonColor: '#e76f51'
   }).then(res => {
     if (res.isConfirmed) {
-      db.collection('reservation_requests').doc(id).delete()
+      db.collection('reservation_requests').doc(id).update({ status: 'ditolak', rejectedAt: firebase.firestore.FieldValue.serverTimestamp() })
         .then(() => { unmarkChatted(id); })
         .catch(e => Swal.fire('Error', e.message, 'error'));
     }
@@ -1390,7 +1390,8 @@ async function showApproveDpDialog(id, r, menus) {
     try {
       const data = {
         ...r, menus, status: 'approved', dp: form.dp, tipeDp: form.pay,
-        approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+        approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        requestId: id // dipakai halaman pelacak status tamu
       };
       delete data.id;
       // Website utama (reservasids) hanya membaca `tambahan`. Catatan bisa saja
