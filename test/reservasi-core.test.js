@@ -75,7 +75,7 @@ const R = (id, date, extra = {}) => ({ id, date, jam: "10:00", nama: id, nomorHp
 test("pengingat H-3 (jendela H-3..H-2), H-1 (H-1..hari H), sudah dikirim tidak muncul", () => {
   const out = C.daftarPengingat([
     R("a", "2026-11-05"), R("b", "2026-11-04"), R("c", "2026-11-06"),           // +3, +2, +4
-    R("d", "2026-11-03"), R("e", "2026-11-02"), R("f", "2026-11-03", { reminders: { h1: 1 } }),
+    R("d", "2026-11-03"), R("e", "2026-11-02", { jam: "15:00" }), R("f", "2026-11-03", { reminders: { h1: 1 } }),
     R("g", "2026-11-05", { reminders: { h3: 1 } })
   ], [], NOW);
   assert.deepEqual(out.h3.map((r) => r.id), ["b", "a"]);
@@ -128,4 +128,16 @@ test("tanggal WIB: pukul 00:30 WIB sudah dianggap hari berikutnya", () => {
   assert.equal(C.ymdWib(Date.parse("2026-11-01T17:30:00Z")), "2026-11-02");
   assert.equal(C.tambahHari("2026-12-31", 1), "2027-01-01");
   assert.equal(C.selisihHari("2026-11-05", "2026-11-02"), 3);
+});
+
+test("H-1 pada hari H hanya bila jam reservasi belum lewat (regresi penguji)", () => {
+  // NOW = 10:00 WIB 2 Nov. Hari H jam 06:00 sudah lewat -> bukan H-1; jam 15:00 masih -> H-1; besok selalu H-1.
+  const out = C.daftarPengingat([
+    R("lewat", "2026-11-02", { jam: "06:00" }),
+    R("nanti", "2026-11-02", { jam: "15:00" }),
+    R("besok", "2026-11-03", { jam: "06:00" }),
+    R("tanpaJam", "2026-11-02", { jam: "" })
+  ], [], NOW);
+  assert.deepEqual(out.h1.map((r) => r.id).sort(), ["besok", "nanti", "tanpaJam"]);
+  assert.deepEqual(out.terimaKasih.map((r) => r.id), ["lewat"]);
 });

@@ -89,7 +89,11 @@
       var d = selisihHari(r.date, hariIni);
       var sent = r.reminders || {};
       if (d >= 2 && d <= 3) { if (!sent.h3) out.h3.push(r); }
-      else if (d >= 0 && d <= 1 && !sent.h1) out.h1.push(r);
+      else if (d >= 0 && d <= 1 && !sent.h1) {
+        // Pada hari H, pengingat 'kami tunggu kedatangan' hanya masuk akal bila jam reservasi belum lewat.
+        var tw = waktuReservasi(r);
+        if (d === 1 || isNaN(tw) || tw > now) out.h1.push(r);
+      }
       // Ucapan terima kasih: 3 jam setelah jam reservasi, sampai 7 hari ke belakang (sama dengan notifikasi di kalender admin).
       if (d <= 0 && d >= -7 && r.thankYouSent !== true) {
         var t = waktuReservasi(r);

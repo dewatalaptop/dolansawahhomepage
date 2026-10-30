@@ -1160,14 +1160,14 @@ function buildCard(r) {
   let menuHTML = '<div class="menu-empty">Tidak ada menu tambahan</div>';
   if (r.menus && r.menus.length > 0) {
     menuHTML = r.menus.map(m =>
-      `<div class="menu-row"><span>${m.name}</span><b>×${m.quantity}</b></div>`
+      `<div class="menu-row"><span>${escapeHtml(m.name)}</span><b>×${escapeHtml(m.quantity)}</b></div>`
     ).join('');
   }
 
   const note = r.note || r.catatan || r.pesan || r.tambahan || '–';
 
   // Safe ID for onclick — escape single quotes in doc ID (rare but safe)
-  const safeId = r.id.replace(/'/g,"&#39;");
+  const safeId = String(r.id).replace(/[^A-Za-z0-9_-]/g, '');
 
   return `<div class="request-card ${chatted ? 'chatted' : ''}" id="card-${safeId}">
 
@@ -1178,23 +1178,23 @@ function buildCard(r) {
     <div class="card-header">
       <label style="display:flex;align-items:center;margin-right:10px;cursor:pointer;" title="Pilih untuk tindakan massal"><input type="checkbox" class="sel-box" ${selectedReqs.has(r.id) ? 'checked' : ''} onchange="toggleSelect('${safeId}', this.checked)" style="width:20px;height:20px;"></label>
       <div style="flex:1;">
-        <div class="card-name">${r.nama || '–'}</div>
-        <div class="card-phone"><i class="fab fa-whatsapp"></i> ${r.nomorHp || '–'}</div>
+        <div class="card-name">${escapeHtml(r.nama || '–')}</div>
+        <div class="card-phone"><i class="fab fa-whatsapp"></i> ${escapeHtml(r.nomorHp || '–')}</div>
       </div>
-      <span class="card-via">${r.via || 'Web'}</span>
+      <span class="card-via">${escapeHtml(r.via || 'Web')}</span>
     </div>
 
     <div class="card-meta">
-      <div><i class="fas fa-calendar-day"></i>${r.date || '–'}</div>
-      <div><i class="fas fa-clock"></i>${r.jam || '–'}</div>
-      <div><i class="fas fa-users"></i>${r.jumlah || '–'} Orang</div>
-      <div><i class="fas fa-map-marker-alt"></i>${r.tempat || '–'}</div>
+      <div><i class="fas fa-calendar-day"></i>${escapeHtml(r.date || '–')}</div>
+      <div><i class="fas fa-clock"></i>${escapeHtml(r.jam || '–')}</div>
+      <div><i class="fas fa-users"></i>${escapeHtml(r.jumlah || '–')} Orang</div>
+      <div><i class="fas fa-map-marker-alt"></i>${escapeHtml(r.tempat || '–')}</div>
     </div>
 
     <div class="card-info-box">
       <div style="margin-bottom:10px;">
         <div class="info-label"><i class="fas fa-sticky-note"></i> Note</div>
-        <div class="note-bubble">${note}</div>
+        <div class="note-bubble">${escapeHtml(note)}</div>
       </div>
       <div>
         <div class="info-label"><i class="fas fa-utensils"></i> Menu</div>
@@ -1283,16 +1283,11 @@ function sendWaMessage(r, menus, note) {
   // customer memilihnya sebagai penanda, bukan menu berharga sungguhan), jadi
   // dideteksi dari NAMA menu yang dipilih, bukan dari field tempat/via (yang
   // selalu "Web App V9"/nama lokasi asli, tidak pernah berisi teks "OTS").
-  const hasOTSMenu_wa = (menus || []).some(m => (m.name || '').trim().toUpperCase() === 'OTS');
-  const isOTS_wa = hasOTSMenu_wa
-                || (r.tempat || '').toUpperCase().includes('OTS')
-                || (r.via    || '').toUpperCase().includes('OTS')
-                || !(menus && menus.length > 0);
-  const hasCustomMenu_wa = (menus || []).some(m =>
-    typeof m.price === 'number' || (m.name || '').trim().toUpperCase() === 'CUSTOM'
-  );
-  const normalDp_wa = Math.round(total * 0.5);
-  const dp    = (isOTS_wa || hasCustomMenu_wa) ? Math.max(200000, normalDp_wa) : normalDp_wa;
+  const est_wa = ReservasiCore.estimasiDp(menus, globalMenuPrices, {
+    ots: (r.tempat || '').toUpperCase().includes('OTS') || (r.via || '').toUpperCase().includes('OTS')
+  });
+  const normalDp_wa = est_wa.dpNormal;
+  const dp    = est_wa.dp;
   const dpLabel_wa = dp === normalDp_wa ? 'DP 50%' : 'DP';
 
   const msg =
@@ -1396,6 +1391,11 @@ async function showApproveDpDialog(id, r, menus) {
   });
   const isMinDp200k = est.minimal;
   const estDP = est.dp;
+  // Label peringatan: OTS (menu OTS / tempat atau via OTS / tanpa menu) atau Menu Custom.
+  const isOTS = (menus || []).some(ReservasiCore.isOtsMenu)
+             || (r.tempat || '').toUpperCase().includes('OTS')
+             || (r.via || '').toUpperCase().includes('OTS')
+             || !(menus && menus.length > 0);
 
   const { value: form } = await Swal.fire({
     title: `Setujui — ${r.nama}`,
