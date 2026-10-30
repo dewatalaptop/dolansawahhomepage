@@ -1772,12 +1772,15 @@
       try {
         const [snapConfirmed, snapPending] = await fetchAvailabilityDay(dateVal);
 
-        const usageMap = {};
+        // Kapasitas dinilai per jendela waktu (reservasi yang jamnya berdekatan), bukan jumlah seharian --
+        // sama dengan server (submitReservation). Lihat ReservasiCore.sisaKapasitas.
+        const itemsHariIni = [];
         let isLantai1FullBooked = false;
+        const jamDipilih = document.getElementById('inputTime').value;
 
         const processDoc = (d) => {
           if(d.tempat) {
-            usageMap[d.tempat] = (usageMap[d.tempat] || 0) + (parseInt(d.jumlah) || 0);
+            itemsHariIni.push(d);
             if (d.tempat.toLowerCase().includes("lantai 1 full blok")) isLantai1FullBooked = true;
           }
         };
@@ -1791,8 +1794,9 @@
         container.innerHTML = '';
         locationsData.sort((a,b) => a.name.localeCompare(b.name)).forEach(loc => {
           const locNameLower = loc.name.toLowerCase();
-          const used = usageMap[loc.name] || 0;
-          const capacity = (loc.capacity !== undefined && loc.capacity !== null) ? parseInt(loc.capacity) : 50;
+          const capacityParsed = parseInt(loc.capacity);
+          const capacity = Number.isFinite(capacityParsed) ? capacityParsed : 50;
+          const used = ReservasiCore.sisaKapasitas(itemsHariIni, loc.name, jamDipilih, capacity).terpakai;
           let remaining = capacity - used;
           let isFull = remaining < paxVal;
           let customError = "";

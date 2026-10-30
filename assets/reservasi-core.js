@@ -59,6 +59,26 @@
     return { kode: "belum", label: "BELUM ADA PEMBAYARAN", dibayar: 0, sisa: total > 0 ? total : null };
   }
 
+  // ---------- Kapasitas tempat per jendela waktu ----------
+  // Keputusan pemilik (2026-10-31): reservasi di tempat yang sama hanya dijumlahkan bila jamnya berdekatan
+  // (selisih < 150 menit = gratis 2,5 jam), bukan jumlah seharian. SALINAN dari reservasids/functions/submit.js
+  // (server = penentu); reservasids/functions/test/parity-core.test.js menjaga keduanya sama.
+  var JENDELA_BENTROK_MENIT = 150;
+  function menitDariJam(t) {
+    var m = /^(\d{1,2}):(\d{2})/.exec(String(t || ""));
+    return m ? (+m[1]) * 60 + (+m[2]) : NaN;
+  }
+  function sisaKapasitas(items, tempat, jam, kapasitas, jendela) {
+    var w = jendela == null ? JENDELA_BENTROK_MENIT : jendela;
+    var dasar = menitDariJam(jam), terpakai = 0;
+    (items || []).forEach(function (it) {
+      if (!it || it.tempat !== tempat || isBatal(it)) return;
+      var j = menitDariJam(it.jam);
+      if (isNaN(j) || isNaN(dasar) || Math.abs(j - dasar) < w) terpakai += Math.max(0, parseInt(it.jumlah, 10) || 0);
+    });
+    return { terpakai: terpakai, sisa: kapasitas - terpakai };
+  }
+
   // ---------- Pengingat (dipakai panel dasbor web; aplikasi Android memakai logika yang sama) ----------
   var STATUS_BATAL = ["batal", "dibatalkan", "cancel", "cancelled", "canceled", "ditolak", "rejected", "kedaluwarsa"];
   function isBatal(r) { return STATUS_BATAL.indexOf(String((r && r.status) == null ? "" : r.status).trim().toLowerCase()) >= 0; }
@@ -137,6 +157,7 @@
     hitungSubtotal: hitungSubtotal, hitungPpn: hitungPpn, hitungGrandTotal: hitungGrandTotal,
     estimasiDp: estimasiDp, statusBayar: statusBayar,
     isBatal: isBatal, tsMillis: tsMillis, ymdWib: ymdWib, tambahHari: tambahHari, selisihHari: selisihHari,
-    daftarPengingat: daftarPengingat, nomorWa: nomorWa, pesanPengingat: pesanPengingat
+    daftarPengingat: daftarPengingat, nomorWa: nomorWa, pesanPengingat: pesanPengingat,
+    JENDELA_BENTROK_MENIT: JENDELA_BENTROK_MENIT, menitDariJam: menitDariJam, sisaKapasitas: sisaKapasitas
   };
 });

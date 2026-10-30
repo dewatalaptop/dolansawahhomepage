@@ -141,3 +141,11 @@ test("H-1 pada hari H hanya bila jam reservasi belum lewat (regresi penguji)", (
   assert.deepEqual(out.h1.map((r) => r.id).sort(), ["besok", "nanti", "tanpaJam"]);
   assert.deepEqual(out.terimaKasih.map((r) => r.id), ["lewat"]);
 });
+
+test("sisaKapasitas klien: jendela 150 menit (jam berjauhan tidak dijumlahkan)", () => {
+  const items = [{ tempat: "A", jumlah: 30, jam: "10:00" }, { tempat: "A", jumlah: 20, jam: "12:30" }, { tempat: "A", jumlah: 9, jam: "11:00", status: "ditolak" }];
+  assert.equal(C.sisaKapasitas(items, "A", "10:00", 100).terpakai, 30);
+  assert.equal(C.sisaKapasitas(items, "A", "11:00", 100).terpakai, 50);
+  assert.equal(C.sisaKapasitas(items, "A", "17:00", 100).sisa, 100);
+  assert.equal(C.sisaKapasitas(items, "A", "17:00", 100, 1440).terpakai, 50);
+});
