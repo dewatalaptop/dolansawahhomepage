@@ -150,3 +150,37 @@ test("sisaKapasitas klien: durasi 2,5 jam + jeda 2 jam = jendela 270 menit", () 
   assert.equal(C.sisaKapasitas(items, "A", "22:00", 100).sisa, 100);
   assert.equal(C.sisaKapasitas(items, "A", "17:00", 100, 1440).terpakai, 50);
 });
+
+
+// ---------- audit log ----------
+test("audit: perubahan field operasional dicatat dari/ke; data pribadi hanya 'diubah' tanpa nilai", () => {
+  const sebelum = { nama: "Budi", nomorHp: "0811111", date: "2026-12-05", jam: "10:00", tempat: "Pondok 1", jumlah: 10, dp: 100000, tipeDp: "QRIS", tambahan: "a", menus: [{ name: "Paket A", quantity: 10 }] };
+  const sesudah = { ...sebelum, nama: "Budi S", nomorHp: "0822222", jam: "11:00", dp: 150000, tambahan: "b", menus: [{ name: "Paket A", quantity: 12 }] };
+  const c = C.buatCatatanAudit("ubah", "reservations", "abc", sebelum, sesudah, "admin@x.id");
+  assert.deepEqual(c.perubahan.jam, { dari: "10:00", ke: "11:00" });
+  assert.deepEqual(c.perubahan.dp, { dari: 100000, ke: 150000 });
+  assert.equal(c.perubahan.nama, "diubah");
+  assert.equal(c.perubahan.nomorHp, "diubah");
+  assert.equal(c.perubahan.tambahan, "diubah");
+  assert.deepEqual(c.perubahan.menus, { dari: "Paket A x10", ke: "Paket A x12" });
+  assert.equal(c.perubahan.tempat, undefined);                                   // tidak berubah -> tidak dicatat
+  const json = JSON.stringify(c);
+  assert.equal(json.includes("0811111") || json.includes("0822222"), false);     // nomor HP tidak pernah ada di log
+  assert.deepEqual([c.aksi, c.koleksi, c.dokId, c.nama, c.tanggal, c.oleh], ["ubah", "reservations", "abc", "Budi S", "2026-12-05", "admin@x.id"]);
+});
+
+test("audit: tambah, hapus, setujui, tolak", () => {
+  const r = { nama: "Siti", nomorHp: "0833", date: "2026-12-06", jam: "09:00", tempat: "Lantai 2", jumlah: 20, status: "pending" };
+  const tambah = C.buatCatatanAudit("tambah", "reservations", "n1", null, r, "a@x");
+  assert.deepEqual(tambah.perubahan.jumlah, { dari: null, ke: 20 });
+  assert.equal(tambah.perubahan.nama, undefined);                                // tak ada 'sebelum' -> bukan 'diubah'
+  const hapus = C.buatCatatanAudit("hapus", "reservations", "n1", r, null, "a@x");
+  assert.deepEqual(hapus.perubahan.jumlah, { dari: 20, ke: null });
+  assert.equal(hapus.nama, "Siti");
+  const setujui = C.buatCatatanAudit("setujui", "reservations", "n2", r, { ...r, status: "approved", dp: 200000, tipeDp: "QRIS" }, "a@x");
+  assert.deepEqual(setujui.perubahan.status, { dari: "pending", ke: "approved" });
+  assert.deepEqual(setujui.perubahan.dp, { dari: null, ke: 200000 });
+  const tolak = C.buatCatatanAudit("tolak", "reservation_requests", "q1", r, { ...r, status: "ditolak" }, "a@x");
+  assert.deepEqual(tolak.perubahan.status, { dari: "pending", ke: "ditolak" });
+  assert.equal(C.buatCatatanAudit("ubah", "reservations", "z", r, r, "a@x").perubahan.jumlah, undefined); // tanpa perubahan
+});

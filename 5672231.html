@@ -748,6 +748,9 @@
       <i class="fas fa-bell"></i> Pengingat
       <span class="nav-badge" id="reminder-badge">0</span>
     </div>
+    <div class="nav-item" data-tab="audit" onclick="switchTab('audit',this)">
+      <i class="fas fa-clock-rotate-left"></i> Riwayat
+    </div>
     <div class="nav-item" data-tab="calendar" onclick="switchTab('calendar',this)">
       <i class="far fa-calendar-alt"></i> Kalender
     </div>
@@ -850,6 +853,14 @@
     <div class="inbox-toolbar"><div class="inbox-left"><h2>Pengingat</h2></div></div>
     <p style="color:#6b7280;font-size:0.88rem;margin:0 0 14px;">Daftar yang perlu Anda kirim hari ini. Setelah tombol WhatsApp ditekan, pengingat ditandai terkirim dan hilang dari daftar.</p>
     <div id="reminder-container"></div>
+  </div>
+
+  <!-- RIWAYAT PERUBAHAN -->
+  <div id="tab-audit" class="section">
+    <div class="inbox-toolbar"><div class="inbox-left"><h2>Riwayat Perubahan</h2></div>
+      <div class="inbox-right"><button class="btn-refresh" onclick="muatRiwayat()"><i class="fas fa-sync-alt"></i> Muat ulang</button></div></div>
+    <p style="color:#6b7280;font-size:0.88rem;margin:0 0 14px;">100 perubahan terakhir: siapa, kapan, apa. Nomor HP tidak dicatat.</p>
+    <div id="audit-container"><div class="rem-empty">Belum dimuat.</div></div>
   </div>
 
   <!-- KALENDER -->
@@ -1330,7 +1341,7 @@ function rejectRequest(id) {
   }).then(res => {
     if (res.isConfirmed) {
       db.collection('reservation_requests').doc(id).update({ status: 'ditolak', rejectedAt: firebase.firestore.FieldValue.serverTimestamp(), expiresAt: firebase.firestore.FieldValue.delete() })
-        .then(() => { unmarkChatted(id); })
+        .then(() => { unmarkChatted(id); catatAudit('tolak', 'reservation_requests', id, r || {}, Object.assign({}, r || {}, { status: 'ditolak' })); })
         .catch(e => Swal.fire('Error', e.message, 'error'));
     }
   });
@@ -1358,6 +1369,17 @@ async function approveRequest(id) {
   );
 }
 
+// Audit log: siapa mengubah apa. TIDAK BOLEH menghalangi penyimpanan (gagal -> hanya peringatan di konsol).
+// Aturan Firestore harus mengizinkan create pada koleksi audit_log (lihat firestore.rules di repo reservasids).
+function catatAudit(aksi, koleksi, dokId, sebelum, sesudah) {
+  try {
+    const u = auth.currentUser;
+    const entri = ReservasiCore.buatCatatanAudit(aksi, koleksi, dokId, sebelum, sesudah, u && u.email);
+    entri.at = firebase.firestore.FieldValue.serverTimestamp();
+    db.collection('audit_log').add(entri).catch(err => console.warn('audit_log gagal:', err && err.message));
+  } catch (err) { console.warn('audit_log gagal:', err && err.message); }
+}
+
 // Menyimpan satu persetujuan: salin permintaan -> reservations, hapus dari reservation_requests.
 // Dipakai persetujuan satuan (showApproveDpDialog) dan persetujuan massal (bulkApprove).
 async function simpanApprove(id, r, menus, form) {
@@ -1375,6 +1397,7 @@ async function simpanApprove(id, r, menus, form) {
   const newRef = await db.collection('reservations').add(data);
   await db.collection('reservation_requests').doc(id).delete();
   unmarkChatted(id);
+  catatAudit('setujui', 'reservations', newRef.id, r, data);
   return newRef;
 }
 
@@ -1761,6 +1784,7 @@ function switchTab(tabId, el) {
 
   // render chart lazy (first open)
   if (tabId === 'analysis') setTimeout(updateChart, 50);
+  if (tabId === 'audit') muatRiwayat();
 }
 
 // ═══════════════════════════════════════════
@@ -1830,6 +1854,7 @@ async function bulkReject() {
     try {
       await db.collection('reservation_requests').doc(r.id).update({ status: 'ditolak', rejectedAt: firebase.firestore.FieldValue.serverTimestamp(), expiresAt: firebase.firestore.FieldValue.delete() });
       unmarkChatted(r.id); selectedReqs.delete(r.id); ok++;
+      catatAudit('tolak', 'reservation_requests', r.id, r, Object.assign({}, r, { status: 'ditolak' }));
     } catch (e) { gagal.push(`${r.nama || r.id}: ${e.message}`); }
   }
   renderInbox();
@@ -1888,6 +1913,27 @@ function sendReminder(id, jenis) {
     .catch(e => Swal.fire('Gagal menandai terkirim', e.message, 'error'));
 }
 setInterval(() => { try { renderReminders(); } catch (e) {} }, 60000);
+
+async function muatRiwayat() {
+  const box = document.getElementById('audit-container');
+  box.innerHTML = '<div class="rem-empty">Memuat...</div>';
+  try {
+    const snap = await db.collection('audit_log').orderBy('at', 'desc').limit(100).get();
+    if (snap.empty) { box.innerHTML = '<div class="rem-empty">Belum ada riwayat.</div>'; return; }
+    const AKSI = { tambah: 'Tambah', ubah: 'Ubah', hapus: 'Hapus', setujui: 'Setujui', tolak: 'Tolak' };
+    const fmt = v => v === null || v === undefined || v === '' ? '–' : escapeHtml(v);
+    box.innerHTML = snap.docs.map(d => {
+      const e = d.data();
+      const waktu = e.at && e.at.toDate ? e.at.toDate().toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+      const rinci = Object.entries(e.perubahan || {}).map(([f, v]) =>
+        typeof v === 'string' ? `${escapeHtml(f)} ${escapeHtml(v)}` : `${escapeHtml(f)}: ${fmt(v.dari)} → ${fmt(v.ke)}`).join(' · ');
+      return `<div class="rem-row"><div class="rem-info"><b>${escapeHtml(AKSI[e.aksi] || e.aksi)} — ${escapeHtml(e.nama || '–')} <small style="font-weight:400;color:#6b7280;">(${escapeHtml(e.tanggal || '')})</small></b>
+        <span>${escapeHtml(waktu)} · ${escapeHtml(e.oleh || '–')}${rinci ? ' · ' + rinci : ''}</span></div></div>`;
+    }).join('');
+  } catch (err) {
+    box.innerHTML = '<div class="rem-empty">Riwayat belum bisa dibaca: ' + escapeHtml(err.message) + '. Pastikan aturan Firestore untuk audit_log sudah diterbitkan.</div>';
+  }
+}
 
 function openSidebar() {
   document.getElementById('sidebar').classList.add('open');
@@ -2235,6 +2281,8 @@ async function saveEdit() {
         else addMenuRow(entry.name, entry.quantity);
       },
       onProceed: async () => {
+        const koleksiEdit = editCollection, dokIdEdit = editingDocId;
+        const sebelumEdit = (koleksiEdit === 'reservations' ? reservationsCache : requestsCache).find(x => x.id === dokIdEdit) || null;
         const updates = {
           nama, nomorHp, date, jam,
           jumlah: jumlah.toString(),
@@ -2253,6 +2301,7 @@ async function saveEdit() {
         }
         try {
           await db.collection(editCollection).doc(editingDocId).update(updates);
+          catatAudit('ubah', koleksiEdit, dokIdEdit, sebelumEdit, Object.assign({}, sebelumEdit || {}, { nama, nomorHp, date, jam, jumlah: updates.jumlah, tempat, tambahan: note, menus: updates.menus }, koleksiEdit === 'reservations' ? { dp: updates.dp, tipeDp: updates.tipeDp } : {}));
           closeEditModal();
           Swal.fire({
             icon: 'success', title: 'Tersimpan!',
