@@ -1318,6 +1318,7 @@
 
   </div>
 
+  <script src="assets/reservasi-core.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyA_c1tU70FM84Qi_f_aSaQ-YVLo_18lCkI",
@@ -1627,20 +1628,15 @@
     // DP = 50% (menu + PPN 10%); menu "OTS"/"Custom" (harga Rp 0 sebagai penanda) -> DP minimal Rp 200.000.
     const rpFmt = n => 'Rp ' + Math.round(n || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     function updateEstimate() {
-      let food = 0, minDp = false;
-      Object.entries(selectedMenus).forEach(([name, qty]) => {
-        const price = (menusData[name] && menusData[name].price) || 0;
-        food += price * qty;
-        const up = name.trim().toUpperCase();
-        if (up === 'OTS' || up === 'CUSTOM') minDp = true;
-      });
-      const ppn = Math.round(food * 0.1);
-      const normalDp = Math.round((food + ppn) * 0.5);
-      const dp = minDp ? Math.max(200000, normalDp) : normalDp;
-      document.getElementById('summarySub').textContent = rpFmt(food);
-      document.getElementById('summaryPpn').textContent = rpFmt(ppn);
-      document.getElementById('summaryTotal').textContent = rpFmt(food + ppn);
-      document.getElementById('summaryDp').textContent = rpFmt(dp);
+      // Aturan harga/DP dari assets/reservasi-core.js (sama dengan dasbor admin).
+      const harga = {};
+      Object.keys(menusData).forEach(n => { harga[n] = menusData[n].price || 0; });
+      const items = Object.entries(selectedMenus).map(([name, quantity]) => ({ name, quantity }));
+      const e = ReservasiCore.estimasiDp(items, harga);
+      document.getElementById('summarySub').textContent = rpFmt(e.subtotal);
+      document.getElementById('summaryPpn').textContent = rpFmt(e.ppn);
+      document.getElementById('summaryTotal').textContent = rpFmt(e.total);
+      document.getElementById('summaryDp').textContent = rpFmt(e.dp);
     }
 
     function cleanId(str) { return str.replace(/[^a-zA-Z0-9]/g, '-'); }

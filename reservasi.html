@@ -205,6 +205,7 @@ h2::before{content:"";flex:none;width:5px;height:18px;border-radius:4px;backgrou
 </div>
 <div class="toast" id="toast" role="status"></div>
 
+<script src="assets/reservasi-core.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════
    PERATURAN RESERVASI — ubah isi di sini.
@@ -278,18 +279,9 @@ function stateView(kind, title, msg){
 }
 
 /* ── Perhitungan pembayaran (satu sumber kebenaran untuk halaman & invoice) ── */
-const PPN_RATE = 0.10; // PPN 10% (orderTotal & harga menu tersimpan SEBELUM pajak)
-function hitungTotal(r, menuPrices){
-  if (typeof r.orderTotal === 'number') return r.orderTotal;
-  if (Array.isArray(r.menus)) return r.menus.reduce((s, m) => s + (typeof m.price === 'number' ? m.price : (menuPrices[m.name] || 0)) * (parseInt(m.quantity) || 0), 0);
-  return 0;
-}
-function statusBayar(r, total){
-  const dp = Math.max(0, +r.dp || 0);
-  if (r.lunas === true || (total > 0 && dp >= total)) return { kode: 'lunas', label: 'LUNAS', dibayar: total > 0 ? Math.max(total, dp) : dp, sisa: 0 };
-  if (dp > 0) return { kode: 'dp', label: 'DP DIBAYAR', dibayar: dp, sisa: total > 0 ? Math.max(0, total - dp) : null };
-  return { kode: 'belum', label: 'BELUM ADA PEMBAYARAN', dibayar: 0, sisa: total > 0 ? total : null };
-}
+const PPN_RATE = ReservasiCore.PPN_RATE; // PPN 10% (orderTotal & harga menu tersimpan SEBELUM pajak)
+function hitungTotal(r, menuPrices){ return ReservasiCore.hitungSubtotal(r, menuPrices); }
+function statusBayar(r, total){ return ReservasiCore.statusBayar(r, total); }
 
 let CUR = null; // { id, r, sub (sebelum PPN), ppn, total (sesudah PPN), bayar, menuDetail }
 

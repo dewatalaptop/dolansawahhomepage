@@ -885,6 +885,7 @@
 
 </div><!-- /main-content -->
 
+<script src="assets/reservasi-core.js"></script>
 <script>
 // ═══════════════════════════════════════════
 // FIREBASE
@@ -1325,27 +1326,13 @@ async function showApproveDpDialog(id, r, menus) {
   // spot" di Data Master) — atau tempat/via mengandung 'OTS', atau tidak ada
   // pre-order menu sama sekali. Dicek dari NAMA menu, bukan cuma tempat/via,
   // karena tempat/via yang sebenarnya tidak pernah berisi teks "OTS".
-  const hasOTSMenu = (menus || []).some(m => (m.name || '').trim().toUpperCase() === 'OTS');
-  const isOTS = hasOTSMenu
-             || (r.tempat || '').toUpperCase().includes('OTS')
-             || (r.via    || '').toUpperCase().includes('OTS')
-             || !(menus && menus.length > 0);
-  // Menu custom = item di luar master menu (dari Asisten AI / admin, dikenali
-  // dari price yang menempel langsung di item — lihat sendWaMessage di atas)
-  // ATAU customer memilih menu master "Custom" (harga Rp 0 di Data Master).
-  const hasCustomMenu = (menus || []).some(m =>
-    typeof m.price === 'number' || (m.name || '').trim().toUpperCase() === 'CUSTOM'
-  );
-  let totalFood = 0;
-  (menus || []).forEach(m => {
-    const price = (typeof m.price === 'number') ? m.price : (globalMenuPrices[m.name] || 0);
-    totalFood += price * m.quantity;
+  // Aturan OTS/Custom/DP/PPN ada di assets/reservasi-core.js (satu sumber, dites): OTS & Custom dikenali dari NAMA menu;
+  // tempat/via yang mengandung 'OTS' juga memicu aturan OTS (DP minimal Rp 200.000, naik ke 50% bila lebih besar).
+  const est = ReservasiCore.estimasiDp(menus, globalMenuPrices, {
+    ots: (r.tempat || '').toUpperCase().includes('OTS') || (r.via || '').toUpperCase().includes('OTS')
   });
-  // OTS atau ada menu custom: DP minimal 200.000 (naik ke 50% kalau 50%-nya
-  // lebih besar, bukan flat 200rb selalu).
-  const isMinDp200k = isOTS || hasCustomMenu;
-  const normalDp = Math.round((totalFood + Math.round(totalFood * 0.1)) * 0.5);
-  const estDP = isMinDp200k ? Math.max(200000, normalDp) : normalDp;
+  const isMinDp200k = est.minimal;
+  const estDP = est.dp;
 
   const { value: form } = await Swal.fire({
     title: `Setujui — ${r.nama}`,
