@@ -800,6 +800,10 @@
           <button class="filter-tab" onclick="setFilter('unchatted',this)">Belum Chat</button>
           <button class="filter-tab" onclick="setFilter('chatted',this)">Sudah Chat</button>
         </div>
+        <select id="inbox-sort" onchange="renderInbox()" style="padding:8px 10px;border-radius:10px;border:1px solid #d1d5db;background:#fff;font-size:0.85rem;" title="Urutan">
+          <option value="terbaru">Terbaru masuk</option>
+          <option value="tanggal">Tanggal terdekat</option>
+        </select>
       </div>
       <div class="inbox-right">
         <div class="search-wrapper">
@@ -810,6 +814,12 @@
           <i class="fas fa-sync-alt"></i> Refresh
         </button>
       </div>
+    </div>
+    <div id="bulk-bar" style="display:none;position:sticky;top:0;z-index:5;background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px;padding:10px 14px;margin-bottom:12px;align-items:center;gap:10px;flex-wrap:wrap;">
+      <b id="bulk-count" style="flex:1;min-width:120px;"></b>
+      <button class="btn-terima" onclick="bulkApprove()"><i class="fas fa-check-double"></i> Setujui terpilih</button>
+      <button class="btn-tolak" onclick="bulkReject()"><i class="fas fa-times"></i> Tolak terpilih</button>
+      <button class="btn-edit-inline" onclick="clearSelection()">Batal pilih</button>
     </div>
     <!-- Empty state OUTSIDE grid (FIX BUG #1) -->
     <div id="inbox-empty" style="display:none;">
@@ -1129,7 +1139,11 @@ function renderInbox() {
   }
   emptyEl.style.display = 'none';
 
+  if ((document.getElementById('inbox-sort') || {}).value === 'tanggal') {
+    items = [...items].sort((a, b) => String(a.date || '9999').localeCompare(String(b.date || '9999')) || String(a.jam || '').localeCompare(String(b.jam || '')));
+  }
   container.innerHTML = items.map(r => buildCard(r)).join('');
+  updateBulkBar();
 }
 
 function buildCard(r) {
@@ -1162,7 +1176,8 @@ function buildCard(r) {
     </div>
 
     <div class="card-header">
-      <div>
+      <label style="display:flex;align-items:center;margin-right:10px;cursor:pointer;" title="Pilih untuk tindakan massal"><input type="checkbox" class="sel-box" ${selectedReqs.has(r.id) ? 'checked' : ''} onchange="toggleSelect('${safeId}', this.checked)" style="width:20px;height:20px;"></label>
+      <div style="flex:1;">
         <div class="card-name">${r.nama || '–'}</div>
         <div class="card-phone"><i class="fab fa-whatsapp"></i> ${r.nomorHp || '–'}</div>
       </div>
@@ -1348,6 +1363,26 @@ async function approveRequest(id) {
   );
 }
 
+// Menyimpan satu persetujuan: salin permintaan -> reservations, hapus dari reservation_requests.
+// Dipakai persetujuan satuan (showApproveDpDialog) dan persetujuan massal (bulkApprove).
+async function simpanApprove(id, r, menus, form) {
+  const data = {
+    ...r, menus, status: 'approved', dp: form.dp, tipeDp: form.pay,
+    approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    requestId: id // dipakai halaman pelacak status tamu
+  };
+  delete data.id;
+  // Website utama (reservasids) hanya membaca `tambahan`. Catatan bisa saja
+  // tersimpan di `note` (hasil Edit sebelumnya) -- satukan ke `tambahan`.
+  data.tambahan = r.note || r.catatan || r.pesan || r.tambahan || '';
+  delete data.note; delete data.catatan; delete data.pesan;
+  delete data.expiresAt; // batas waktu hanya untuk permintaan menunggu
+  const newRef = await db.collection('reservations').add(data);
+  await db.collection('reservation_requests').doc(id).delete();
+  unmarkChatted(id);
+  return newRef;
+}
+
 async function showApproveDpDialog(id, r, menus) {
   // hitung estimasi DP
   // OTS = customer memilih menu master "OTS" (harga Rp 0, penanda "on the
@@ -1403,19 +1438,7 @@ async function showApproveDpDialog(id, r, menus) {
     // memblokirnya karena gesture-nya sudah hilang. Diarahkan ke URL setelah simpan.
     const viewer = window.open('about:blank', '_blank');
     try {
-      const data = {
-        ...r, menus, status: 'approved', dp: form.dp, tipeDp: form.pay,
-        approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        requestId: id // dipakai halaman pelacak status tamu
-      };
-      delete data.id;
-      // Website utama (reservasids) hanya membaca `tambahan`. Catatan bisa saja
-      // tersimpan di `note` (hasil Edit sebelumnya) -- satukan ke `tambahan`.
-      data.tambahan = r.note || r.catatan || r.pesan || r.tambahan || '';
-      delete data.note; delete data.catatan; delete data.pesan;
-      const newRef = await db.collection('reservations').add(data);
-      await db.collection('reservation_requests').doc(id).delete();
-      unmarkChatted(id);
+      const newRef = await simpanApprove(id, r, menus, form);
 
       // Sertakan ID dokumen baru supaya viewer bisa buka tepat by-ID (bukan tebak nama).
       const viewerUrl = `https://dewatalaptop.github.io/reservasids/upgradeV2.html?autoOpen=true&date=${r.date}&search=${encodeURIComponent(r.nama)}&id=${encodeURIComponent(newRef.id)}`;
@@ -1738,6 +1761,79 @@ function switchTab(tabId, el) {
 
   // render chart lazy (first open)
   if (tabId === 'analysis') setTimeout(updateChart, 50);
+}
+
+// ═══════════════════════════════════════════
+// TINDAKAN MASSAL (inbox)
+// ═══════════════════════════════════════════
+const selectedReqs = new Set();
+
+function toggleSelect(id, on) {
+  if (on) selectedReqs.add(id); else selectedReqs.delete(id);
+  updateBulkBar();
+}
+function clearSelection() { selectedReqs.clear(); renderInbox(); }
+function updateBulkBar() {
+  // buang pilihan yang sudah tidak ada (disetujui/ditolak/kedaluwarsa)
+  for (const id of [...selectedReqs]) if (!requestsCache.some(r => r.id === id)) selectedReqs.delete(id);
+  const bar = document.getElementById('bulk-bar');
+  if (!bar) return;
+  bar.style.display = selectedReqs.size > 0 ? 'flex' : 'none';
+  document.getElementById('bulk-count').textContent = selectedReqs.size + ' permintaan dipilih';
+}
+
+async function bulkApprove() {
+  const list = requestsCache.filter(r => selectedReqs.has(r.id));
+  if (!list.length) return;
+  const rows = list.map((r, i) => {
+    const est = ReservasiCore.estimasiDp(r.menus || [], globalMenuPrices, {
+      ots: (r.tempat || '').toUpperCase().includes('OTS') || (r.via || '').toUpperCase().includes('OTS')
+    });
+    return `<tr><td style="text-align:left;padding:6px 4px;"><b>${escapeHtml(r.nama || '–')}</b><br><small>${escapeHtml(r.date || '')} ${escapeHtml(r.jam || '')} · ${escapeHtml(r.tempat || '')} · ${escapeHtml(r.jumlah || '')} org</small></td>
+      <td style="padding:6px 4px;"><input id="bulk-dp-${i}" type="number" min="1" value="${est.dp > 0 ? est.dp : ''}" style="width:110px;padding:6px;border:1px solid #d1d5db;border-radius:8px;"></td></tr>`;
+  }).join('');
+  const { value: form } = await Swal.fire({
+    title: `Setujui ${list.length} permintaan`,
+    html: `<div style="font-size:0.8rem;color:#92400e;background:#fff7ed;border:1px solid #fcd34d;border-radius:8px;padding:6px 10px;margin-bottom:10px;text-align:left;">DP sudah terisi estimasi per permintaan (bisa diubah). Pemeriksaan kelengkapan AI dilewati pada persetujuan massal.</div>
+      <div style="max-height:46vh;overflow:auto;"><table style="width:100%;border-collapse:collapse;"><tr><th style="text-align:left;">Tamu</th><th>DP (Rp)</th></tr>${rows}</table></div>
+      <div style="text-align:left;margin:10px 0 4px;"><label style="font-size:0.82rem;font-weight:600;color:#555;">Metode Pembayaran DP (semua)</label></div>
+      <select id="bulk-pay" class="swal2-input" style="margin-top:0;"><option>Transfer BNI</option><option>Transfer BRI</option><option>QRIS</option><option>Cash</option></select>`,
+    showCancelButton: true, confirmButtonText: 'Setujui semua', cancelButtonText: 'Batal', confirmButtonColor: '#10b981', focusConfirm: false,
+    preConfirm: () => {
+      const dps = list.map((_, i) => parseInt(document.getElementById('bulk-dp-' + i).value, 10));
+      if (dps.some(d => !d || d <= 0)) { Swal.showValidationMessage('Semua nominal DP wajib diisi dan lebih dari 0'); return false; }
+      return { dps, pay: document.getElementById('bulk-pay').value };
+    }
+  });
+  if (!form) return;
+  Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  let ok = 0; const gagal = [];
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i];
+    try { await simpanApprove(r.id, r, (r.menus || []).map(m => ({ ...m })), { dp: form.dps[i], pay: form.pay }); ok++; selectedReqs.delete(r.id); }
+    catch (e) { gagal.push(`${r.nama || r.id}: ${e.message}`); }
+  }
+  renderInbox();
+  Swal.fire({ icon: gagal.length ? 'warning' : 'success', title: `${ok} dari ${list.length} disetujui`, html: gagal.length ? `Gagal:<br>${gagal.map(escapeHtml).join('<br>')}` : '', confirmButtonColor: '#10b981' });
+}
+
+async function bulkReject() {
+  const list = requestsCache.filter(r => selectedReqs.has(r.id));
+  if (!list.length) return;
+  const res = await Swal.fire({
+    title: `Tolak ${list.length} permintaan?`, text: 'Ditandai ditolak (tamu bisa melihat statusnya).', icon: 'warning',
+    showCancelButton: true, confirmButtonText: 'Ya, tolak semua', cancelButtonText: 'Batal', confirmButtonColor: '#e76f51'
+  });
+  if (!res.isConfirmed) return;
+  let ok = 0; const gagal = [];
+  for (const r of list) {
+    try {
+      await db.collection('reservation_requests').doc(r.id).update({ status: 'ditolak', rejectedAt: firebase.firestore.FieldValue.serverTimestamp(), expiresAt: firebase.firestore.FieldValue.delete() });
+      unmarkChatted(r.id); selectedReqs.delete(r.id); ok++;
+    } catch (e) { gagal.push(`${r.nama || r.id}: ${e.message}`); }
+  }
+  renderInbox();
+  Swal.fire({ icon: gagal.length ? 'warning' : 'success', title: `${ok} dari ${list.length} ditolak`, html: gagal.length ? gagal.map(escapeHtml).join('<br>') : '', confirmButtonColor: '#10b981' });
 }
 
 // ═══════════════════════════════════════════
