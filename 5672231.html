@@ -802,6 +802,7 @@
           <button class="filter-tab active" onclick="setFilter('all',this)">Semua</button>
           <button class="filter-tab" onclick="setFilter('unchatted',this)">Belum Chat</button>
           <button class="filter-tab" onclick="setFilter('chatted',this)">Sudah Chat</button>
+          <button class="filter-tab" id="tab-expired" onclick="setFilter('expired',this)">Kedaluwarsa</button>
         </div>
         <select id="inbox-sort" onchange="renderInbox()" style="padding:8px 10px;border-radius:10px;border:1px solid #d1d5db;background:#fff;font-size:0.85rem;" title="Urutan">
           <option value="terbaru">Terbaru masuk</option>
@@ -964,6 +965,7 @@ let myChart = null;
 let myChartLokasi = null;
 let myChartPax = null;
 let activeFilter = 'all';
+let expiredCache = [];   // permintaan berstatus kedaluwarsa (sisa fitur lama): tidak di kotak masuk, bisa dipulihkan lewat tab Kedaluwarsa
 
 // ─── Chat-status (localStorage) ───
 const CHAT_KEY = 'ds_chatted_v2';
@@ -1116,7 +1118,9 @@ function listenRequests() {
     .orderBy('createdAt','desc')
     .onSnapshot(snap => {
       // Permintaan kedaluwarsa (dilepas otomatis oleh server) atau ditolak tidak ditampilkan di kotak masuk.
-      requestsCache = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(r => r.status !== 'kedaluwarsa' && r.status !== 'ditolak');
+      const semua = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      requestsCache = semua.filter(r => r.status !== 'kedaluwarsa' && r.status !== 'ditolak');
+      expiredCache = semua.filter(r => r.status === 'kedaluwarsa');
       pruneChat();
       renderInbox();
       renderReminders();
@@ -1141,8 +1145,13 @@ function renderInbox() {
   badge.textContent    = total;
   badge.style.display  = total > 0 ? 'inline-block' : 'none';
 
+  const tabExp = document.getElementById('tab-expired');
+  if (tabExp) tabExp.textContent = 'Kedaluwarsa' + (expiredCache.length ? ' (' + expiredCache.length + ')' : '');
+
   // search
   const q = ((document.getElementById('inbox-search') || {}).value || '').toLowerCase().trim();
+
+  if (activeFilter === 'expired') { renderExpired(container, emptyEl, q); return; }
 
   let items = requestsCache.filter(r => {
     if (!q) return true;
@@ -1175,6 +1184,64 @@ function renderInbox() {
   }
   container.innerHTML = items.map(r => buildCard(r)).join('');
   updateBulkBar();
+}
+
+// Tab Kedaluwarsa: permintaan yang dulu dilepas otomatis server (batas 48 jam, kini dihapus). Pulihkan = kembali menunggu di kotak masuk, tanpa batas waktu.
+function renderExpired(container, emptyEl, q) {
+  const items = expiredCache.filter(r => !q
+    || (r.nama || '').toLowerCase().includes(q) || (r.nomorHp || '').includes(q)
+    || (r.tempat || '').toLowerCase().includes(q) || (r.date || '').includes(q))
+    .sort((a, b) => String(a.date || '').localeCompare(String(b.date || '')) || String(a.jam || '').localeCompare(String(b.jam || '')));
+  if (!items.length) {
+    container.innerHTML = '';
+    emptyEl.style.display = 'block';
+    emptyEl.querySelector('p').innerHTML = q ? `Tidak ada hasil untuk "<b>${escapeHtml(q)}</b>"` : 'Tidak ada permintaan kedaluwarsa';
+    emptyEl.querySelector('i').className = 'fas fa-inbox';
+    updateBulkBar();
+    return;
+  }
+  emptyEl.style.display = 'none';
+  const semuaBtn = `<div style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:10px 14px;">
+      <span style="font-size:0.88rem;">${items.length} permintaan kedaluwarsa. Pulihkan agar tampil lagi di kotak masuk.</span>
+      <button class="btn-terima" onclick="pulihkanSemua()"><i class="fas fa-undo"></i> Pulihkan semua</button></div>`;
+  container.innerHTML = semuaBtn + items.map(r => {
+    const safeId = String(r.id).replace(/[^A-Za-z0-9_-]/g, '');
+    return `<div class="request-card" id="card-${safeId}">
+      <div class="card-header"><div style="flex:1;"><div class="card-name">${escapeHtml(r.nama || '–')}</div>
+        <div class="card-phone"><i class="fab fa-whatsapp"></i> ${escapeHtml(r.nomorHp || '–')}</div></div>
+        <span class="card-via">Kedaluwarsa</span></div>
+      <div class="card-meta">
+        <div><i class="fas fa-calendar-day"></i>${escapeHtml(r.date || '–')}</div>
+        <div><i class="fas fa-clock"></i>${escapeHtml(r.jam || '–')}</div>
+        <div><i class="fas fa-users"></i>${escapeHtml(r.jumlah || '–')} Orang</div>
+        <div><i class="fas fa-map-marker-alt"></i>${escapeHtml(r.tempat || '–')}</div>
+      </div>
+      <div class="req-actions"><button class="btn-terima" onclick="pulihkanSatu('${safeId}')"><i class="fas fa-undo"></i> Pulihkan</button></div>
+    </div>`;
+  }).join('');
+  updateBulkBar();
+}
+
+const PULIH_DATA = () => ({ status: 'pending', expiresAt: firebase.firestore.FieldValue.delete(), expiredAt: firebase.firestore.FieldValue.delete(), restoredAt: firebase.firestore.FieldValue.serverTimestamp() });
+
+async function pulihkanSatu(id) {
+  try {
+    await db.collection('reservation_requests').doc(id).update(PULIH_DATA());
+    catatAudit('pulihkan', 'reservation_requests', id, expiredCache.find(x => x.id === id) || {}, { status: 'pending' });
+  } catch (e) { Swal.fire('Error', e.message, 'error'); }
+}
+
+async function pulihkanSemua() {
+  const ids = expiredCache.map(x => x.id);
+  if (!ids.length) return;
+  const res = await Swal.fire({ title: `Pulihkan ${ids.length} permintaan?`, text: 'Semuanya kembali ke kotak masuk berstatus menunggu, tanpa batas waktu.', icon: 'question', showCancelButton: true, confirmButtonText: 'Pulihkan', cancelButtonText: 'Batal' });
+  if (!res.isConfirmed) return;
+  let ok = 0, gagal = 0;
+  for (const id of ids) {
+    try { await db.collection('reservation_requests').doc(id).update(PULIH_DATA()); ok++; } catch (e) { gagal++; }
+  }
+  catatAudit('pulihkan', 'reservation_requests', '(massal)', {}, { dipulihkan: ok, gagal });
+  Swal.fire(gagal ? 'Sebagian gagal' : 'Selesai', `${ok} dipulihkan${gagal ? `, ${gagal} gagal` : ''}.`, gagal ? 'warning' : 'success');
 }
 
 function buildCard(r) {
@@ -1967,7 +2034,7 @@ async function muatRiwayat() {
   try {
     const snap = await db.collection('audit_log').orderBy('at', 'desc').limit(100).get();
     if (snap.empty) { box.innerHTML = '<div class="rem-empty">Belum ada riwayat.</div>'; return; }
-    const AKSI = { tambah: 'Tambah', ubah: 'Ubah', hapus: 'Hapus', setujui: 'Setujui', tolak: 'Tolak' };
+    const AKSI = { tambah: 'Tambah', ubah: 'Ubah', hapus: 'Hapus', setujui: 'Setujui', tolak: 'Tolak', pulihkan: 'Pulihkan' };
     const fmt = v => v === null || v === undefined || v === '' ? '–' : escapeHtml(v);
     box.innerHTML = snap.docs.map(d => {
       const e = d.data();
