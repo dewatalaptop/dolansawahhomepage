@@ -1352,8 +1352,10 @@ async function openWA(id) {
     { nomorHp: r.nomorHp, tempat: r.tempat, jumlah: r.jumlah, tambahan: note, menus: workingMenus },
     {
       proceedLabel: 'Tetap Kirim',
-      onItemAdd: (entry) => { workingMenus.push(entry); },
+      aiCek: r.aiCek,
+      onItemAdd: (entry) => { workingMenus.push(entry); simpanMenuPermintaan(id, r, workingMenus); },
       onProceed: () => {
+        simpanAiCek('reservation_requests', id, note, workingMenus);
         sendWaMessage(r, workingMenus, note);
         markChatted(id);
         renderInbox();
@@ -1450,8 +1452,9 @@ async function approveRequest(id) {
     { nomorHp: r.nomorHp, tempat: r.tempat, jumlah: r.jumlah, tambahan: note, menus: workingMenus },
     {
       proceedLabel: 'Lanjutkan',
-      onItemAdd: (entry) => { workingMenus.push(entry); },
-      onProceed: () => showApproveDpDialog(id, r, workingMenus)
+      aiCek: r.aiCek,
+      onItemAdd: (entry) => { workingMenus.push(entry); simpanMenuPermintaan(id, r, workingMenus); },
+      onProceed: () => { simpanAiCek('reservation_requests', id, note, workingMenus); showApproveDpDialog(id, r, workingMenus); }
     }
   );
 }
@@ -2385,10 +2388,12 @@ async function saveEdit() {
     saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
   };
 
+  const docEdit = (editCollection === 'reservations' ? reservationsCache : requestsCache).find(x => x.id === editingDocId) || {};
   await runAiCompletenessCheck(
     { nomorHp, tempat, jumlah, tambahan: note, menus: collectMenusFromDom() },
     {
       proceedLabel: 'Tetap Simpan',
+      aiCek: docEdit.aiCek,
       onCancel: resetSaveBtn,
       onItemAdd: (entry) => {
         if (typeof entry.price === 'number') addCustomMenuRow(entry.name, entry.quantity, entry.price);
@@ -2409,6 +2414,7 @@ async function saveEdit() {
           menus: collectMenusFromDom(),
           lastEditedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
+        updates.aiCek = { k: aiCekKey(note, updates.menus), at: firebase.firestore.FieldValue.serverTimestamp() };
         if (editCollection === 'reservations') {
           updates.dp     = parseInt(document.getElementById('ef-dp').value) || 0;
           updates.tipeDp = document.getElementById('ef-tipe-dp').value;
@@ -2478,17 +2484,52 @@ async function getCapacityForLocationNameAdmin(name) {
   return loc ? loc.capacity : null;
 }
 
+// Batas tunggu pemeriksaan AI. Lewat dari ini, aksi tetap jalan (fail-open) supaya admin tidak menunggu lama.
+const AI_TIMEOUT_MS = 12000;
+
 async function callAiFunction(functionName, payload) {
   const user = auth.currentUser;
   if (!user) throw new Error('Belum login');
   const token = await user.getIdToken();
-  const res = await fetch(`${AI_FUNCTIONS_BASE_URL}/${functionName}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) throw new Error(`AI function gagal (${res.status})`);
-  return res.json();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), AI_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${AI_FUNCTIONS_BASE_URL}/${functionName}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(payload),
+      signal: ctrl.signal
+    });
+    if (!res.ok) throw new Error(`AI function gagal (${res.status})`);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Kunci hasil pemeriksaan: catatan + daftar menu (nama, jumlah, harga custom).
+// Disimpan di dokumen (field aiCek.k) setelah admin melanjutkan, sehingga
+// pemeriksaan berikutnya untuk catatan+menu yang sama tidak memanggil AI lagi
+// dan item yang sudah ditangani tidak ditanyakan ulang.
+function aiCekKey(note, menus) {
+  const src = JSON.stringify([String(note || '').trim(), (menus || []).map(m => [m.name, m.quantity, typeof m.price === 'number' ? m.price : null]).map(x => JSON.stringify(x)).sort()]);
+  let h = 5381;
+  for (let i = 0; i < src.length; i++) h = ((h * 33) ^ src.charCodeAt(i)) >>> 0;
+  return h.toString(36) + '-' + src.length;
+}
+
+function simpanAiCek(koleksi, id, note, menus) {
+  db.collection(koleksi).doc(id).update({ aiCek: { k: aiCekKey(note, menus), at: firebase.firestore.FieldValue.serverTimestamp() } })
+    .catch(e => console.warn('Simpan tanda cek AI gagal:', e && e.message));
+}
+
+// Item tambahan dari popup AI (beserta harga custom) langsung disimpan ke
+// permintaan, supaya Chat/Terima berikutnya tidak perlu input ulang.
+function simpanMenuPermintaan(id, r, menus) {
+  const baru = menus.map(m => ({ ...m }));
+  db.collection('reservation_requests').doc(id).update({ menus: baru })
+    .then(() => catatAudit('ubah', 'reservation_requests', id, r, Object.assign({}, r, { menus: baru })))
+    .catch(e => Swal.fire('Gagal menyimpan item', e.message, 'error'));
 }
 
 // --- Progress bar simulasi (bukan API streaming, lihat catatan di reservasids) ---
@@ -2550,14 +2591,15 @@ function buildRuleFlagsClient(reservation, capacity) {
 //   TANPA klik tombol lanjut (mis. reset tombol Simpan di form Edit).
 // opts.proceedLabel: teks tombol lanjut, default "Tetap Simpan".
 async function runAiCompletenessCheck(reservationLike, opts) {
-  const { onProceed, onItemAdd, onCancel, proceedLabel } = opts;
+  const { onProceed, onItemAdd, onCancel, proceedLabel, aiCek } = opts;
   const capacity = await getCapacityForLocationNameAdmin(reservationLike.tempat);
   const ruleFlags = buildRuleFlagsClient(reservationLike, capacity);
   const note = (reservationLike.tambahan || '').trim();
+  const sudahDicek = !!(aiCek && aiCek.k && aiCek.k === aiCekKey(note, reservationLike.menus));
 
-  // Tidak ada catatan untuk dianalisis -> tidak perlu hubungi server sama
-  // sekali (skip cold start + panggilan Gemini yang percuma).
-  if (!note) {
+  // Tidak ada catatan untuk dianalisis, atau catatan+menu ini sudah pernah
+  // diperiksa dan ditangani admin -> tidak perlu hubungi server sama sekali.
+  if (!note || sudahDicek) {
     if (ruleFlags.length === 0) { onProceed(); return; }
     showAiCheckModal(ruleFlags, [], { onProceed, onItemAdd, onCancel, proceedLabel });
     return;
