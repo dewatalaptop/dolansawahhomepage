@@ -2605,30 +2605,40 @@ async function runAiCompletenessCheck(reservationLike, opts) {
     return;
   }
 
+  // Deteksi aturan (instan, tanpa jaringan): pola "nama + jumlah" seperti "sate ayam 30".
+  // Tetap jalan walau AI gagal, supaya item berbayar tidak diam-diam terlewat.
+  const knownMenuNames = Object.keys(globalMenuPrices);
+  const aturanItems = ReservasiCore.deteksiItemCatatan(note, knownMenuNames, reservationLike.menus);
+
   showAiLoadingProgress();
-  let result;
+  let analisis = {}, aiGagal = false;
   try {
-    result = await callAiFunction('checkReservationCompleteness', {
+    const result = await callAiFunction('checkReservationCompleteness', {
       reservation: reservationLike,
       capacity,
-      knownMenuNames: Object.keys(globalMenuPrices)
+      knownMenuNames
     });
+    analisis = result.tambahanAnalysis || {};
+    aiGagal = !!analisis.error;
   } catch (e) {
-    console.warn('Pengecekan AI tidak tersedia, lanjut tanpa peringatan:', e);
-    hideAiLoadingProgress();
-    onProceed();
-    return;
+    console.warn('Pengecekan AI tidak tersedia, pakai deteksi otomatis saja:', e);
+    aiGagal = true;
   }
   hideAiLoadingProgress();
 
-  const aiItems = (result.tambahanAnalysis && result.tambahanAnalysis.items) || [];
+  // possibleMatch yang bukan nama menu sungguhan akan terhitung Rp0 -> jadikan item custom (harga diisi admin).
+  const aiItems = ReservasiCore.gabungItemCatatan(analisis.items || [], aturanItems)
+    .map(it => it.possibleMatch && !Object.prototype.hasOwnProperty.call(globalMenuPrices, it.possibleMatch) ? { ...it, possibleMatch: null } : it);
 
-  if (ruleFlags.length === 0 && aiItems.length === 0) {
+  if (ruleFlags.length === 0 && aiItems.length === 0 && !aiGagal) {
     onProceed();
     return;
   }
 
-  showAiCheckModal(ruleFlags, aiItems, { onProceed, onItemAdd, onCancel, proceedLabel });
+  const flags = aiGagal
+    ? ruleFlags.concat([{ field: 'ai', severity: 'warning', message: `AI sedang sibuk. Hasil di bawah hanya dari deteksi otomatis sederhana; baca ulang catatan: "${note.slice(0, 200)}"` }])
+    : ruleFlags;
+  showAiCheckModal(flags, aiItems, { onProceed, onItemAdd, onCancel, proceedLabel });
 }
 
 let pendingAiRuleFlags = [];
@@ -2732,7 +2742,7 @@ function addAiItemToForm(idx) {
       Swal.fire({ icon:'warning', title:'Isi harga dulu', text:'Harga satuan wajib diisi sebelum menambahkan.', timer:2200, showConfirmButton:false });
       return;
     }
-    entry = { name: item.mentionedText, quantity, price };
+    entry = { name: ReservasiCore.namaItemCatatan(item.mentionedText), quantity, price };
   }
 
   pendingAiAddedFlags[idx] = true;
